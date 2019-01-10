@@ -16,6 +16,7 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.gson.gson
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.locations.Location
 import io.ktor.locations.Locations
 import io.ktor.request.receive
@@ -27,42 +28,29 @@ import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
+import mu.KotlinLogging
 import java.util.UUID
 
-data class Beregning(
+data class MinsteInntektBeregningsRequest(
     val aktorId: String,
     val verneplikt: Boolean,
     val fangstOgFisk: Boolean
 )
 
-data class RegelBeregning(
+data class TaskResponse(
     val regel: String,
-    val status: String, // todo: enum?
-    val expires: String // todo: real date
+    val status: String,
+    val expires: String
 )
 
-data class MinsteinntektBeregningResultat(
-    val oppfyllerMinsteinntekt: Boolean,
-    val periode: Int,
-    val status: String // todo: enum?
-) {
-    companion object {
-        val exampleInntektBeregning = mapOf(
-                "oppfyllerMinsteinntekt" to true,
-                "status" to 1,
-                "status" to "string"
-        )
-    }
-}
+private val LOGGER = KotlinLogging.logger {}
 
 @Group("API")
-@Location("/{id}")
+@Location("minsteinntekt/{id}")
 data class GetMinsteinntekt(val id: String)
 
 class Oppslag {
+
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
@@ -72,6 +60,10 @@ class Oppslag {
 }
 
 fun Application.main() {
+
+    val tasks = Tasks()
+    val minsteinntektBeregninger = MinsteInntektBeregninger()
+
     install(DefaultHeaders)
     install(CallLogging)
     install(ContentNegotiation) {
@@ -97,43 +89,41 @@ fun Application.main() {
 
         route("minsteinntekt") {
             post {
-                val beregning = call.receive<Beregning>()
+                val beregning = call.receive<MinsteInntektBeregningsRequest>()
                 val taskId = UUID.randomUUID().toString()
+
+                tasks.createTask(taskId)
+
+                // dette skal egentlig bli gjort av kafka-consumer når regelberegning er ferdig
+                tasks.updateTask(taskId, "123")
+
                 call.response.header(HttpHeaders.Location, "/task/$taskId")
-                call.respond(
-                        RegelBeregning(
-                                regel = "minsteinntekt",
-                                status = "pending",
-                                expires = ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
-                        )
-                )
+                call.respond(HttpStatusCode.Accepted)
             }
 
             get<GetMinsteinntekt>("/{id}".responds(
                     ok<MinsteinntektBeregningResultat>(
-                            example("model", MinsteinntektBeregningResultat.exampleInntektBeregning)
+                            example("model",
+                                MinsteinntektBeregningResultat.exampleInntektBeregning
+                            )
                     ))) { param ->
                 val id = param.id
 
-                call.respond(
-                        MinsteinntektBeregningResultat(
-                                oppfyllerMinsteinntekt = true,
-                                periode = 52,
-                                status = "done"
-                        )
-                )
+                call.respond(minsteinntektBeregninger.getBeregning(id))
             }
         }
         route("task") {
             get("/{id}") {
                 val id = call.parameters["id"]
-                call.respond(
-                        RegelBeregning(
-                                regel = "minsteinntekt",
-                                status = "pending",
-                                expires = ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
-                        )
-                )
+
+                val task = tasks.getTask(id ?: "awe")
+
+                if (task.status == "pending") {
+                    call.respond(TaskResponse(task.regel, task.status, task.expires))
+                } else if (task.status == "done") {
+                    call.response.header(HttpHeaders.Location, "/${task.regel}/${task.ressursId}")
+                    call.respond(HttpStatusCode.SeeOther)
+                }
             }
         }
     }

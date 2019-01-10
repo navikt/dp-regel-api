@@ -27,6 +27,7 @@ java {
 val ktorVersion = "1.1.1"
 val swagger_version = "3.1.7"
 val kotlinLoggingVersion = "1.4.9"
+val log4j2Version = "2.11.1"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -37,6 +38,12 @@ dependencies {
     implementation("io.ktor:ktor-locations:$ktorVersion")
 
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
+
+    implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
+    implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
+    implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
+    implementation("ch.qos.logback:logback-classic:1.2.3")
 
     implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")
 
