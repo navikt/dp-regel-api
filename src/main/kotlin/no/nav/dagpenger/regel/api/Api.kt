@@ -31,6 +31,8 @@ import io.ktor.server.netty.Netty
 import mu.KotlinLogging
 import java.util.UUID
 
+private val LOGGER = KotlinLogging.logger {}
+
 data class MinsteInntektBeregningsRequest(
     val aktorId: String,
     val verneplikt: Boolean,
@@ -43,14 +45,11 @@ data class TaskResponse(
     val expires: String
 )
 
-private val LOGGER = KotlinLogging.logger {}
-
 @Group("API")
-@Location("minsteinntekt/{id}")
+@Location("/{id}")
 data class GetMinsteinntekt(val id: String)
 
 class Oppslag {
-
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
@@ -101,7 +100,7 @@ fun Application.main() {
                 call.respond(HttpStatusCode.Accepted)
             }
 
-            get<GetMinsteinntekt>("/{id}".responds(
+            get<GetMinsteinntekt>("resultat av minsteinntektsberegning".responds(
                     ok<MinsteinntektBeregningResultat>(
                             example("model",
                                 MinsteinntektBeregningResultat.exampleInntektBeregning
@@ -112,11 +111,13 @@ fun Application.main() {
                 call.respond(minsteinntektBeregninger.getBeregning(id))
             }
         }
+
         route("task") {
             get("/{id}") {
                 val id = call.parameters["id"]
 
                 val task = tasks.getTask(id ?: "awe")
+                task.status
 
                 if (task.status == "pending") {
                     call.respond(TaskResponse(task.regel, task.status, task.expires))
