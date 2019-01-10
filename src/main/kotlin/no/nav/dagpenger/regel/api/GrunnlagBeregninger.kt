@@ -14,7 +14,7 @@ data class GrunnlagBeregningResultat(
 
 class GrunnlagBeregninger {
     val beregninger = mutableMapOf<String, GrunnlagBeregningResultat>(
-        "123" to GrunnlagBeregningResultat(250000)
+        "456" to GrunnlagBeregningResultat(250000)
     )
 
     fun hasDataForBeregning(beregningsId: String) = beregninger.containsKey(beregningsId)
