@@ -93,6 +93,7 @@ fun Application.main() {
             info = information
         }
     }
+
     routing {
 
         route("minsteinntekt") {
@@ -108,6 +109,7 @@ fun Application.main() {
                         )
                 )
             }
+
             get<GetMinsteinntekt>("/{id}".responds(
                     ok<MinsteinntektBeregningResultat>(
                             example("model", MinsteinntektBeregningResultat.exampleInntektBeregning)
