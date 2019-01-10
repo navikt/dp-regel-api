@@ -24,8 +24,14 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+val ktorVersion = "1.1.1"
+
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("io.ktor:ktor-server:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-gson:$ktorVersion")
+
     testImplementation("junit:junit:4.12")
 }
 
