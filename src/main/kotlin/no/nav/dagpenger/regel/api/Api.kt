@@ -33,19 +33,6 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
-val sizeSchemaMap = mapOf(
-        "type" to "number",
-        "minimum" to 0
-)
-
-fun rectangleSchemaMap(refBase: String) = mapOf(
-        "type" to "object",
-        "properties" to mapOf(
-                "a" to mapOf("${'$'}ref" to "$refBase/size"),
-                "b" to mapOf("${'$'}ref" to "$refBase/size")
-        )
-)
-
 data class Beregning(
     val aktorId: String,
     val verneplikt: Boolean,
@@ -80,7 +67,7 @@ class Oppslag {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            embeddedServer(Netty, port = 8080, module = Application::main).start(wait = true)
+            embeddedServer(Netty, port = 8092, module = Application::main).start(wait = true)
         }
     }
 }
@@ -96,7 +83,6 @@ fun Application.main() {
     install(Locations)
 
     install(SwaggerSupport) {
-        path = "swagger"
         forwardRoot = true
         val information = Information(
                 version = "0.1",
@@ -105,7 +91,6 @@ fun Application.main() {
         )
         swagger = Swagger().apply {
             info = information
-            definitions["size"] = sizeSchemaMap
         }
     }
     routing {
