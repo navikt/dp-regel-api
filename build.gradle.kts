@@ -24,8 +24,24 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+val ktorVersion = "1.1.1"
+val swagger_version = "3.1.7"
+val kotlinLoggingVersion = "1.4.9"
+
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("io.ktor:ktor-server:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-gson:$ktorVersion")
+    implementation("io.ktor:ktor-auth:$ktorVersion")
+    implementation("io.ktor:ktor-locations:$ktorVersion")
+
+    //implementation("org.webjars:swagger-ui:$swagger_version")
+
+    implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
+
+    implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")
+
     testImplementation("junit:junit:4.12")
 }
 
