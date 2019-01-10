@@ -35,7 +35,7 @@ dependencies {
     implementation("io.ktor:ktor-gson:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-locations:$ktorVersion")
-    
+
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
 
     implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")

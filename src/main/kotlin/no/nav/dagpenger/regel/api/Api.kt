@@ -1,7 +1,6 @@
 package no.nav.dagpenger.regel.api
 
 import de.nielsfalk.ktor.swagger.SwaggerSupport
-import de.nielsfalk.ktor.swagger.SwaggerUi
 import de.nielsfalk.ktor.swagger.example
 import de.nielsfalk.ktor.swagger.get
 import de.nielsfalk.ktor.swagger.ok
