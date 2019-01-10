@@ -14,7 +14,7 @@ data class MinsteinntektBeregningResultat(
     }
 }
 
-class MinsteInntektBeregninger {
+class MinsteinntektBeregninger {
     val beregninger = mutableMapOf<String, MinsteinntektBeregningResultat>(
         "123" to MinsteinntektBeregningResultat(true, 52)
     )
