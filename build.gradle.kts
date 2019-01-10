@@ -4,6 +4,7 @@ plugins {
     id("application")
     kotlin("jvm") version "1.3.10"
     id("com.diffplug.gradle.spotless") version "3.13.0"
+    id("com.github.johnrengelman.shadow") version "4.0.3"
 }
 
 apply {
@@ -15,7 +16,7 @@ repositories {
 }
 
 application {
-    applicationName = "dagpenger-regel-api"
+    applicationName = "dp-regel-api"
     mainClassName = "no.nav.dagpenger.regel.Api"
 }
 
@@ -43,7 +44,7 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
-    implementation("ch.qos.logback:logback-classic:1.2.3")
+
 
     implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")
 

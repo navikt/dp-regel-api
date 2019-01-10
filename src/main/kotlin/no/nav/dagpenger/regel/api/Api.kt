@@ -28,7 +28,6 @@ import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import mu.KotlinLogging
 import java.util.UUID
 
 private val LOGGER = KotlinLogging.logger {}
