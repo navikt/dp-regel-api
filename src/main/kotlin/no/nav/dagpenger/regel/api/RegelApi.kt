@@ -39,9 +39,9 @@ data class MinsteInntektBeregningsRequest(
 )
 
 data class GrunnlagBeregningsRequest(
-        val aktorId: String,
-        val verneplikt: Boolean,
-        val fangstOgFisk: Boolean
+    val aktorId: String,
+    val verneplikt: Boolean,
+    val fangstOgFisk: Boolean
 )
 
 data class TaskResponse(
