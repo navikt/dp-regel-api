@@ -13,11 +13,13 @@ data class GrunnlagBeregningResultat(
 }
 
 class GrunnlagBeregninger {
-    val beregninger = mutableMapOf<String, GrunnlagBeregningResultat>(
+    val beregninger = mutableMapOf(
         "456" to GrunnlagBeregningResultat(250000)
     )
 
     fun hasDataForBeregning(beregningsId: String) = beregninger.containsKey(beregningsId)
 
-    fun getBeregning(beregningsId: String) = beregninger[beregningsId] ?: throw Exception("no beregning for id found")
+    fun getBeregning(beregningsId: String) = beregninger[beregningsId] ?: throw GrunnlagBeregningNotFoundException("no beregning for id found")
 }
+
+class GrunnlagBeregningNotFoundException(override val message: String) : RuntimeException(message)

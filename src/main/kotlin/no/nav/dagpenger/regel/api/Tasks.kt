@@ -31,7 +31,7 @@ class Tasks {
         return taskId
     }
 
-    fun getTask(taskId: String) = tasks[taskId] ?: throw Exception("no task")
+    fun getTask(taskId: String) = tasks[taskId] ?: throw TaskNotFoundException("no task")
 
     // skal bli kalt av kafka-consumer når en regelberegning er ferdig
     fun updateTask(taskId: String, ressursId: String) {
@@ -39,3 +39,4 @@ class Tasks {
         tasks[taskId]?.ressursId = ressursId
     }
 }
+class TaskNotFoundException(override val message: String) : RuntimeException(message)

@@ -21,5 +21,7 @@ class MinsteinntektBeregninger {
 
     fun hasDataForBeregning(beregningsId: String) = beregninger.containsKey(beregningsId)
 
-    fun getBeregning(beregningsId: String) = beregninger[beregningsId] ?: throw Exception("no beregning for id found")
+    fun getBeregning(beregningsId: String) = beregninger[beregningsId] ?: throw MinsteinntektBeregningNotFoundException("no beregning for id found")
 }
+
+class MinsteinntektBeregningNotFoundException(override val message: String) : RuntimeException(message)
