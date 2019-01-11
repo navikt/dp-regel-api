@@ -1,0 +1,11 @@
+package no.nav.dagpenger.regel.api
+
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+
+class RegelApiTest {
+    @Test
+    fun test() {
+        assertEquals(true, false)
+    }
+}

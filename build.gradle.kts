@@ -1,10 +1,17 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    id("application")
-    kotlin("jvm") version "1.3.10"
+    application
+    kotlin("jvm") version "1.3.11"
     id("com.diffplug.gradle.spotless") version "3.13.0"
     id("com.github.johnrengelman.shadow") version "4.0.3"
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
 }
 
 apply {
@@ -29,6 +36,7 @@ val ktorVersion = "1.1.1"
 val swagger_version = "3.1.7"
 val kotlinLoggingVersion = "1.4.9"
 val log4j2Version = "2.11.1"
+val jupiterVersion = "5.3.2"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -47,7 +55,10 @@ dependencies {
 
     implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")
 
-    testImplementation("junit:junit:4.12")
+    testImplementation(kotlin("test"))
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
 }
 
 spotless {
@@ -59,11 +70,17 @@ spotless {
         ktlint()
     }
 }
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    testLogging {
+        showExceptions = true
+        showStackTraces = true
+        exceptionFormat = TestExceptionFormat.FULL
+        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+    }
 }
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+
+tasks.withType<Wrapper> {
+    gradleVersion = "5.0"
 }
