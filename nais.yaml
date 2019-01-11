@@ -1,6 +1,7 @@
 name: dp-regel-api
 image: repo.adeo.no:5443/dp-regel-api
 team: teamdagpenger
+port: 8092
 replicas:
   min: 2
   max: 4
