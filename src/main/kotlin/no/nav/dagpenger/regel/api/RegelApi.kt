@@ -91,4 +91,3 @@ fun Application.api() {
         grunnlag(grunnlagBeregninger, tasks)
     }
 }
-
