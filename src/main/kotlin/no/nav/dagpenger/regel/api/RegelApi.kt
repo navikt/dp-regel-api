@@ -29,6 +29,7 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import mu.KotlinLogging
+import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -58,7 +59,11 @@ class RegelApi {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            embeddedServer(Netty, port = 8092, module = Application::api).start(wait = true)
+            val app = embeddedServer(Netty, port = 8092, module = Application::api)
+            app.start(wait = false)
+            Runtime.getRuntime().addShutdownHook(Thread {
+                app.stop(5, 60, TimeUnit.SECONDS)
+            })
         }
     }
 }
@@ -81,7 +86,7 @@ fun Application.api() {
     install(SwaggerSupport) {
         forwardRoot = true
         val information = Information(
-                title = "Dagpenger regel-api"
+            title = "Dagpenger regel-api"
         )
         swagger = Swagger().apply {
             info = information
@@ -105,10 +110,11 @@ data class GetMinsteinntekt(val id: String)
 
 fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, tasks: Tasks) {
     post<PostMinsteinntekt, MinsteInntektBeregningsRequest>(
-            "minsteinntektsberegning"
-                    .description("Start minsteinntektsberegning")
-                    .examples()
-                    .responds()) { _, request ->
+        "minsteinntektsberegning"
+            .description("Start minsteinntektsberegning")
+            .examples()
+            .responds()
+    ) { _, request ->
         val taskId = tasks.createTask(Regel.MINSTEINNTEKT)
 
         // dette skal egentlig bli gjort av kafka-consumer når regelberegning er ferdig
@@ -118,12 +124,16 @@ fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, ta
         call.respond(HttpStatusCode.Accepted, taskResponseFromTask(tasks.getTask(taskId)))
     }
 
-    get<GetMinsteinntekt>("resultat av minsteinntektsberegning".responds(
+    get<GetMinsteinntekt>(
+        "resultat av minsteinntektsberegning".responds(
             ok<MinsteinntektBeregningResultat>(
-                    example("model",
-                            MinsteinntektBeregningResultat.exampleInntektBeregning
-                    )
-            ))) { param ->
+                example(
+                    "model",
+                    MinsteinntektBeregningResultat.exampleInntektBeregning
+                )
+            )
+        )
+    ) { param ->
         val id = param.id
 
         call.respond(minsteinntektBeregninger.getBeregning(id))
@@ -140,10 +150,11 @@ data class GetGrunnlag(val id: String)
 
 fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks) {
     post<PostGrunnlag, GrunnlagBeregningsRequest>(
-            "grunnlagberegning"
-                    .description("")
-                    .examples()
-                    .responds()) { _, request ->
+        "grunnlagberegning"
+            .description("")
+            .examples()
+            .responds()
+    ) { _, request ->
 
         val taskId = tasks.createTask(Regel.GRUNNLAG)
 
@@ -154,12 +165,16 @@ fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks) {
         call.respond(HttpStatusCode.Accepted, taskResponseFromTask(tasks.getTask(taskId)))
     }
 
-    get<GetGrunnlag>("resultat av grunnlagsberegning".responds(
+    get<GetGrunnlag>(
+        "resultat av grunnlagsberegning".responds(
             ok<GrunnlagBeregningResultat>(
-                    example("model",
-                            GrunnlagBeregningResultat.exampleGrunnlag
-                    )
-            ))) { param ->
+                example(
+                    "model",
+                    GrunnlagBeregningResultat.exampleGrunnlag
+                )
+            )
+        )
+    ) { param ->
         val id = param.id
 
         call.respond(grunnlagBeregninger.getBeregning(id))
@@ -175,8 +190,10 @@ fun taskResponseFromTask(task: Task): TaskResponse {
 data class GetTask(val id: String)
 
 fun Routing.task(tasks: Tasks) {
-    get<GetTask>("task"
-            .description("")) { param ->
+    get<GetTask>(
+        "task"
+            .description("")
+    ) { param ->
         val id = param.id
 
         val task = tasks.getTask(id)
@@ -186,7 +203,8 @@ fun Routing.task(tasks: Tasks) {
             call.respond(taskResponseFromTask(task))
         } else if (task.status == TaskStatus.DONE) {
             call.response.header(
-                    HttpHeaders.Location, "/${task.regel.toString().toLowerCase()}/${task.ressursId}")
+                HttpHeaders.Location, "/${task.regel.toString().toLowerCase()}/${task.ressursId}"
+            )
             call.respond(HttpStatusCode.SeeOther)
         }
     }
