@@ -1,6 +1,4 @@
-package no.nav.dagpenger.regel.api
-
-import java.lang.Exception
+package no.nav.dagpenger.regel.api.minsteinntekt
 
 data class MinsteinntektBeregningResultat(
     val oppfyllerMinsteinntekt: Boolean,
@@ -21,7 +19,9 @@ class MinsteinntektBeregninger {
 
     fun hasDataForBeregning(beregningsId: String) = beregninger.containsKey(beregningsId)
 
-    fun getBeregning(beregningsId: String) = beregninger[beregningsId] ?: throw MinsteinntektBeregningNotFoundException("no beregning for id found")
+    fun getBeregning(beregningsId: String) = beregninger[beregningsId] ?: throw MinsteinntektBeregningNotFoundException(
+        "no beregning for id found"
+    )
 }
 
 class MinsteinntektBeregningNotFoundException(override val message: String) : RuntimeException(message)

@@ -1,5 +1,6 @@
-package no.nav.dagpenger.regel.api
+package no.nav.dagpenger.regel.api.tasks
 
+import no.nav.dagpenger.regel.api.Regel
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter

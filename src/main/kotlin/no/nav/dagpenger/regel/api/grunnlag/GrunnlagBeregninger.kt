@@ -1,6 +1,4 @@
-package no.nav.dagpenger.regel.api
-
-import java.lang.Exception
+package no.nav.dagpenger.regel.api.grunnlag
 
 data class GrunnlagBeregningResultat(
     val grunnlag: Int
@@ -19,7 +17,9 @@ class GrunnlagBeregninger {
 
     fun hasDataForBeregning(beregningsId: String) = beregninger.containsKey(beregningsId)
 
-    fun getBeregning(beregningsId: String) = beregninger[beregningsId] ?: throw GrunnlagBeregningNotFoundException("no beregning for id found")
+    fun getBeregning(beregningsId: String) = beregninger[beregningsId] ?: throw GrunnlagBeregningNotFoundException(
+        "no beregning for id found"
+    )
 }
 
 class GrunnlagBeregningNotFoundException(override val message: String) : RuntimeException(message)
