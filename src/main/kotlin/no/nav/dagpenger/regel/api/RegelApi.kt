@@ -89,5 +89,6 @@ fun Application.api() {
         task(tasks)
         minsteinntekt(minsteinntektBeregninger, tasks)
         grunnlag(grunnlagBeregninger, tasks)
+        naischecks()
     }
 }
