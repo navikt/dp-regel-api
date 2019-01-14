@@ -21,6 +21,7 @@ import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
 import no.nav.dagpenger.regel.api.tasks.TaskStatus
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.task
+import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger {}
@@ -51,7 +52,9 @@ fun Application.api(
     grunnlagBeregninger: GrunnlagBeregninger
 ) {
     install(DefaultHeaders)
-    install(CallLogging)
+    install(CallLogging) {
+        level = Level.INFO
+    }
     install(ContentNegotiation) {
         gson {
             setPrettyPrinting()
