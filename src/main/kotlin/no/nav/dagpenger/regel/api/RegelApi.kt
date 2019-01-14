@@ -25,18 +25,6 @@ import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger {}
 
-data class MinsteInntektBeregningsRequest(
-    val aktorId: String,
-    val verneplikt: Boolean,
-    val fangstOgFisk: Boolean
-)
-
-data class GrunnlagBeregningsRequest(
-    val aktorId: String,
-    val verneplikt: Boolean,
-    val fangstOgFisk: Boolean
-)
-
 data class TaskResponse(
     val regel: Regel,
     val status: TaskStatus,
