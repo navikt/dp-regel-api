@@ -10,7 +10,7 @@ import io.ktor.routing.Routing
 @Location("/isAlive")
 class IsAlive
 
-@Location("/isAlive")
+@Location("/isReady")
 class IsReady
 
 fun Routing.naischecks() {
