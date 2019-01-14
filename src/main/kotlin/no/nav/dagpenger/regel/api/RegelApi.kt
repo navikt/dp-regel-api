@@ -36,19 +36,20 @@ enum class Regel {
 }
 
 fun main(args: Array<String>) {
-    val app = embeddedServer(Netty, port = 8092, module = Application::api)
+    val app = embeddedServer(Netty, port = 8092) {
+        api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger())
+    }
     app.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
         app.stop(5, 60, TimeUnit.SECONDS)
     })
 }
 
-fun Application.api() {
-
-    val tasks = Tasks()
-    val grunnlagBeregninger = GrunnlagBeregninger()
-    val minsteinntektBeregninger = MinsteinntektBeregninger()
-
+fun Application.api(
+    tasks: Tasks,
+    minsteinntektBeregninger: MinsteinntektBeregninger,
+    grunnlagBeregninger: GrunnlagBeregninger
+) {
     install(DefaultHeaders)
     install(CallLogging)
     install(ContentNegotiation) {
