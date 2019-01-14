@@ -24,7 +24,7 @@ repositories {
 
 application {
     applicationName = "dp-regel-api"
-    mainClassName = "no.nav.dagpenger.regel.api.RegelApi"
+    mainClassName = "no.nav.dagpenger.regel.api.RegelApiKt"
 }
 
 java {
