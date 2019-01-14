@@ -47,17 +47,12 @@ enum class Regel {
     MINSTEINNTEKT, GRUNNLAG
 }
 
-class RegelApi {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val app = embeddedServer(Netty, port = 8092, module = Application::api)
-            app.start(wait = false)
-            Runtime.getRuntime().addShutdownHook(Thread {
-                app.stop(5, 60, TimeUnit.SECONDS)
-            })
-        }
-    }
+fun main(args: Array<String>) {
+    val app = embeddedServer(Netty, port = 8092, module = Application::api)
+    app.start(wait = false)
+    Runtime.getRuntime().addShutdownHook(Thread {
+        app.stop(5, 60, TimeUnit.SECONDS)
+    })
 }
 
 fun Application.api() {
