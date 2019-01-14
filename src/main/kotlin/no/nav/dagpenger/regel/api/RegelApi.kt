@@ -32,7 +32,7 @@ data class TaskResponse(
 )
 
 enum class Regel {
-    MINSTEINNTEKT, GRUNNLAG
+    MINSTEINNTEKT, DAGPENGEGRUNNLAG
 }
 
 fun main(args: Array<String>) {

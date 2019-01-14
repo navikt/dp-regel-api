@@ -45,7 +45,7 @@ fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks) {
             .responds()
     ) { _, request ->
 
-        val taskId = tasks.createTask(Regel.GRUNNLAG)
+        val taskId = tasks.createTask(Regel.DAGPENGEGRUNNLAG)
 
         // dette skal egentlig bli gjort av kafka-consumer når regelberegning er ferdig
         tasks.updateTask(taskId, "456")
