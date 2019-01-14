@@ -21,6 +21,6 @@ fasitResources:
     - alias: srvdp-regel-api
       resourceType: credential
   exposed:
-    - alias: dagpenger-oppslag-api
+    - alias: dagpenger-regel-api-rest
       resourceType: restservice
       path: /
