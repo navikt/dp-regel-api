@@ -77,7 +77,7 @@ fun Application.api(
         }
     }
 
-    install(StatusPages){
+    install(StatusPages) {
         exception<JsonSyntaxException> { cause ->
             call.respond(HttpStatusCode.BadRequest)
             throw cause

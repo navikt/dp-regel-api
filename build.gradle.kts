@@ -20,6 +20,7 @@ apply {
 
 repositories {
     jcenter()
+    maven("http://packages.confluent.io/maven/")
 }
 
 application {
@@ -36,6 +37,8 @@ val swagger_version = "3.1.7"
 val kotlinLoggingVersion = "1.4.9"
 val log4j2Version = "2.11.1"
 val jupiterVersion = "5.3.2"
+val confluentVersion = "5.0.0"
+val kafkaVersion = "2.0.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -45,6 +48,8 @@ dependencies {
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-locations:$ktorVersion")
 
+    implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")
+
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
 
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
@@ -52,7 +57,12 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
 
-    implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")
+    implementation("no.nav.dagpenger:streams:0.2.2-SNAPSHOT")
+    implementation("no.nav.dagpenger:events:0.1.9-SNAPSHOT")
+
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
+    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
+    implementation("io.confluent:kafka-streams-avro-serde:$confluentVersion")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
