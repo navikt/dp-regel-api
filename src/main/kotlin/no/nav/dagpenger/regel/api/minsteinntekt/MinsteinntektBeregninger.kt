@@ -1,6 +1,5 @@
 package no.nav.dagpenger.regel.api.minsteinntekt
 
-import no.nav.dagpenger.regel.api.grunnlag.Parametere
 import no.nav.dagpenger.regel.api.grunnlag.Utfall
 
 class MinsteinntektBeregninger {
@@ -10,16 +9,16 @@ class MinsteinntektBeregninger {
         Utfall(true, 104),
         "2018-12-26T14:42:09Z",
         "2018-12-26T14:42:09Z",
-        Parametere(
+        MinsteinntektBeregningsRequest(
             "01019955667",
             123,
             "2019-01-11",
             "lasdfQ",
-            InntektsPeriode("2019-01", "2018-01")
-        ),
-        false,
-        false,
-        false
+            InntektsPeriode("2019-01", "2018-01"),
+            false,
+            false,
+            false
+        )
     )
 
     val beregningsId_beregninger = mutableMapOf("123" to dummyresult)
