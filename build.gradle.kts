@@ -8,18 +8,14 @@ plugins {
     id("com.github.johnrengelman.shadow") version "4.0.3"
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
-
 apply {
     plugin("com.diffplug.gradle.spotless")
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
+    maven("http://packages.confluent.io/maven/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
 }
 
 application {
