@@ -42,10 +42,14 @@ enum class Regel {
 }
 
 fun main(args: Array<String>) {
-    val app = embeddedServer(Netty, port = 8092) {
-        api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger())
+    val env = Environment()
+
+    val app = embeddedServer(Netty,  port = env.apiHttpPort) {
+        api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger(), KafkaProducer(env))
     }
+
     app.start(wait = false)
+
     Runtime.getRuntime().addShutdownHook(Thread {
         app.stop(5, 60, TimeUnit.SECONDS)
     })
@@ -54,7 +58,8 @@ fun main(args: Array<String>) {
 fun Application.api(
     tasks: Tasks,
     minsteinntektBeregninger: MinsteinntektBeregninger,
-    grunnlagBeregninger: GrunnlagBeregninger
+    grunnlagBeregninger: GrunnlagBeregninger,
+    kafkaProducer: KafkaProducer
 ) {
     install(DefaultHeaders)
     install(CallLogging) {
@@ -86,8 +91,8 @@ fun Application.api(
 
     routing {
         task(tasks)
-        minsteinntekt(minsteinntektBeregninger, tasks)
-        grunnlag(grunnlagBeregninger, tasks)
+        minsteinntekt(minsteinntektBeregninger, tasks, kafkaProducer)
+        grunnlag(grunnlagBeregninger, tasks, kafkaProducer)
         naischecks()
     }
 }

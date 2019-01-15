@@ -16,6 +16,7 @@ import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Routing
 import mu.KotlinLogging
+import no.nav.dagpenger.regel.api.KafkaProducer
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.grunnlag.Parametere
 import no.nav.dagpenger.regel.api.grunnlag.Utfall
@@ -36,15 +37,16 @@ data class GetMinsteinntekt(val beregningsId: String)
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, tasks: Tasks) {
+fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, tasks: Tasks, kafkaProducer: KafkaProducer) {
     post<PostMinsteinntekt, MinsteinntektBeregningsRequest>(
         "minsteinntektsberegning"
             .description("Kjør en beregning av minsteinntekt")
             .examples()
             .responds()
-    ) { _, payload ->
+    ) { _, request ->
         val taskId = tasks.createTask(Regel.MINSTEINNTEKT)
 
+        kafkaProducer.processRegel(request)
         // dette skal egentlig bli gjort av kafka-consumer når regelberegning er ferdig
         tasks.updateTask(taskId, "123")
 
