@@ -1,15 +1,20 @@
 package no.nav.dagpenger.regel.api
 
+import com.google.gson.JsonSyntaxException
 import de.nielsfalk.ktor.swagger.SwaggerSupport
 import de.nielsfalk.ktor.swagger.version.shared.Information
 import de.nielsfalk.ktor.swagger.version.v2.Swagger
 import io.ktor.application.Application
+import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
+import io.ktor.features.StatusPages
 import io.ktor.gson.gson
+import io.ktor.http.HttpStatusCode
 import io.ktor.locations.Locations
+import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -69,6 +74,13 @@ fun Application.api(
         )
         swagger = Swagger().apply {
             info = information
+        }
+    }
+
+    install(StatusPages){
+        exception<JsonSyntaxException> { cause ->
+            call.respond(HttpStatusCode.BadRequest)
+            throw cause
         }
     }
 

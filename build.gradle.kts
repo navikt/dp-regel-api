@@ -31,7 +31,6 @@ java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 }
-
 val ktorVersion = "1.1.1"
 val swagger_version = "3.1.7"
 val kotlinLoggingVersion = "1.4.9"
@@ -70,6 +69,8 @@ spotless {
         ktlint()
     }
 }
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> { kotlinOptions.jvmTarget = "1.8" }
 
 tasks.withType<Test> {
     useJUnitPlatform()
