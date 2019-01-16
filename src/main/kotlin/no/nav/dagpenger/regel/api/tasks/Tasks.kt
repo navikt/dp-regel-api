@@ -19,18 +19,30 @@ data class Task(
 )
 
 class Tasks {
-    val tasks = ConcurrentHashMap<String, Task>()
+    val tasks: HashMap<String, Task> = hashMapOf(
+            "123456" to Task(
+                    Regel.MINSTEINNTEKT,
+                    TaskStatus.PENDING,
+                    ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(
+                            DateTimeFormatter.ISO_ZONED_DATE_TIME
+                    )
+            ),
+            "987654" to Task(
+                    Regel.DAGPENGEGRUNNLAG,
+                    TaskStatus.PENDING,
+                    ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(
+                            DateTimeFormatter.ISO_ZONED_DATE_TIME
+                    )
+            )
+    )
 
     fun createTask(regel: Regel): String {
-        val taskId = UUID.randomUUID().toString()
-        tasks[taskId] = Task(
-            regel,
-            TaskStatus.PENDING,
-            ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(
-                DateTimeFormatter.ISO_ZONED_DATE_TIME
-            )
-        )
-        return taskId
+        if (regel == Regel.MINSTEINNTEKT) {
+            return "123456"
+        }
+        else {
+            return "987654"
+        }
     }
 
     fun getTask(taskId: String) = tasks[taskId] ?: throw TaskNotFoundException("no task found for id:{$taskId}")
