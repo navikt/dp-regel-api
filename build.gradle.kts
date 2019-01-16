@@ -29,7 +29,7 @@ java {
 }
 val ktorVersion = "1.1.1"
 val swagger_version = "3.1.7"
-val kotlinLoggingVersion = "1.4.9"
+val kotlinLoggingVersion = "1.6.22"
 val log4j2Version = "2.11.1"
 val jupiterVersion = "5.3.2"
 
