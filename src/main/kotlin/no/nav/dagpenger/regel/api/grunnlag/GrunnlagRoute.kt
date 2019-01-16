@@ -17,7 +17,7 @@ import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Routing
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.KafkaProducer
+import no.nav.dagpenger.regel.api.KafkaVilkårProducer
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.minsteinntekt.InntektsPeriode
 import no.nav.dagpenger.regel.api.tasks.Tasks
@@ -38,7 +38,7 @@ data class GetGrunnlag(val beregningsId: String)
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks, kafkaProducer: KafkaProducer) {
+fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks, kafkaProducer: KafkaVilkårProducer) {
     post<PostGrunnlag, GrunnlagBeregningsRequest>(
         "grunnlagberegning"
             .description("")

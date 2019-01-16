@@ -8,6 +8,8 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
+import no.nav.dagpenger.regel.api.Environment
+import no.nav.dagpenger.regel.api.KafkaVilkårProducer
 import no.nav.dagpenger.regel.api.api
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagBeregninger
 import no.nav.dagpenger.regel.api.tasks.Tasks
@@ -49,7 +51,7 @@ class MinsteinntektRouteTest {
 
     @Test
     fun `post request with good json`() = testApp {
-        handleRequest(HttpMethod.Post, "/grunnlag") {
+        handleRequest(HttpMethod.Post, "/minsteinntekt") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(validJson)
         }.apply {
@@ -63,7 +65,7 @@ class MinsteinntektRouteTest {
     fun `post request with bad json`() {
         assertThrows<JsonSyntaxException> {
             testApp {
-                handleRequest(HttpMethod.Post, "/grunnlag") {
+                handleRequest(HttpMethod.Post, "/minsteinntekt") {
                     addHeader(HttpHeaders.ContentType, "application/json")
                     setBody(jsonMissingFields)
                 }.apply {
@@ -74,6 +76,6 @@ class MinsteinntektRouteTest {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication({ api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger()) }) { callback() }
+        withTestApplication({ api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger(), KafkaVilkårProducer(Environment())) }) { callback() }
     }
 }

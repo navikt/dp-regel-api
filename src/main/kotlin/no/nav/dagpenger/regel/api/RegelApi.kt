@@ -44,8 +44,8 @@ enum class Regel {
 fun main(args: Array<String>) {
     val env = Environment()
 
-    val app = embeddedServer(Netty,  port = env.apiHttpPort) {
-        api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger(), KafkaProducer(env))
+    val app = embeddedServer(Netty, port = env.apiHttpPort) {
+        api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger(), KafkaVilkårProducer(env))
     }
 
     app.start(wait = false)
@@ -59,7 +59,7 @@ fun Application.api(
     tasks: Tasks,
     minsteinntektBeregninger: MinsteinntektBeregninger,
     grunnlagBeregninger: GrunnlagBeregninger,
-    kafkaProducer: KafkaProducer
+    kafkaProducer: KafkaVilkårProducer
 ) {
     install(DefaultHeaders)
     install(CallLogging) {

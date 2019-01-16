@@ -57,7 +57,8 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
 
-    implementation("no.nav.dagpenger:streams:0.2.2-SNAPSHOT")
+    implementation("org.apache.avro:avro:1.8.2")
+//    implementation("no.nav.dagpenger:streams:0.2.2-SNAPSHOT")
     implementation("no.nav.dagpenger:events:0.1.9-SNAPSHOT")
 
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
