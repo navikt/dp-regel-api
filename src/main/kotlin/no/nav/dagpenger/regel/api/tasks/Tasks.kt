@@ -5,6 +5,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 enum class TaskStatus {
     PENDING, DONE
@@ -18,7 +19,7 @@ data class Task(
 )
 
 class Tasks {
-    val tasks = mutableMapOf<String, Task>()
+    val tasks = ConcurrentHashMap<String, Task>()
 
     fun createTask(regel: Regel): String {
         val taskId = UUID.randomUUID().toString()
