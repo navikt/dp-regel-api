@@ -4,8 +4,6 @@ import no.nav.dagpenger.regel.api.Regel
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 enum class TaskStatus {
     PENDING, DONE
@@ -39,8 +37,7 @@ class Tasks {
     fun createTask(regel: Regel): String {
         if (regel == Regel.MINSTEINNTEKT) {
             return "123456"
-        }
-        else {
+        } else {
             return "987654"
         }
     }
