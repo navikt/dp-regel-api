@@ -110,4 +110,3 @@ data class Utfall(
     val oppfyllerKravtilMinsteArbeidsinntekt: Boolean,
     val periodeAntallUker: Int
 )
-

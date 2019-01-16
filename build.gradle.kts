@@ -14,6 +14,7 @@ apply {
 
 repositories {
     mavenCentral()
+    jcenter()
     maven("http://packages.confluent.io/maven/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
 }

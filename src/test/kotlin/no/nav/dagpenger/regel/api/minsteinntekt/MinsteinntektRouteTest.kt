@@ -49,7 +49,7 @@ class MinsteinntektRouteTest {
 
     @Test
     fun `post request with good json`() = testApp {
-        handleRequest(HttpMethod.Post, "/grunnlag") {
+        handleRequest(HttpMethod.Post, "/minsteinntekt") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(validJson)
         }.apply {
@@ -63,7 +63,7 @@ class MinsteinntektRouteTest {
     fun `post request with bad json`() {
         assertThrows<JsonSyntaxException> {
             testApp {
-                handleRequest(HttpMethod.Post, "/grunnlag") {
+                handleRequest(HttpMethod.Post, "/minsteinntekt") {
                     addHeader(HttpHeaders.ContentType, "application/json")
                     setBody(jsonMissingFields)
                 }.apply {
