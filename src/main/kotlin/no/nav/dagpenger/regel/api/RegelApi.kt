@@ -18,6 +18,8 @@ import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.lettuce.core.RedisClient
+import io.lettuce.core.RedisURI
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagBeregninger
 import no.nav.dagpenger.regel.api.grunnlag.grunnlag
@@ -50,9 +52,15 @@ fun main(args: Array<String>) {
     //val connection = redisClient.connect()
     //val redisCommands = connection.sync()
 
+    val redisUri = RedisURI.Builder.sentinel(env.redisHost, "mymaster").build()
+    val client = RedisClient.create(redisUri)
+    val connection = client.connect()
+
+    val redisCommands = connection.sync()
+
     val jedis = Jedis(env.redisHost, Integer.valueOf(6379))
 
-    val tasks = TasksRedis(jedis)
+    val tasks = TasksRedis(redisCommands)
 
     //VilkårKafkaConsumer(env, redisCommands, tasks).start()
 
