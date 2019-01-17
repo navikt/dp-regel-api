@@ -46,11 +46,8 @@ enum class Regel {
 fun main(args: Array<String>) {
     val env = Environment()
 
-    println("Creating RedisClient instance with sentinel connection")
     val redisClient = RedisClient.create("redis-sentinel://${env.redisHost}:26379/0#mymaster")
-    println("Opening Redis Standalone connection.")
     val connection = redisClient.connect()
-    println("Obtain the command API for synchronous execution")
     val redisCommands = connection.sync()
 
     val tasks = TasksRedis(redisCommands)
