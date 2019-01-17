@@ -30,6 +30,7 @@ import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 import io.lettuce.core.RedisClient
 import no.nav.dagpenger.regel.api.tasks.TasksRedis
+import redis.clients.jedis.Jedis
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -46,11 +47,13 @@ enum class Regel {
 fun main(args: Array<String>) {
     val env = Environment()
 
-    val redisClient = RedisClient.create("redis-sentinel://${env.redisHost}:26379/0#mymaster")
-    val connection = redisClient.connect()
-    val redisCommands = connection.sync()
+    //val redisClient = RedisClient.create("redis-sentinel://${env.redisHost}:26379/0#mymaster")
+    //val connection = redisClient.connect()
+    //val redisCommands = connection.sync()
 
-    val tasks = TasksRedis(redisCommands)
+    val jedis = Jedis(env.redisHost, Integer.valueOf(6379))
+
+    val tasks = TasksRedis(jedis)
 
     //VilkårKafkaConsumer(env, redisCommands, tasks).start()
 
@@ -59,8 +62,8 @@ fun main(args: Array<String>) {
     }
     app.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
-        connection.close()
-        redisClient.shutdown()
+        //connection.close()
+        //redisClient.shutdown()
         app.stop(5, 60, TimeUnit.SECONDS)
     })
 }
