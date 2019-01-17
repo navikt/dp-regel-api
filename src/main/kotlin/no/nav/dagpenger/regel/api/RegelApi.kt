@@ -28,6 +28,8 @@ import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.task
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
+import io.lettuce.core.RedisClient
+import no.nav.dagpenger.regel.api.tasks.TasksRedis
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -42,11 +44,26 @@ enum class Regel {
 }
 
 fun main(args: Array<String>) {
+    val env = Environment()
+
+    println("Creating RedisClient instance with sentinel connection")
+    val redisClient = RedisClient.create("redis-sentinel://${env.redisHost}:26379/0#mymaster")
+    println("Opening Redis Standalone connection.")
+    val connection = redisClient.connect()
+    println("Obtain the command API for synchronous execution")
+    val redisCommands = connection.sync()
+
+    val tasks = TasksRedis(redisCommands)
+
+    //VilkårKafkaConsumer(env, redisCommands, tasks).start()
+
     val app = embeddedServer(Netty, port = 8092) {
-        api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger())
+        api(tasks, MinsteinntektBeregninger(), GrunnlagBeregninger())
     }
     app.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
+        connection.close()
+        redisClient.shutdown()
         app.stop(5, 60, TimeUnit.SECONDS)
     })
 }
