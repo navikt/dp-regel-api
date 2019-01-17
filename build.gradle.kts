@@ -54,7 +54,6 @@ dependencies {
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
 
     compile("io.lettuce:lettuce-core:5.1.3.RELEASE")
-    compile("redis.clients:jedis:3.0.0")
 
     compile("org.apache.kafka:kafka-clients:$kafkaVersion")
     compile("org.apache.kafka:kafka-streams:$kafkaVersion")

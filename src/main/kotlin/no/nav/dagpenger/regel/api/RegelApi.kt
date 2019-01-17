@@ -27,11 +27,10 @@ import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregninger
 import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
 import no.nav.dagpenger.regel.api.tasks.TaskStatus
 import no.nav.dagpenger.regel.api.tasks.Tasks
+import no.nav.dagpenger.regel.api.tasks.TasksRedis
 import no.nav.dagpenger.regel.api.tasks.task
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
-import no.nav.dagpenger.regel.api.tasks.TasksRedis
-import redis.clients.jedis.Jedis
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -48,17 +47,11 @@ enum class Regel {
 fun main(args: Array<String>) {
     val env = Environment()
 
-    //val redisClient = RedisClient.create("redis-sentinel://${env.redisHost}:26379/0#mymaster")
-    //val connection = redisClient.connect()
-    //val redisCommands = connection.sync()
-
     val redisUri = RedisURI.Builder.sentinel(env.redisHost, "mymaster").build()
-    val client = RedisClient.create(redisUri)
-    val connection = client.connect()
+    val redisClient = RedisClient.create(redisUri)
+    val connection = redisClient.connect()
 
     val redisCommands = connection.sync()
-
-    val jedis = Jedis(env.redisHost, Integer.valueOf(6379))
 
     val tasks = TasksRedis(redisCommands)
 
@@ -69,8 +62,8 @@ fun main(args: Array<String>) {
     }
     app.start(wait = false)
     Runtime.getRuntime().addShutdownHook(Thread {
-        //connection.close()
-        //redisClient.shutdown()
+        connection.close()
+        redisClient.shutdown()
         app.stop(5, 60, TimeUnit.SECONDS)
     })
 }
