@@ -28,7 +28,6 @@ import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.task
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
-import io.lettuce.core.RedisClient
 import no.nav.dagpenger.regel.api.tasks.TasksRedis
 import redis.clients.jedis.Jedis
 

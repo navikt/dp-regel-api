@@ -1,7 +1,6 @@
 package no.nav.dagpenger.regel.api.tasks
 
 import com.google.gson.Gson
-import io.lettuce.core.api.sync.RedisCommands
 import no.nav.dagpenger.regel.api.Regel
 import redis.clients.jedis.Jedis
 import java.time.ZoneOffset
