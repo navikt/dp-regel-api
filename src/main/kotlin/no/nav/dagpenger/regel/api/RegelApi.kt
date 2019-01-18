@@ -55,10 +55,11 @@ fun main(args: Array<String>) {
 
     val tasks = TasksRedis(redisCommands)
 
+    val kafkaProducer = KafkaVilkårProducer(env)
     // VilkårKafkaConsumer(env, redisCommands, tasks).start()
 
     val app = embeddedServer(Netty, port = 8092) {
-        api(tasks, MinsteinntektBeregninger(), GrunnlagBeregninger(), KafkaVilkårProducer(env))
+        api(tasks, MinsteinntektBeregninger(), GrunnlagBeregninger(), kafkaProducer)
     }
 
     app.start(wait = false)
@@ -66,6 +67,7 @@ fun main(args: Array<String>) {
     Runtime.getRuntime().addShutdownHook(Thread {
         connection.close()
         redisClient.shutdown()
+        kafkaProducer.close()
         app.stop(5, 60, TimeUnit.SECONDS)
     })
 }

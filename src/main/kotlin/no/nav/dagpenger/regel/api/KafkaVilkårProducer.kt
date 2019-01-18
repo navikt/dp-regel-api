@@ -65,6 +65,8 @@ class KafkaVilkårProducer(env: Environment) : VilkårProducer {
         LOGGER.info { "Produced -> ${record.topic()}  to offset ${record.offset()}" }
     }
 
+    fun close() = kafkaProducer.close()
+
     fun mapRequestToParametere(request: MinsteinntektBeregningsRequest): MinsteinntektParametere =
             MinsteinntektParametere(
                     request.aktorId,
