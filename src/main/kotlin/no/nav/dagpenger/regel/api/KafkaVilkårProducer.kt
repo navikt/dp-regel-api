@@ -51,7 +51,7 @@ class KafkaVilkårProducer(env: Environment) : VilkårProducer {
                 vilkårId,
                 request.aktorId,
                 request.vedtakId.toString(),
-                listOf(Regel(RegelType.FIRE_FIRE, null, parametere)),
+                listOf(Regel(RegelType.FIRE_FIRE, null, null, parametere)),
                 null
         )
         produceEvent(vilkår, vilkårId)

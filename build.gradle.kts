@@ -38,7 +38,7 @@ val confluentVersion = "5.0.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("no.nav.dagpenger:events:0.2.0-SNAPSHOT")
+    implementation("no.nav.dagpenger:events:0.2.1-SNAPSHOT")
     implementation("no.nav.dagpenger:streams:0.2.4-SNAPSHOT")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
