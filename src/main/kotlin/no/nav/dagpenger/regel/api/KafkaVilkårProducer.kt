@@ -11,6 +11,7 @@ import no.nav.dagpenger.events.avro.Vilkår
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregningsRequest
 import no.nav.dagpenger.streams.Topics
 import org.apache.kafka.clients.CommonClientConfigs
+import org.apache.kafka.clients.producer.Callback
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -59,12 +60,15 @@ class KafkaVilkårProducer(env: Environment) : VilkårProducer {
 
     fun produceEvent(vilkår: Vilkår, key: String) {
         LOGGER.info { "Producing Vilkårevent" }
-        val record: RecordMetadata = kafkaProducer.send(
+        kafkaProducer.send(
                 ProducerRecord(Topics.VILKÅR_EVENT.name, key, vilkår)
-        ).get()
-        LOGGER.info { "Produced -> ${record.topic()}  to offset ${record.offset()}" }
+        ) { metadata, exception ->
+            exception?.let { LOGGER.error { "Failed to produce vilkår" } }
+            metadata?.let { LOGGER.info { "Produced -> ${metadata.topic()}  to offset ${metadata.offset()}" } }
+        }
     }
 
+    //LOGGER.info {  }
     fun close() = kafkaProducer.close()
 
     fun mapRequestToParametere(request: MinsteinntektBeregningsRequest): MinsteinntektParametere =
