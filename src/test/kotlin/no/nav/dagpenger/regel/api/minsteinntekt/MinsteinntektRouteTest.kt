@@ -8,8 +8,7 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
-import no.nav.dagpenger.regel.api.Environment
-import no.nav.dagpenger.regel.api.KafkaVilkårProducer
+import no.nav.dagpenger.regel.api.VilkårProducerDummy
 import no.nav.dagpenger.regel.api.api
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagBeregninger
 import no.nav.dagpenger.regel.api.tasks.Tasks
@@ -76,6 +75,6 @@ class MinsteinntektRouteTest {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication({ api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger(), KafkaVilkårProducer(Environment())) }) { callback() }
+        withTestApplication({ api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger(), VilkårProducerDummy()) }) { callback() }
     }
 }

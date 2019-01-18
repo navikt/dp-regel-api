@@ -16,8 +16,8 @@ import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Routing
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.KafkaVilkårProducer
 import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.VilkårProducer
 import no.nav.dagpenger.regel.api.grunnlag.Parametere
 import no.nav.dagpenger.regel.api.grunnlag.Utfall
 import no.nav.dagpenger.regel.api.tasks.Tasks
@@ -37,7 +37,7 @@ data class GetMinsteinntekt(val beregningsId: String)
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, tasks: Tasks, kafkaProducer: KafkaVilkårProducer) {
+fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, tasks: Tasks, kafkaProducer: VilkårProducer) {
     post<PostMinsteinntekt, MinsteinntektBeregningsRequest>(
         "minsteinntektsberegning"
             .description("Kjør en beregning av minsteinntekt")

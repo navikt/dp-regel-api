@@ -59,7 +59,7 @@ fun Application.api(
     tasks: Tasks,
     minsteinntektBeregninger: MinsteinntektBeregninger,
     grunnlagBeregninger: GrunnlagBeregninger,
-    kafkaProducer: KafkaVilkårProducer
+    kafkaProducer: VilkårProducer
 ) {
     install(DefaultHeaders)
     install(CallLogging) {

@@ -21,6 +21,7 @@ apply {
 repositories {
     jcenter()
     maven("http://packages.confluent.io/maven/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
 }
 
 application {
@@ -58,12 +59,11 @@ dependencies {
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
 
     implementation("org.apache.avro:avro:1.8.2")
-//    implementation("no.nav.dagpenger:streams:0.2.2-SNAPSHOT")
-    implementation("no.nav.dagpenger:events:0.1.9-SNAPSHOT")
+    compile("no.nav.dagpenger:streams:0.2.5-SNAPSHOT")
+    implementation("no.nav.dagpenger:events:0.2.0-SNAPSHOT")
 
-    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
-    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
-    implementation("io.confluent:kafka-streams-avro-serde:$confluentVersion")
+    compile("io.confluent:kafka-streams-avro-serde:$confluentVersion")
+    compile("org.apache.kafka:kafka-clients:$kafkaVersion")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
