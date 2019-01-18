@@ -55,7 +55,6 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
 
-    implementation("org.apache.avro:avro:1.8.2")
     compile("no.nav.dagpenger:streams:0.2.5-SNAPSHOT")
     implementation("no.nav.dagpenger:events:0.2.0-SNAPSHOT")
 
