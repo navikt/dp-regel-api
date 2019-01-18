@@ -19,6 +19,7 @@ import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.StringSerializer
 import java.io.File
+import java.util.UUID
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -44,20 +45,22 @@ class KafkaVilkårProducer(env: Environment) : VilkårProducer {
     override fun produceMinsteInntektEvent(request: MinsteinntektBeregningsRequest) {
         val parametere = mapRequestToParametere(request)
 
+        val vilkårId = UUID.randomUUID().toString()
+
         val vilkår = Vilkår(
-                "id",
+                vilkårId,
                 request.aktorId,
                 request.vedtakId.toString(),
                 listOf(Regel(RegelType.FIRE_FIRE, null, parametere)),
                 null
         )
-        produceEvent(vilkår)
+        produceEvent(vilkår, vilkårId)
     }
 
-    fun produceEvent(vilkår: Vilkår) {
+    fun produceEvent(vilkår: Vilkår, key: String) {
         LOGGER.info { "Producing Vilkårevent" }
         val record: RecordMetadata = kafkaProducer.send(
-                ProducerRecord(Topics.VILKÅR_EVENT.name, "", vilkår)
+                ProducerRecord(Topics.VILKÅR_EVENT.name, key, vilkår)
         ).get()
         LOGGER.info { "Produced -> ${record.topic()}  to offset ${record.offset()}" }
     }
