@@ -11,7 +11,7 @@ import io.ktor.server.testing.withTestApplication
 import no.nav.dagpenger.regel.api.VilkårProducerDummy
 import no.nav.dagpenger.regel.api.api
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagBeregninger
-import no.nav.dagpenger.regel.api.tasks.Tasks
+import no.nav.dagpenger.regel.api.tasks.TasksDummy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -75,6 +75,6 @@ class MinsteinntektRouteTest {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication({ api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger(), VilkårProducerDummy()) }) { callback() }
+        withTestApplication({ api(TasksDummy(), MinsteinntektBeregninger(), GrunnlagBeregninger(), VilkårProducerDummy()) }) { callback() }
     }
 }

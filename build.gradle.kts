@@ -8,17 +8,12 @@ plugins {
     id("com.github.johnrengelman.shadow") version "4.0.3"
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
-
 apply {
     plugin("com.diffplug.gradle.spotless")
 }
 
 repositories {
+    mavenCentral()
     jcenter()
     maven("http://packages.confluent.io/maven/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
@@ -35,14 +30,16 @@ java {
 }
 val ktorVersion = "1.1.1"
 val swagger_version = "3.1.7"
-val kotlinLoggingVersion = "1.4.9"
+val kotlinLoggingVersion = "1.6.22"
 val log4j2Version = "2.11.1"
 val jupiterVersion = "5.3.2"
-val confluentVersion = "5.0.0"
 val kafkaVersion = "2.0.0"
+val confluentVersion = "5.0.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("no.nav.dagpenger:events:0.2.0-SNAPSHOT")
+    implementation("no.nav.dagpenger:streams:0.2.4-SNAPSHOT")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-gson:$ktorVersion")
@@ -62,13 +59,19 @@ dependencies {
     compile("no.nav.dagpenger:streams:0.2.5-SNAPSHOT")
     implementation("no.nav.dagpenger:events:0.2.0-SNAPSHOT")
 
-    compile("io.confluent:kafka-streams-avro-serde:$confluentVersion")
+    compile("io.lettuce:lettuce-core:5.1.3.RELEASE")
+
     compile("org.apache.kafka:kafka-clients:$kafkaVersion")
+    compile("org.apache.kafka:kafka-streams:$kafkaVersion")
+    compile("io.confluent:kafka-streams-avro-serde:$confluentVersion")
+
+    implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:$jupiterVersion")
 }
 
 spotless {

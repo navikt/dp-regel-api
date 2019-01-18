@@ -18,6 +18,8 @@ import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.lettuce.core.RedisClient
+import io.lettuce.core.RedisURI
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagBeregninger
 import no.nav.dagpenger.regel.api.grunnlag.grunnlag
@@ -25,6 +27,7 @@ import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregninger
 import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
 import no.nav.dagpenger.regel.api.tasks.TaskStatus
 import no.nav.dagpenger.regel.api.tasks.Tasks
+import no.nav.dagpenger.regel.api.tasks.TasksRedis
 import no.nav.dagpenger.regel.api.tasks.task
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
@@ -44,13 +47,25 @@ enum class Regel {
 fun main(args: Array<String>) {
     val env = Environment()
 
-    val app = embeddedServer(Netty, port = env.apiHttpPort) {
-        api(Tasks(), MinsteinntektBeregninger(), GrunnlagBeregninger(), KafkaVilkårProducer(env))
+    val redisUri = RedisURI.Builder.sentinel(env.redisHost, "mymaster").build()
+    val redisClient = RedisClient.create(redisUri)
+    val connection = redisClient.connect()
+
+    val redisCommands = connection.sync()
+
+    val tasks = TasksRedis(redisCommands)
+
+    // VilkårKafkaConsumer(env, redisCommands, tasks).start()
+
+    val app = embeddedServer(Netty, port = 8092) {
+        api(tasks, MinsteinntektBeregninger(), GrunnlagBeregninger(), KafkaVilkårProducer(env))
     }
 
     app.start(wait = false)
 
     Runtime.getRuntime().addShutdownHook(Thread {
+        connection.close()
+        redisClient.shutdown()
         app.stop(5, 60, TimeUnit.SECONDS)
     })
 }

@@ -8,10 +8,16 @@ class GrunnlagBeregninger {
         Utfall(true, 104),
         "2018-12-26T14:42:09Z",
         "2018-12-26T14:42:09Z",
-        Parametere("01019955667", 123, "2019-01-11", "lasdFQ=q", InntektsPeriode("2019-01", "2018-01")),
-        false,
-        false,
-        false
+        GrunnlagBeregningsRequest(
+            "01019955667",
+            123,
+            "2019-01-11",
+            "lasdFQ=q",
+            InntektsPeriode("2019-01", "2018-01"),
+            false,
+            false,
+            false
+        )
     )
 
     val beregninger_aktorId = mutableMapOf(

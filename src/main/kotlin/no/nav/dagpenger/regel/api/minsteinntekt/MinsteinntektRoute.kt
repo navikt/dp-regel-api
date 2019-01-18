@@ -18,7 +18,6 @@ import io.ktor.routing.Routing
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.VilkårProducer
-import no.nav.dagpenger.regel.api.grunnlag.Parametere
 import no.nav.dagpenger.regel.api.grunnlag.Utfall
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
@@ -98,10 +97,7 @@ data class MinsteinntektBeregningsResult(
     val utfall: Utfall,
     val opprettet: String,
     val utfort: String,
-    val parametere: Parametere,
-    val harAvtjentVerneplikt: Boolean,
-    val oppfyllerKravTilFangstOgFisk: Boolean,
-    val harArbeidsperiodeEosSiste12Maaneder: Boolean
+    val parametere: MinsteinntektBeregningsRequest
 ) {
     companion object {
         val exampleInntektBeregning = mapOf(

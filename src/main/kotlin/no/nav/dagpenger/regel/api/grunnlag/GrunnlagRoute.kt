@@ -98,10 +98,7 @@ data class GrunnlagBeregningsResultat(
     val utfall: Utfall,
     val opprettet: String,
     val utfort: String,
-    val parametere: Parametere,
-    val harAvtjentVerneplikt: Boolean,
-    val oppfyllerKravTilFangstOgFisk: Boolean,
-    val harArbeidsperiodeEosSiste12Maaneder: Boolean
+    val parametere: GrunnlagBeregningsRequest
 ) {
     companion object {
         val exampleInntektBeregning = mapOf(
@@ -114,12 +111,4 @@ data class GrunnlagBeregningsResultat(
 data class Utfall(
     val oppfyllerKravtilMinsteArbeidsinntekt: Boolean,
     val periodeAntallUker: Int
-)
-
-data class Parametere(
-    val aktorId: String,
-    val vedtakId: Int,
-    val beregningsdato: String,
-    val inntektsId: String,
-    val bruktinntektsPeriode: InntektsPeriode
 )

@@ -11,8 +11,9 @@ data class Environment(
         "FASIT_ENVIRONMENT_NAME",
         ""
     ),
-    val apiHttpPort: Int = 8092,
-    val kafkaApiPort: Int = 8080
+    val kafkaApiPort: Int = 8080,
+    val redisHost: String = getEnvVar("REDIS_HOST", "localhost"),
+    val httpPort: Int? = null
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
