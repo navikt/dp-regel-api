@@ -28,6 +28,8 @@ fasitResources:
       resourceType: applicationproperties
     - alias: srvdp-regel-api
       resourceType: credential
+    - alias:  kafka-schema-registry
+      resourceType: baseUrl
   exposed:
     - alias: dagpenger-regel-api-rest
       resourceType: restservice
