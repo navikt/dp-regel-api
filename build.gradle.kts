@@ -38,7 +38,7 @@ val confluentVersion = "5.0.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("no.nav.dagpenger:events:0.2.0-SNAPSHOT")
+    implementation("no.nav.dagpenger:events:0.2.1-SNAPSHOT")
     implementation("no.nav.dagpenger:streams:0.2.4-SNAPSHOT")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
@@ -46,12 +46,17 @@ dependencies {
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-locations:$ktorVersion")
 
+    implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")
+
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
 
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
+
+    compile("no.nav.dagpenger:streams:0.2.5-SNAPSHOT")
+    implementation("no.nav.dagpenger:events:0.2.0-SNAPSHOT")
 
     compile("io.lettuce:lettuce-core:5.1.3.RELEASE")
 

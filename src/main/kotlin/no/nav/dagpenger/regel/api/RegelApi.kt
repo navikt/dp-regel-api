@@ -55,15 +55,19 @@ fun main(args: Array<String>) {
 
     val tasks = TasksRedis(redisCommands)
 
-    //VilkårKafkaConsumer(env, redisCommands, tasks).start()
+    val kafkaProducer = KafkaVilkårProducer(env)
+    // VilkårKafkaConsumer(env, redisCommands, tasks).start()
 
     val app = embeddedServer(Netty, port = 8092) {
-        api(tasks, MinsteinntektBeregninger(), GrunnlagBeregninger())
+        api(tasks, MinsteinntektBeregninger(), GrunnlagBeregninger(), kafkaProducer)
     }
+
     app.start(wait = false)
+
     Runtime.getRuntime().addShutdownHook(Thread {
         connection.close()
         redisClient.shutdown()
+        kafkaProducer.close()
         app.stop(5, 60, TimeUnit.SECONDS)
     })
 }
@@ -71,7 +75,8 @@ fun main(args: Array<String>) {
 fun Application.api(
     tasks: Tasks,
     minsteinntektBeregninger: MinsteinntektBeregninger,
-    grunnlagBeregninger: GrunnlagBeregninger
+    grunnlagBeregninger: GrunnlagBeregninger,
+    kafkaProducer: VilkårProducer
 ) {
     install(DefaultHeaders)
     install(CallLogging) {
@@ -103,8 +108,8 @@ fun Application.api(
 
     routing {
         task(tasks)
-        minsteinntekt(minsteinntektBeregninger, tasks)
-        grunnlag(grunnlagBeregninger, tasks)
+        minsteinntekt(minsteinntektBeregninger, tasks, kafkaProducer)
+        grunnlag(grunnlagBeregninger, tasks, kafkaProducer)
         naischecks()
     }
 }
