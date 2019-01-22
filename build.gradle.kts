@@ -33,7 +33,7 @@ val swagger_version = "3.1.7"
 val kotlinLoggingVersion = "1.6.22"
 val log4j2Version = "2.11.1"
 val jupiterVersion = "5.3.2"
-val kafkaVersion = "2.0.0"
+val kafkaVersion = "2.0.1"
 val confluentVersion = "5.0.0"
 
 dependencies {
@@ -54,11 +54,12 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
+    compile("org.slf4j:slf4j-api:1.7.25")
 
-    compile("no.nav.dagpenger:streams:0.2.5-SNAPSHOT")
+    implementation("no.nav.dagpenger:streams:0.2.5-SNAPSHOT")
     implementation("no.nav.dagpenger:events:0.2.0-SNAPSHOT")
 
-    compile("io.lettuce:lettuce-core:5.1.3.RELEASE")
+    implementation("io.lettuce:lettuce-core:5.1.3.RELEASE")
 
     compile("org.apache.kafka:kafka-clients:$kafkaVersion")
     compile("org.apache.kafka:kafka-streams:$kafkaVersion")
@@ -83,7 +84,10 @@ spotless {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> { kotlinOptions.jvmTarget = "1.8" }
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.freeCompilerArgs = listOf("-Xuse-experimental=io.ktor.locations.KtorExperimentalLocationsAPI")
+    kotlinOptions.jvmTarget = "1.8"
+}
 
 tasks.withType<Test> {
     useJUnitPlatform()
