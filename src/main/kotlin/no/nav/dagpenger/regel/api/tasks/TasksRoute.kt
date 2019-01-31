@@ -1,31 +1,23 @@
 package no.nav.dagpenger.regel.api.tasks
 
-import de.nielsfalk.ktor.swagger.description
-import de.nielsfalk.ktor.swagger.get
-import de.nielsfalk.ktor.swagger.version.shared.Group
 import io.ktor.application.call
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.locations.Location
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Routing
+import io.ktor.routing.get
+import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.TaskResponse
 
 fun taskResponseFromTask(task: Task): TaskResponse {
     return TaskResponse(task.regel, task.status, task.expires)
 }
 
-@Group("Task")
-@Location("/task/{id}")
-data class GetTask(val id: String)
-
 fun Routing.task(tasks: Tasks) {
-    get<GetTask>(
-        "task"
-            .description("")
-    ) { param ->
-        val id = param.id
+    get("/task/{id}") {
+
+        val id = call.parameters["id"] ?: throw BadRequestException()
 
         val task = tasks.getTask(id)
         task.status

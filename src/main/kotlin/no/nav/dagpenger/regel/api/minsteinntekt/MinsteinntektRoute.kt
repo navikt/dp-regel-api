@@ -1,6 +1,5 @@
 package no.nav.dagpenger.regel.api.minsteinntekt
 
-import de.huxhorn.sulky.ulid.ULID
 import io.ktor.application.call
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -12,22 +11,24 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import mu.KotlinLogging
+import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.VilkårProducer
-import no.nav.dagpenger.regel.api.minsteinntekt.model.MinsteinntektInnParametere
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
+import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
 fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, tasks: Tasks, kafkaProducer: VilkårProducer) {
 
-    val ulidGenerator = ULID()
     route("/minsteinntekt") {
         post {
-            val parametere = call.receive<MinsteinntektInnParametere>()
+            val parametere = call.receive<MinsteinntektParametere>()
 
             val taskId = tasks.createTask(Regel.MINSTEINNTEKT)
+
+            kafkaProducer.produceMinsteInntektEvent(parametere)
 
             tasks.updateTask(taskId, "123")
 
@@ -35,10 +36,16 @@ fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, ta
             call.respond(HttpStatusCode.Accepted, taskResponseFromTask(tasks.getTask(taskId)))
         }
 
-        get("/{subsumsjonsid}"){
-            call.parameters["subsumsjonsid"]?.let { subsumsjonsid ->
-                call.respond(HttpStatusCode.OK)
-            } ?: call.respond(HttpStatusCode.BadRequest)
+        get("/{subsumsjonsid}") {
+            val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
+
+            call.respond(HttpStatusCode.OK)
         }
     }
 }
+
+data class MinsteinntektParametere(
+    val aktorId: String,
+    val vedtakId: Int,
+    val beregningsdato: LocalDate
+)

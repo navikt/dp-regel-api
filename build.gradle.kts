@@ -29,24 +29,27 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 val ktorVersion = "1.1.1"
-val swagger_version = "3.1.7"
 val kotlinLoggingVersion = "1.6.22"
 val log4j2Version = "2.11.1"
 val jupiterVersion = "5.3.2"
 val kafkaVersion = "2.0.1"
 val confluentVersion = "5.0.0"
+val moshiVersion = "1.8.0"
+val ktorMoshiVersion = "1.0.1"
 
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("no.nav.dagpenger:events:0.2.1-SNAPSHOT")
-    implementation("no.nav.dagpenger:streams:0.2.4-SNAPSHOT")
+    implementation("no.nav.dagpenger:streams:0.2.5-SNAPSHOT")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-gson:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-locations:$ktorVersion")
 
-    implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")
+    implementation("com.squareup.moshi:moshi-adapters:$moshiVersion")
+    implementation("com.squareup.moshi:moshi-kotlin:$moshiVersion")
+    implementation("com.squareup.moshi:moshi:$moshiVersion")
+    implementation("com.ryanharter.ktor:ktor-moshi:$ktorMoshiVersion")
 
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
 
@@ -58,16 +61,11 @@ dependencies {
 
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
 
-    implementation("no.nav.dagpenger:streams:0.2.5-SNAPSHOT")
-    implementation("no.nav.dagpenger:events:0.2.0-SNAPSHOT")
-
     implementation("io.lettuce:lettuce-core:5.1.3.RELEASE")
 
     compile("org.apache.kafka:kafka-clients:$kafkaVersion")
     compile("org.apache.kafka:kafka-streams:$kafkaVersion")
     compile("io.confluent:kafka-streams-avro-serde:$confluentVersion")
-
-    implementation("de.nielsfalk.ktor:ktor-swagger:0.4.0")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")

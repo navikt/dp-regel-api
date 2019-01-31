@@ -1,9 +1,7 @@
 package no.nav.dagpenger.regel.api
 
-import com.google.gson.JsonSyntaxException
-import de.nielsfalk.ktor.swagger.SwaggerSupport
-import de.nielsfalk.ktor.swagger.version.shared.Information
-import de.nielsfalk.ktor.swagger.version.v2.Swagger
+import com.ryanharter.ktor.moshi.moshi
+import com.squareup.moshi.JsonDataException
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -11,7 +9,6 @@ import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
-import io.ktor.gson.gson
 import io.ktor.http.HttpStatusCode
 import io.ktor.locations.Locations
 import io.ktor.response.respond
@@ -83,26 +80,18 @@ fun Application.api(
         level = Level.INFO
     }
     install(ContentNegotiation) {
-        gson {
-            setPrettyPrinting()
-        }
+        moshi(moshiInstance)
     }
     install(Locations)
 
-    install(SwaggerSupport) {
-        forwardRoot = true
-        val information = Information(
-            title = "Dagpenger regel-api"
-        )
-        swagger = Swagger().apply {
-            info = information
-        }
-    }
-
     install(StatusPages) {
-        exception<JsonSyntaxException> { cause ->
+        exception<BadRequestException> { cause ->
+            LOGGER.warn("Bad request") { cause }
             call.respond(HttpStatusCode.BadRequest)
-            throw cause
+        }
+        exception<JsonDataException> { cause ->
+            LOGGER.warn("Bad request") { cause }
+            call.respond(HttpStatusCode.BadRequest)
         }
     }
 
@@ -113,3 +102,5 @@ fun Application.api(
         naischecks()
     }
 }
+
+class BadRequestException : RuntimeException()
