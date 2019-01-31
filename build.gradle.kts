@@ -56,6 +56,8 @@ dependencies {
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
     compile("org.slf4j:slf4j-api:1.7.25")
 
+    implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
+
     implementation("no.nav.dagpenger:streams:0.2.5-SNAPSHOT")
     implementation("no.nav.dagpenger:events:0.2.0-SNAPSHOT")
 

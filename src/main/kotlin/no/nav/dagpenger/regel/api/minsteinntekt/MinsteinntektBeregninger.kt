@@ -1,25 +1,29 @@
 package no.nav.dagpenger.regel.api.minsteinntekt
 
 import no.nav.dagpenger.regel.api.grunnlag.Utfall
+import no.nav.dagpenger.regel.api.minsteinntekt.model.InntektsPeriode
+import no.nav.dagpenger.regel.api.minsteinntekt.model.MinsteinntektBeregning
+import no.nav.dagpenger.regel.api.minsteinntekt.model.MinsteinntektResultat
+import no.nav.dagpenger.regel.api.minsteinntekt.model.MinsteinntektResultatParametere
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 class MinsteinntektBeregninger {
 
-    val dummyresult = MinsteinntektBeregningsResult(
+    val dummyresult = MinsteinntektBeregning(
         "456",
-        Utfall(true, 104),
-        "2018-12-26T14:42:09Z",
-        "2018-12-26T14:42:09Z",
-        MinsteinntektBeregningsRequest(
-            "01019955667",
-            123,
-            "2019-01-11",
-            "lasdfQ",
-            InntektsPeriode("2019-01", "2018-01"),
-            false,
-            false,
-            false
-        )
+        LocalDateTime.now(),
+        LocalDateTime.now(),
+        MinsteinntektResultatParametere(
+            "123",
+            789,
+            LocalDate.now()
+        ),
+        MinsteinntektResultat("true")
+
     )
+
+
 
     val beregningsId_beregninger = mutableMapOf("123" to dummyresult)
     val aktorId_beregninger = mutableMapOf("01019955667" to dummyresult)
