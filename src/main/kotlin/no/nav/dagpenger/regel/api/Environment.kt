@@ -4,9 +4,6 @@ data class Environment(
     val username: String = getEnvVar("SRVDP_REGEL_API_USERNAME", "itest"),
     val password: String = getEnvVar("SRVDP_REGEL_API_PASSWORD", "igroup"),
     val bootstrapServersUrl: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"),
-    val schemaRegistryUrl: String = getEnvVar("KAFKA_SCHEMA_REGISTRY_URL", "http://localhost:8081"),
-    val trustStorePath: String = getEnvVar("NAV_TRUSTSTORE_PATH"),
-    val trustStorePassword: String = getEnvVar("NAV_TRUSTSTORE_PASSWORD"),
     val fasitEnvironmentName: String = getEnvVar(
         "FASIT_ENVIRONMENT_NAME",
         ""
