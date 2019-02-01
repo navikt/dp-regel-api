@@ -17,7 +17,7 @@ import java.util.Properties
 
 private val LOGGER = KotlinLogging.logger {}
 
-class KafkaVilkårProducer(env: Environment) : VilkårProducer {
+class KafkaDagpengerBehovProducer(env: Environment) : VilkårProducer {
 
     val jsonAdapter = moshiInstance.adapter(SubsumsjonsBehov::class.java)
 
@@ -35,7 +35,7 @@ class KafkaVilkårProducer(env: Environment) : VilkårProducer {
 
         val credential = KafkaCredential(env.username, env.password)
 
-        credential?.let { credential ->
+        credential.let { credential ->
             LOGGER.info { "Using user name ${credential.username} to authenticate against Kafka brokers " }
             put(SaslConfigs.SASL_MECHANISM, "PLAIN")
             put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")

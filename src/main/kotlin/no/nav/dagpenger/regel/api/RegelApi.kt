@@ -52,7 +52,7 @@ fun main(args: Array<String>) {
 
     val tasks = TasksRedis(redisCommands)
 
-    val kafkaProducer = KafkaVilkårProducer(env)
+    val kafkaProducer = KafkaDagpengerBehovProducer(env)
     // VilkårKafkaConsumer(env, redisCommands, tasks).start()
 
     val app = embeddedServer(Netty, port = 8092) {
