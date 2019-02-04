@@ -1,19 +1,20 @@
 package no.nav.dagpenger.regel.api.tasks
 
+import de.huxhorn.sulky.ulid.ULID
 import io.lettuce.core.api.sync.RedisCommands
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.moshiInstance
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 class TasksRedis(val redisCommands: RedisCommands<String, String>) : Tasks {
 
     val jsonAdapter = moshiInstance.adapter(Task::class.java)
+    val ulidGenerator = ULID()
 
     override fun createTask(regel: Regel): String {
-        val taskId = UUID.randomUUID().toString()
+        val taskId = ulidGenerator.nextULID()
         val task = Task(
             regel,
             TaskStatus.PENDING,
