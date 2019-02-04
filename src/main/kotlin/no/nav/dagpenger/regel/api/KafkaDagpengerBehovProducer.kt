@@ -17,29 +17,38 @@ import java.util.Properties
 
 private val LOGGER = KotlinLogging.logger {}
 
-class KafkaDagpengerBehovProducer(env: Environment) : VilkårProducer {
+class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
+    private val jsonAdapter = moshiInstance.adapter(SubsumsjonsBehov::class.java)
+    private val clientId = "dp-regel-api"
+    private val ulidGenerator = ULID()
 
-    val jsonAdapter = moshiInstance.adapter(SubsumsjonsBehov::class.java)
-
-    val clientId = "dp-regel-api"
-
-    val kafkaConfig = Properties().apply {
+    private val kafkaConfig = Properties().apply {
         putAll(
             listOf(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to env.bootstrapServersUrl,
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
-                ProducerConfig.CLIENT_ID_CONFIG to clientId
+                ProducerConfig.CLIENT_ID_CONFIG to clientId,
+                ProducerConfig.ACKS_CONFIG to "all",
+                ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
+                ProducerConfig.RETRIES_CONFIG to Int.MAX_VALUE.toString(),
+                ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION to "5", // kafka 2.0 >= 1.1 so we can keep this as 5 instead of 1
+                ProducerConfig.COMPRESSION_TYPE_CONFIG to "snappy",
+                ProducerConfig.LINGER_MS_CONFIG to "20",
+                ProducerConfig.BATCH_SIZE_CONFIG to 32.times(1024).toString() // 32Kb (default is 16 Kb)
             )
         )
 
-        val credential = KafkaCredential(env.username, env.password)
+        val kafkaCredential = KafkaCredential(env.username, env.password)
 
-        credential.let { credential ->
+        kafkaCredential.let { credential ->
             LOGGER.info { "Using user name ${credential.username} to authenticate against Kafka brokers " }
             put(SaslConfigs.SASL_MECHANISM, "PLAIN")
             put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
-            put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${credential.username}\" password=\"${credential.password}\";")
+            put(
+                SaslConfigs.SASL_JAAS_CONFIG,
+                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${credential.username}\" password=\"${credential.password}\";"
+            )
 
             val trustStoreLocation = System.getenv("NAV_TRUSTSTORE_PATH")
             trustStoreLocation?.let {
@@ -55,18 +64,26 @@ class KafkaDagpengerBehovProducer(env: Environment) : VilkårProducer {
         }
     }
 
-    val kafkaProducer = KafkaProducer<String, String>(kafkaConfig)
+    private val kafkaProducer = KafkaProducer<String, String>(kafkaConfig)
+
+    init {
+        Runtime.getRuntime().addShutdownHook(Thread {
+            LOGGER.info("Closing dagpenger behov Kafka producer")
+            kafkaProducer.flush()
+            kafkaProducer.close()
+            LOGGER.info("done! ")
+        })
+    }
 
     override fun produceMinsteInntektEvent(request: MinsteinntektParametere) {
         val behov = mapRequestToBehov(request)
-        val behovId = ULID()
-
-        produceEvent(behov, behovId.toString())
+        val behovId = ulidGenerator.nextULID()
+        produceEvent(behov, behovId)
     }
 
     fun produceEvent(behov: SubsumsjonsBehov, key: String) {
         val behovJson = jsonAdapter.toJson(behov)
-        LOGGER.info { "Producing Vilkårevent" }
+        LOGGER.info { "Producing Vilkårevent $behovJson" }
         kafkaProducer.send(
             ProducerRecord(Topics.DAGPENGER_BEHOV_EVENT.name, key, behovJson)
         ) { metadata, exception ->
@@ -75,11 +92,10 @@ class KafkaDagpengerBehovProducer(env: Environment) : VilkårProducer {
         }
     }
 
-    fun close() = kafkaProducer.close()
-
     fun mapRequestToBehov(request: MinsteinntektParametere): SubsumsjonsBehov =
         SubsumsjonsBehov(
             request.aktorId,
             request.vedtakId,
-            request.beregningsdato)
+            request.beregningsdato
+        )
 }

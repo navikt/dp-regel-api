@@ -53,7 +53,6 @@ fun main(args: Array<String>) {
     val tasks = TasksRedis(redisCommands)
 
     val kafkaProducer = KafkaDagpengerBehovProducer(env)
-    // VilkårKafkaConsumer(env, redisCommands, tasks).start()
 
     val app = embeddedServer(Netty, port = 8092) {
         api(tasks, MinsteinntektBeregninger(), GrunnlagBeregninger(), kafkaProducer)
@@ -64,7 +63,6 @@ fun main(args: Array<String>) {
     Runtime.getRuntime().addShutdownHook(Thread {
         connection.close()
         redisClient.shutdown()
-        kafkaProducer.close()
         app.stop(5, 60, TimeUnit.SECONDS)
     })
 }
@@ -73,7 +71,7 @@ fun Application.api(
     tasks: Tasks,
     minsteinntektBeregninger: MinsteinntektBeregninger,
     grunnlagBeregninger: GrunnlagBeregninger,
-    kafkaProducer: VilkårProducer
+    kafkaProducer: DagpengerBehovProducer
 ) {
     install(DefaultHeaders)
     install(CallLogging) {

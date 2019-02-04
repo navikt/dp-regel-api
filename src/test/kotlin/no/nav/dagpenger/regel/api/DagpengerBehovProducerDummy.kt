@@ -2,7 +2,7 @@ package no.nav.dagpenger.regel.api
 
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektParametere
 
-class VilkårProducerDummy : VilkårProducer {
+class DagpengerBehovProducerDummy : DagpengerBehovProducer {
     override fun produceMinsteInntektEvent(request: MinsteinntektParametere) {
     }
 }

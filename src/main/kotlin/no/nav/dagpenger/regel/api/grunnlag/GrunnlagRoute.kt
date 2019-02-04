@@ -13,14 +13,14 @@ import io.ktor.routing.route
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.Regel
-import no.nav.dagpenger.regel.api.VilkårProducer
+import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
 import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks, kafkaProducer: VilkårProducer) {
+fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks, kafkaProducer: DagpengerBehovProducer) {
     route("/dagpengegrunnlag") {
         post {
             val parametere = call.receive<DagpengegrunnlagParametere>()

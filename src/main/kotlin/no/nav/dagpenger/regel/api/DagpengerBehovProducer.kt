@@ -2,6 +2,6 @@ package no.nav.dagpenger.regel.api
 
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektParametere
 
-interface VilkårProducer {
+interface DagpengerBehovProducer {
     fun produceMinsteInntektEvent(request: MinsteinntektParametere)
 }
