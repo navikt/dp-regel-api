@@ -72,6 +72,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:$jupiterVersion")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:$kafkaVersion")
 }
 
 spotless {

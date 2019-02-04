@@ -17,7 +17,7 @@ import java.util.Properties
 
 private val LOGGER = KotlinLogging.logger {}
 
-class KafkaDagpengerBehovProducer(env: Environment) : VilkårProducer {
+class KafkaDagpengerBehovProducer(env: Environment) : BehovProducer {
 
     val jsonAdapter = moshiInstance.adapter(SubsumsjonsBehov::class.java)
 
@@ -57,11 +57,15 @@ class KafkaDagpengerBehovProducer(env: Environment) : VilkårProducer {
 
     val kafkaProducer = KafkaProducer<String, String>(kafkaConfig)
 
-    override fun produceMinsteInntektEvent(request: MinsteinntektParametere) {
-        val behov = mapRequestToBehov(request)
-        val behovId = ULID()
+    fun close() = kafkaProducer.close()
 
-        produceEvent(behov, behovId.toString())
+    override fun produceMinsteInntektEvent(request: MinsteinntektParametere): SubsumsjonsBehov {
+        val behovId = ULID().nextULID()
+        val behov = mapRequestToBehov(request, behovId)
+
+        produceEvent(behov, behovId)
+
+        return behov
     }
 
     fun produceEvent(behov: SubsumsjonsBehov, key: String) {
@@ -75,10 +79,9 @@ class KafkaDagpengerBehovProducer(env: Environment) : VilkårProducer {
         }
     }
 
-    fun close() = kafkaProducer.close()
-
-    fun mapRequestToBehov(request: MinsteinntektParametere): SubsumsjonsBehov =
+    fun mapRequestToBehov(request: MinsteinntektParametere, behovId: String): SubsumsjonsBehov =
         SubsumsjonsBehov(
+            behovId,
             request.aktorId,
             request.vedtakId,
             request.beregningsdato)

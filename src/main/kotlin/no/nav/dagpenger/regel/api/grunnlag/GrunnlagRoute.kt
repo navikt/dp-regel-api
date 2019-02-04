@@ -12,25 +12,23 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
+import no.nav.dagpenger.regel.api.BehovProducer
 import no.nav.dagpenger.regel.api.Regel
-import no.nav.dagpenger.regel.api.VilkårProducer
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
 import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks, kafkaProducer: VilkårProducer) {
+fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks, kafkaProducer: BehovProducer) {
     route("/dagpengegrunnlag") {
         post {
             val parametere = call.receive<DagpengegrunnlagParametere>()
 
-            val taskId = tasks.createTask(Regel.DAGPENGEGRUNNLAG)
+            val task = tasks.createTask(Regel.DAGPENGEGRUNNLAG, "temp")
 
-            tasks.updateTask(taskId, "456")
-
-            call.response.header(HttpHeaders.Location, "/task/$taskId")
-            call.respond(HttpStatusCode.Accepted, taskResponseFromTask(tasks.getTask(taskId)))
+            call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
+            call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
         }
 
         get("/{subsumsjonsid}") {

@@ -21,7 +21,9 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagBeregninger
 import no.nav.dagpenger.regel.api.grunnlag.grunnlag
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregninger
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregningerRedis
 import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
+import no.nav.dagpenger.regel.api.tasks.TaskNotFoundException
 import no.nav.dagpenger.regel.api.tasks.TaskStatus
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.TasksRedis
@@ -47,16 +49,17 @@ fun main(args: Array<String>) {
     val redisUri = RedisURI.Builder.sentinel(env.redisHost, "mymaster").build()
     val redisClient = RedisClient.create(redisUri)
     val connection = redisClient.connect()
-
     val redisCommands = connection.sync()
 
     val tasks = TasksRedis(redisCommands)
+    val minsteinntektBeregninger = MinsteinntektBeregningerRedis(redisCommands)
 
     val kafkaProducer = KafkaDagpengerBehovProducer(env)
-    // VilkårKafkaConsumer(env, redisCommands, tasks).start()
+    val kafkaConsumer = KafkaDagpengerBehovConsumer(env, tasks, minsteinntektBeregninger)
+    kafkaConsumer.start()
 
     val app = embeddedServer(Netty, port = 8092) {
-        api(tasks, MinsteinntektBeregninger(), GrunnlagBeregninger(), kafkaProducer)
+        api(tasks, minsteinntektBeregninger, GrunnlagBeregninger(), kafkaProducer)
     }
 
     app.start(wait = false)
@@ -65,6 +68,7 @@ fun main(args: Array<String>) {
         connection.close()
         redisClient.shutdown()
         kafkaProducer.close()
+        kafkaConsumer.stop()
         app.stop(5, 60, TimeUnit.SECONDS)
     })
 }
@@ -73,7 +77,7 @@ fun Application.api(
     tasks: Tasks,
     minsteinntektBeregninger: MinsteinntektBeregninger,
     grunnlagBeregninger: GrunnlagBeregninger,
-    kafkaProducer: VilkårProducer
+    kafkaProducer: BehovProducer
 ) {
     install(DefaultHeaders)
     install(CallLogging) {
@@ -92,6 +96,10 @@ fun Application.api(
         exception<JsonDataException> { cause ->
             LOGGER.warn("Bad request") { cause }
             call.respond(HttpStatusCode.BadRequest)
+        }
+        exception<TaskNotFoundException> { cause ->
+            LOGGER.warn("Unknown task id") { cause }
+            call.respond(HttpStatusCode.NotFound)
         }
     }
 

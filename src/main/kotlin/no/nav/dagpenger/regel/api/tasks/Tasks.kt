@@ -7,18 +7,21 @@ enum class TaskStatus {
 }
 
 data class Task(
+    val taskId: String,
     val regel: Regel,
+    val behovId: String,
     var status: TaskStatus,
     val expires: String, // todo: real date
-    var ressursId: String? = null
+    var subsumsjonsId: String? = null
 )
 
 interface Tasks {
 
-    fun createTask(regel: Regel): String
+    fun createTask(regel: Regel, behovId: String): Task
 
-    fun getTask(taskId: String): Task
+    fun getTask(regel: Regel, behovId: String): Task?
 
-    // skal bli kalt av kafka-consumer når en regelberegning er ferdig
-    fun updateTask(taskId: String, ressursId: String)
+    fun getTask(taskId: String): Task?
+
+    fun updateTask(regel: Regel, behovId: String, subsumsjonsId: String): Task
 }
