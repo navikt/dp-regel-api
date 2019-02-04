@@ -83,11 +83,11 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     fun produceEvent(behov: SubsumsjonsBehov, key: String) {
         val behovJson = jsonAdapter.toJson(behov)
-        LOGGER.info { "Producing Vilkårevent $behovJson" }
+        LOGGER.info { "Producing dagpenger behov $behovJson" }
         kafkaProducer.send(
             ProducerRecord(Topics.DAGPENGER_BEHOV_EVENT.name, key, behovJson)
         ) { metadata, exception ->
-            exception?.let { LOGGER.error { "Failed to produce vilkår" } }
+            exception?.let { LOGGER.error { "Failed to produce dagpenger behov" } }
             metadata?.let { LOGGER.info { "Produced -> ${metadata.topic()}  to offset ${metadata.offset()}" } }
         }
     }
