@@ -75,10 +75,12 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
         })
     }
 
-    override fun produceMinsteInntektEvent(request: MinsteinntektParametere) {
-        val behov = mapRequestToBehov(request)
+    override fun produceMinsteInntektEvent(request: MinsteinntektParametere): SubsumsjonsBehov {
         val behovId = ulidGenerator.nextULID()
+        val behov = mapRequestToBehov(request, behovId)
         produceEvent(behov, behovId)
+
+        return behov
     }
 
     fun produceEvent(behov: SubsumsjonsBehov, key: String) {

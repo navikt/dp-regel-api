@@ -67,9 +67,8 @@ fun main(args: Array<String>) {
     Runtime.getRuntime().addShutdownHook(Thread {
         connection.close()
         redisClient.shutdown()
-        kafkaProducer.close()
         kafkaConsumer.stop()
-        app.stop(5, 60, TimeUnit.SECONDS)
+        app.stop(10, 60, TimeUnit.SECONDS)
     })
 }
 
