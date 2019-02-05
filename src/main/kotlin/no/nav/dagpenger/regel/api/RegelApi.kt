@@ -77,7 +77,7 @@ fun Application.api(
     tasks: Tasks,
     minsteinntektBeregninger: MinsteinntektBeregninger,
     grunnlagBeregninger: GrunnlagBeregninger,
-    kafkaProducer: BehovProducer
+    kafkaProducer: DagpengerBehovProducer
 ) {
     install(DefaultHeaders)
     install(CallLogging) {

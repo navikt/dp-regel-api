@@ -8,7 +8,7 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
-import no.nav.dagpenger.regel.api.BehovProducerDummy
+import no.nav.dagpenger.regel.api.DagpengerBehovProducerDummy
 import no.nav.dagpenger.regel.api.MinsteinntektBeregningerDummy
 import no.nav.dagpenger.regel.api.TasksDummy
 import no.nav.dagpenger.regel.api.api
@@ -60,6 +60,6 @@ class MinsteinntektRouteTest {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication({ api(TasksDummy(), MinsteinntektBeregningerDummy(), GrunnlagBeregninger(), BehovProducerDummy()) }) { callback() }
+        withTestApplication({ api(TasksDummy(), MinsteinntektBeregningerDummy(), GrunnlagBeregninger(), DagpengerBehovProducerDummy()) }) { callback() }
     }
 }

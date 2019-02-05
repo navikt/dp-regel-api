@@ -12,22 +12,22 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
-import no.nav.dagpenger.regel.api.BehovProducer
 import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
 import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, tasks: Tasks, kafkaProducer: BehovProducer) {
+fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, tasks: Tasks, kafkaProducer: DagpengerBehovProducer) {
 
     route("/minsteinntekt") {
         post {
             val parametere = call.receive<MinsteinntektParametere>()
 
+            // todo: what if this call or next fails? either way?
             val behov = kafkaProducer.produceMinsteInntektEvent(parametere)
-
             val task = tasks.createTask(Regel.MINSTEINNTEKT, behov.behovId)
 
             call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
