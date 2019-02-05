@@ -1,4 +1,4 @@
-package no.nav.dagpenger.regel.api
+package no.nav.dagpenger.regel.api.minsteinntekt
 
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregning
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregninger

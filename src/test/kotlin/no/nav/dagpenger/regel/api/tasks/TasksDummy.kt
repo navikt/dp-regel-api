@@ -1,9 +1,6 @@
-package no.nav.dagpenger.regel.api
+package no.nav.dagpenger.regel.api.tasks
 
-import no.nav.dagpenger.regel.api.tasks.Task
-import no.nav.dagpenger.regel.api.tasks.TaskNotFoundException
-import no.nav.dagpenger.regel.api.tasks.TaskStatus
-import no.nav.dagpenger.regel.api.tasks.Tasks
+import no.nav.dagpenger.regel.api.Regel
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter

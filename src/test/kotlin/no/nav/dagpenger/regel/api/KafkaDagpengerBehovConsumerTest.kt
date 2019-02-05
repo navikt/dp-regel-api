@@ -1,5 +1,7 @@
 package no.nav.dagpenger.regel.api
 
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregningerDummy
+import no.nav.dagpenger.regel.api.tasks.TasksDummy
 import no.nav.dagpenger.streams.Topics
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsConfig

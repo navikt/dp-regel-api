@@ -29,13 +29,14 @@ class KafkaDagpengerBehovConsumer(
     val SERVICE_APP_ID = "dp-regel-api"
     private lateinit var streams: KafkaStreams
     fun start() {
+        LOGGER.info { "Starting up $SERVICE_APP_ID kafca consumer" }
         streams = KafkaStreams(buildTopology(), this.getConfig())
         streams.setUncaughtExceptionHandler { t, e -> System.exit(0) }
         streams.start()
     }
 
     fun stop() {
-        LOGGER.info { "Shutting down $SERVICE_APP_ID" }
+        LOGGER.info { "Shutting down $SERVICE_APP_ID kafka consumer" }
         streams.close(3, TimeUnit.SECONDS)
         streams.cleanUp()
     }
@@ -50,7 +51,6 @@ class KafkaDagpengerBehovConsumer(
 
         stream
             .peek { key, value -> LOGGER.info("Processing behov with id ${value.behovId}") }
-            //.filter { _, behov -> shouldBeProcessed(behov) }
             .foreach { _, behov -> storeResult(behov) }
 
         return builder.build()
@@ -62,10 +62,6 @@ class KafkaDagpengerBehovConsumer(
             bootStapServerUrl = env.bootstrapServersUrl,
             credential = KafkaCredential(env.username, env.password))
         return props
-    }
-
-    fun shouldBeProcessed(behov: SubsumsjonsBehov): Boolean {
-        return hasNeededMinsteinntektResult(behov)
     }
 
     fun hasNeededMinsteinntektResult(behov: SubsumsjonsBehov): Boolean {

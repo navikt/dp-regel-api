@@ -68,7 +68,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
-            LOGGER.info("Closing dagpenger behov Kafka producer")
+            LOGGER.info("Closing $clientId Kafka producer")
             kafkaProducer.flush()
             kafkaProducer.close()
             LOGGER.info("done! ")
