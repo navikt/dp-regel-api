@@ -27,19 +27,19 @@ fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, ta
             val parametere = call.receive<MinsteinntektParametere>()
 
             // todo: what if this call or next fails? either way?
-            val taskId = tasks.createTask(Regel.MINSTEINNTEKT)
-            kafkaProducer.produceMinsteInntektEvent(parametere)
+            val behov = kafkaProducer.produceMinsteInntektEvent(parametere)
+            val task = tasks.createTask(Regel.MINSTEINNTEKT, behov.behovId)
 
-            tasks.updateTask(taskId, "123")
-
-            call.response.header(HttpHeaders.Location, "/task/$taskId")
-            call.respond(HttpStatusCode.Accepted, taskResponseFromTask(tasks.getTask(taskId)))
+            call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
+            call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
         }
 
         get("/{subsumsjonsid}") {
             val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
 
-            call.respond(HttpStatusCode.OK)
+            val minsteinntektBeregning = minsteinntektBeregninger.getMinsteinntektBeregning(subsumsjonsId)
+
+            call.respond(HttpStatusCode.OK, minsteinntektBeregning)
         }
     }
 }

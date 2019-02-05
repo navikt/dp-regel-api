@@ -19,16 +19,17 @@ fun Routing.task(tasks: Tasks) {
 
         val id = call.parameters["id"] ?: throw BadRequestException()
 
-        val task = tasks.getTask(id)
-        task.status
+        val task = tasks.getTask(id) ?: throw TaskNotFoundException("Could not find task $id")
 
         if (task.status == TaskStatus.PENDING) {
-            call.respond(taskResponseFromTask(task))
+            call.respond(task)
         } else if (task.status == TaskStatus.DONE) {
             call.response.header(
-                HttpHeaders.Location, "/${task.regel.toString().toLowerCase()}/${task.ressursId}"
+                HttpHeaders.Location, "/${task.regel.toString().toLowerCase()}/${task.subsumsjonsId}"
             )
             call.respond(HttpStatusCode.SeeOther)
         }
     }
 }
+
+class TaskNotFoundException(override val message: String) : RuntimeException(message)

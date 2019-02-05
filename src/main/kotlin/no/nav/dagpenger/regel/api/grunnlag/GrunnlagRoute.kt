@@ -25,12 +25,10 @@ fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks, kaf
         post {
             val parametere = call.receive<DagpengegrunnlagParametere>()
 
-            val taskId = tasks.createTask(Regel.DAGPENGEGRUNNLAG)
+            val task = tasks.createTask(Regel.DAGPENGEGRUNNLAG, "temp")
 
-            tasks.updateTask(taskId, "456")
-
-            call.response.header(HttpHeaders.Location, "/task/$taskId")
-            call.respond(HttpStatusCode.Accepted, taskResponseFromTask(tasks.getTask(taskId)))
+            call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
+            call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
         }
 
         get("/{subsumsjonsid}") {

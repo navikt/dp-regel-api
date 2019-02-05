@@ -68,17 +68,19 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
-            LOGGER.info("Closing dagpenger behov Kafka producer")
+            LOGGER.info("Closing $clientId Kafka producer")
             kafkaProducer.flush()
             kafkaProducer.close()
             LOGGER.info("done! ")
         })
     }
 
-    override fun produceMinsteInntektEvent(request: MinsteinntektParametere) {
-        val behov = mapRequestToBehov(request)
+    override fun produceMinsteInntektEvent(request: MinsteinntektParametere): SubsumsjonsBehov {
         val behovId = ulidGenerator.nextULID()
+        val behov = mapRequestToBehov(request, behovId)
         produceEvent(behov, behovId)
+
+        return behov
     }
 
     fun produceEvent(behov: SubsumsjonsBehov, key: String) {
@@ -92,8 +94,9 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
         }
     }
 
-    fun mapRequestToBehov(request: MinsteinntektParametere): SubsumsjonsBehov =
+    fun mapRequestToBehov(request: MinsteinntektParametere, behovId: String): SubsumsjonsBehov =
         SubsumsjonsBehov(
+            behovId,
             request.aktorId,
             request.vedtakId,
             request.beregningsdato

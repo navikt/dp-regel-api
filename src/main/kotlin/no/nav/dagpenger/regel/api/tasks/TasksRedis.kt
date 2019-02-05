@@ -1,6 +1,5 @@
 package no.nav.dagpenger.regel.api.tasks
 
-import de.huxhorn.sulky.ulid.ULID
 import io.lettuce.core.api.sync.RedisCommands
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.moshiInstance
@@ -11,39 +10,49 @@ import java.time.format.DateTimeFormatter
 class TasksRedis(val redisCommands: RedisCommands<String, String>) : Tasks {
 
     val jsonAdapter = moshiInstance.adapter(Task::class.java)
-    val ulidGenerator = ULID()
 
-    override fun createTask(regel: Regel): String {
-        val taskId = ulidGenerator.nextULID()
+    override fun createTask(regel: Regel, behovId: String): Task {
+        val taskId = createTaskId(regel, behovId)
         val task = Task(
+            taskId,
             regel,
+            behovId,
             TaskStatus.PENDING,
             ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(
                 DateTimeFormatter.ISO_ZONED_DATE_TIME
             )
         )
-        redisCommands.set(taskId, task)
-        return taskId
+        redisCommands.setTask(taskId, task)
+        return task
     }
 
-    override fun getTask(taskId: String) =
-        redisCommands.getTask(taskId) ?: throw TaskNotFoundException("no task found for id:{$taskId}")
+    override fun getTask(regel: Regel, behovId: String): Task? {
+        val taskId = createTaskId(regel, behovId)
+        return redisCommands.getTask(taskId)
+    }
 
-    // skal bli kalt av kafka-consumer når en regelberegning er ferdig
-    override fun updateTask(taskId: String, ressursId: String) {
-        val task = getTask(taskId)
+    override fun getTask(taskId: String): Task? {
+        return redisCommands.getTask(taskId)
+    }
+
+    override fun updateTask(regel: Regel, behovId: String, subsumsjonsId: String): Task {
+        val task = getTask(regel, behovId) ?: throw TaskNotFoundException("Could not find task for regel $regel and behov $behovId")
         task.status = TaskStatus.DONE
-        task.ressursId = ressursId
-        redisCommands.set(taskId, task)
+        task.subsumsjonsId = subsumsjonsId
+        redisCommands.setTask(task.taskId, task)
+        return task
     }
 
-    fun RedisCommands<String, String>.set(id: String, task: Task) {
-        set("task:$id", jsonAdapter.toJson(task))
+    private fun RedisCommands<String, String>.setTask(taskId: String, task: Task) {
+        set("task:$taskId", jsonAdapter.toJson(task))
     }
 
-    fun RedisCommands<String, String>.getTask(id: String): Task? {
-        return jsonAdapter.fromJson(get("task:$id"))
+    private fun RedisCommands<String, String>.getTask(taskId: String): Task? {
+        val json = get("task:$taskId") ?: return null
+        return jsonAdapter.fromJson(json)
+    }
+
+    private fun createTaskId(regel: Regel, behovId: String): String {
+        return "$regel:$behovId"
     }
 }
-
-class TaskNotFoundException(override val message: String) : RuntimeException(message)
