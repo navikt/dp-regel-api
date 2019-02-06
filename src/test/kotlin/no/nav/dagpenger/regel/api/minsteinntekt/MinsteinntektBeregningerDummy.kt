@@ -1,8 +1,5 @@
 package no.nav.dagpenger.regel.api.minsteinntekt
 
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregning
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregninger
-
 class MinsteinntektBeregningerDummy : MinsteinntektBeregninger {
     var storedMinsteinntektBeregning: MinsteinntektBeregning? = null
 
