@@ -2,7 +2,7 @@ package no.nav.dagpenger.regel.api
 
 import de.huxhorn.sulky.ulid.ULID
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.grunnlag.DagpengegrunnlagParametere
+import no.nav.dagpenger.regel.api.grunnlag.GrunnlagParametere
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektRequestParametere
 import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.Topics
@@ -84,7 +84,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
         return behov
     }
 
-    override fun produceDagpengegrunnlagEvent(request: DagpengegrunnlagParametere): SubsumsjonsBehov {
+    override fun produceGrunnlagEvent(request: GrunnlagParametere): SubsumsjonsBehov {
         val behovId = ulidGenerator.nextULID()
         val behov = mapRequestToBehov(request, behovId)
         produceEvent(behov, behovId)
@@ -111,7 +111,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             request.beregningsdato
         )
 
-    fun mapRequestToBehov(request: DagpengegrunnlagParametere, behovId: String): SubsumsjonsBehov =
+    fun mapRequestToBehov(request: GrunnlagParametere, behovId: String): SubsumsjonsBehov =
         SubsumsjonsBehov(
             behovId,
             request.aktorId,

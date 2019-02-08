@@ -3,20 +3,20 @@ package no.nav.dagpenger.regel.api.grunnlag
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class DagpengegrunnlagResponse(
+data class GrunnlagSubsumsjon(
     val subsumsjonsId: String,
     val opprettet: LocalDateTime, // todo: ZonedDateTime?
     val utfort: LocalDateTime, // todo: ZonedDateTime?,
-    val parametere: DagpengegrunnlagResultatParametere,
-    val resultat: DagpengegrunnlagResultat
+    val parametere: GrunnlagFaktum,
+    val resultat: GrunnlagResultat
 )
 
-data class DagpengegrunnlagResultat(
+data class GrunnlagResultat(
     val avkortet: Int,
     val uavkortet: Int
 )
 
-data class DagpengegrunnlagResultatParametere(
+data class GrunnlagFaktum(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,

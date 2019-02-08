@@ -1,6 +1,6 @@
 package no.nav.dagpenger.regel.api.minsteinntekt
 
-class MinsteinntektBeregningerDummy : MinsteinntektSubsumsjoner {
+class MinsteinntektSubsumsjonerDummy : MinsteinntektSubsumsjoner {
     var storedMinsteinntektBeregning: MinsteinntektSubsumsjon? = null
 
     override fun getMinsteinntektSubsumsjon(subsumsjonsId: String): MinsteinntektSubsumsjon {

@@ -20,14 +20,14 @@ import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun Routing.grunnlag(dagpengegrunnlagBeregninger: DagpengegrunnlagBeregninger, tasks: Tasks, kafkaProducer: DagpengerBehovProducer) {
+fun Routing.grunnlag(grunnlagsubsumsjoner: GrunnlagSubsumsjoner, tasks: Tasks, kafkaProducer: DagpengerBehovProducer) {
     route("/dagpengegrunnlag") {
         post {
-            val parametere = call.receive<DagpengegrunnlagParametere>()
+            val parametere = call.receive<GrunnlagParametere>()
 
             // todo: what if this call or next fails? either way?
-            val behov = kafkaProducer.produceDagpengegrunnlagEvent(parametere)
-            val task = tasks.createTask(Regel.DAGPENGEGRUNNLAG, behov.behovId)
+            val behov = kafkaProducer.produceGrunnlagEvent(parametere)
+            val task = tasks.createTask(Regel.GRUNNLAG, behov.behovId)
 
             call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
             call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
@@ -36,14 +36,14 @@ fun Routing.grunnlag(dagpengegrunnlagBeregninger: DagpengegrunnlagBeregninger, t
         get("/{subsumsjonsid}") {
             val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
 
-            val dagpengegrunnlagBeregning = dagpengegrunnlagBeregninger.getGrunnlagBeregning(subsumsjonsId)
+            val grunnlagSubsumsjon = grunnlagsubsumsjoner.getGrunnlagSubsumsjon(subsumsjonsId)
 
-            call.respond(HttpStatusCode.OK, dagpengegrunnlagBeregning)
+            call.respond(HttpStatusCode.OK, grunnlagSubsumsjon)
         }
     }
 }
 
-data class DagpengegrunnlagParametere(
+data class GrunnlagParametere(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate

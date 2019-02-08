@@ -34,7 +34,7 @@ class TasksDummy : Tasks {
         ),
         grunnlagPendingTaskId to Task(
             grunnlagPendingTaskId,
-            Regel.DAGPENGEGRUNNLAG,
+            Regel.GRUNNLAG,
             "behov",
             TaskStatus.PENDING,
             ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(

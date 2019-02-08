@@ -18,11 +18,11 @@ import io.ktor.server.netty.Netty
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.grunnlag.DagpengegrunnlagBeregninger
-import no.nav.dagpenger.regel.api.grunnlag.DagpengegrunnlagBeregningerRedis
+import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjoner
+import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjonerRedis
 import no.nav.dagpenger.regel.api.grunnlag.grunnlag
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjoner
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregningerRedis
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerRedis
 import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
 import no.nav.dagpenger.regel.api.tasks.TaskNotFoundException
 import no.nav.dagpenger.regel.api.tasks.TaskStatus
@@ -41,7 +41,7 @@ data class TaskResponse(
 )
 
 enum class Regel {
-    MINSTEINNTEKT, DAGPENGEGRUNNLAG
+    MINSTEINNTEKT, GRUNNLAG
 }
 
 fun main(args: Array<String>) {
@@ -53,15 +53,15 @@ fun main(args: Array<String>) {
     val redisCommands = connection.sync()
 
     val tasks = TasksRedis(redisCommands)
-    val minsteinntektBeregninger = MinsteinntektBeregningerRedis(redisCommands)
-    val dagpengegrunnlagBeregninger = DagpengegrunnlagBeregningerRedis(redisCommands)
+    val minsteinntektSubsumsjoner = MinsteinntektSubsumsjonerRedis(redisCommands)
+    val grunnlagSubsumsjoner = GrunnlagSubsumsjonerRedis(redisCommands)
 
     val kafkaProducer = KafkaDagpengerBehovProducer(env)
-    val kafkaConsumer = KafkaDagpengerBehovConsumer(env, tasks, minsteinntektBeregninger)
+    val kafkaConsumer = KafkaDagpengerBehovConsumer(env, tasks, minsteinntektSubsumsjoner)
     kafkaConsumer.start()
 
     val app = embeddedServer(Netty, port = 8092) {
-        api(tasks, minsteinntektBeregninger, dagpengegrunnlagBeregninger, kafkaProducer)
+        api(tasks, minsteinntektSubsumsjoner, grunnlagSubsumsjoner, kafkaProducer)
     }
 
     app.start(wait = false)
@@ -76,8 +76,8 @@ fun main(args: Array<String>) {
 
 fun Application.api(
     tasks: Tasks,
-    minsteinntektBeregninger: MinsteinntektSubsumsjoner,
-    grunnlagBeregninger: DagpengegrunnlagBeregninger,
+    minsteinntektSubsumsjoner: MinsteinntektSubsumsjoner,
+    grunnlagSubsumsjoner: GrunnlagSubsumsjoner,
     kafkaProducer: DagpengerBehovProducer
 ) {
     install(DefaultHeaders)
@@ -106,8 +106,8 @@ fun Application.api(
 
     routing {
         task(tasks)
-        minsteinntekt(minsteinntektBeregninger, tasks, kafkaProducer)
-        grunnlag(grunnlagBeregninger, tasks, kafkaProducer)
+        minsteinntekt(minsteinntektSubsumsjoner, tasks, kafkaProducer)
+        grunnlag(grunnlagSubsumsjoner, tasks, kafkaProducer)
         naischecks()
     }
 }

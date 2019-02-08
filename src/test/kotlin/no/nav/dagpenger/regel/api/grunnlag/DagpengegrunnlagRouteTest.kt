@@ -10,7 +10,7 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import no.nav.dagpenger.regel.api.DagpengerBehovProducerDummy
 import no.nav.dagpenger.regel.api.api
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregningerDummy
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.tasks.TasksDummy
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -61,7 +61,7 @@ class DagpengegrunnlagRouteTest {
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({
             api(TasksDummy(),
-                MinsteinntektBeregningerDummy(),
+                MinsteinntektSubsumsjonerDummy(),
                 DagpengegrunnlagBeregningerDummy(),
                 DagpengerBehovProducerDummy())
         }) { callback() }

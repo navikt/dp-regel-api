@@ -1,6 +1,6 @@
 package no.nav.dagpenger.regel.api
 
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregningerDummy
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.tasks.TasksDummy
 import no.nav.dagpenger.streams.Topics
 import org.apache.kafka.common.serialization.Serdes
@@ -31,7 +31,7 @@ class KafkaDagpengerBehovConsumerTest {
 
     @Test
     fun ` Should store received minsteinntektSubsumsjon `() {
-        val minsteinntektBeregninger = MinsteinntektBeregningerDummy()
+        val minsteinntektSubsumsjoner = MinsteinntektSubsumsjonerDummy()
         val tasks = TasksDummy()
         val consumer = KafkaDagpengerBehovConsumer(
             Environment(
@@ -39,10 +39,10 @@ class KafkaDagpengerBehovConsumerTest {
                 password = "bogus"
             ),
             tasks,
-            minsteinntektBeregninger
+            minsteinntektSubsumsjoner
         )
 
-        val minsteinntektSubsumsjon = MinsteinntektResultat(
+        val minsteinntektResultat = MinsteinntektResultat(
             "123",
             "id",
             "regel",
@@ -53,7 +53,7 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
-            minsteinntektSubsumsjon = minsteinntektSubsumsjon
+            minsteinntektResultat = minsteinntektResultat
         )
         val behovJson = jsonAdapter.toJson(behov)
 
@@ -62,6 +62,6 @@ class KafkaDagpengerBehovConsumerTest {
             topologyTestDriver.pipeInput(inputRecord)
         }
 
-        assertEquals("id", minsteinntektSubsumsjon.subsumsjonsId)
+        assertEquals("id", minsteinntektResultat.subsumsjonsId)
     }
 }

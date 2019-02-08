@@ -24,7 +24,7 @@ private val LOGGER = KotlinLogging.logger {}
 class KafkaDagpengerBehovConsumer(
     val env: Environment,
     val tasks: Tasks,
-    val minsteinntektBeregninger: MinsteinntektSubsumsjoner
+    val minsteinntektSubsumsjoner: MinsteinntektSubsumsjoner
 ) {
 
     val SERVICE_APP_ID = "dp-regel-api"
@@ -76,17 +76,17 @@ class KafkaDagpengerBehovConsumer(
 
     fun storeResult(behov: SubsumsjonsBehov) {
         when {
-            hasNeededMinsteinntektResult(behov) -> storeMinsteinntektBeregning(behov)
+            hasNeededMinsteinntektResult(behov) -> storeMinsteinntektSubsumsjon(behov)
             else -> LOGGER.info("Ignoring behov with id ${behov.behovId}")
         }
     }
 
-    fun storeMinsteinntektBeregning(behov: SubsumsjonsBehov) {
-        val minsteinntektBeregning = mapToMinsteinntektSubsumsjon(behov)
+    fun storeMinsteinntektSubsumsjon(behov: SubsumsjonsBehov) {
+        val minsteinntektSubsumsjon = mapToMinsteinntektSubsumsjon(behov)
 
-        minsteinntektBeregninger.insertMinsteinntektSubsumsjon(minsteinntektBeregning)
+        minsteinntektSubsumsjoner.insertMinsteinntektSubsumsjon(minsteinntektSubsumsjon)
 
-        val task = tasks.updateTask(Regel.MINSTEINNTEKT, behov.behovId, minsteinntektBeregning.subsumsjonsId)
+        val task = tasks.updateTask(Regel.MINSTEINNTEKT, behov.behovId, minsteinntektSubsumsjon.subsumsjonsId)
 
         LOGGER.info("Updated task with id ${task.taskId}")
     }

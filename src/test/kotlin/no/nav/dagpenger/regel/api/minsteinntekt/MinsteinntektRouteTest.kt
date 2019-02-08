@@ -61,7 +61,7 @@ class MinsteinntektRouteTest {
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({ api(
             TasksDummy(),
-            MinsteinntektBeregningerDummy(),
+            MinsteinntektSubsumsjonerDummy(),
             DagpengegrunnlagBeregningerDummy(),
             DagpengerBehovProducerDummy())
         }) { callback() }

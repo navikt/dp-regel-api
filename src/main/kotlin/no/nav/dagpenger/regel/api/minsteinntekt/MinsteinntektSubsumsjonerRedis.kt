@@ -3,7 +3,7 @@ package no.nav.dagpenger.regel.api.minsteinntekt
 import io.lettuce.core.api.sync.RedisCommands
 import no.nav.dagpenger.regel.api.moshiInstance
 
-class MinsteinntektBeregningerRedis(val redisCommands: RedisCommands<String, String>) : MinsteinntektSubsumsjoner {
+class MinsteinntektSubsumsjonerRedis(val redisCommands: RedisCommands<String, String>) : MinsteinntektSubsumsjoner {
 
     val jsonAdapter = moshiInstance.adapter(MinsteinntektSubsumsjon::class.java)
 

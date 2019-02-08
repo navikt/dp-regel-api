@@ -1,12 +1,12 @@
 package no.nav.dagpenger.regel.api.grunnlag
 
-class DagpengegrunnlagBeregningerDummy : DagpengegrunnlagBeregninger {
-    var storedDagpengegrunnlagBeregning: DagpengegrunnlagResponse? = null
-    override fun getGrunnlagBeregning(subsumsjonsId: String): DagpengegrunnlagResponse {
+class DagpengegrunnlagBeregningerDummy : GrunnlagSubsumsjoner {
+    var storedDagpengegrunnlagBeregning: GrunnlagSubsumsjon? = null
+    override fun getGrunnlagSubsumsjon(subsumsjonsId: String): GrunnlagSubsumsjon {
         return storedDagpengegrunnlagBeregning!!
     }
 
-    override fun setGrunnlagBeregning(dagpengegrunnlagBeregning: DagpengegrunnlagResponse) {
-        storedDagpengegrunnlagBeregning = dagpengegrunnlagBeregning
+    override fun setGrunnlagSubsumsjon(dagpengegrunnlagSubsumsjon: GrunnlagSubsumsjon) {
+        storedDagpengegrunnlagBeregning = dagpengegrunnlagSubsumsjon
     }
 }
