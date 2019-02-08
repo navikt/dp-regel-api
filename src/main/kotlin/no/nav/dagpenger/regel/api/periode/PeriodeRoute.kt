@@ -1,4 +1,4 @@
-package no.nav.dagpenger.regel.api.grunnlag
+package no.nav.dagpenger.regel.api.periode
 
 import io.ktor.application.call
 import io.ktor.http.HttpHeaders
@@ -12,22 +12,27 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
-import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
 import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun Routing.grunnlag(grunnlagsubsumsjoner: GrunnlagSubsumsjoner, tasks: Tasks, kafkaProducer: DagpengerBehovProducer) {
-    route("/dagpengegrunnlag") {
+fun Routing.periode(
+    periodeSubsumsjoner: PeriodeSubsumsjoner,
+    tasks: Tasks,
+    kafkaProducer: DagpengerBehovProducer
+) {
+
+    route("/periode") {
         post {
-            val parametere = call.receive<GrunnlagRequestParametere>()
+            val parametere = call.receive<PeriodeRequestParametere>()
 
             // todo: what if this call or next fails? either way?
-            val behov = kafkaProducer.produceGrunnlagEvent(parametere)
-            val task = tasks.createTask(Regel.GRUNNLAG, behov.behovId)
+            val behov = kafkaProducer.producePeriodeEvent(parametere)
+            val task = tasks.createTask(Regel.PERIODE, behov.behovId)
 
             call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
             call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
@@ -36,14 +41,14 @@ fun Routing.grunnlag(grunnlagsubsumsjoner: GrunnlagSubsumsjoner, tasks: Tasks, k
         get("/{subsumsjonsid}") {
             val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
 
-            val grunnlagSubsumsjon = grunnlagsubsumsjoner.getGrunnlagSubsumsjon(subsumsjonsId)
+            val periodeSubsumsjon = periodeSubsumsjoner.getPeriodeSubsumsjon(subsumsjonsId)
 
-            call.respond(HttpStatusCode.OK, grunnlagSubsumsjon)
+            call.respond(HttpStatusCode.OK, periodeSubsumsjon)
         }
     }
 }
 
-data class GrunnlagRequestParametere(
+data class PeriodeRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate

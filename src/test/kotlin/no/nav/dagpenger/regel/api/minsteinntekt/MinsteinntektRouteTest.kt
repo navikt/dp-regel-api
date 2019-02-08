@@ -8,10 +8,8 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
-import no.nav.dagpenger.regel.api.DagpengerBehovProducerDummy
 import no.nav.dagpenger.regel.api.api
-import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjonerDummy
-import no.nav.dagpenger.regel.api.tasks.TasksDummy
+import no.nav.dagpenger.regel.api.dummyApi
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -59,11 +57,6 @@ class MinsteinntektRouteTest {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication({ api(
-            TasksDummy(),
-            MinsteinntektSubsumsjonerDummy(),
-            GrunnlagSubsumsjonerDummy(),
-            DagpengerBehovProducerDummy())
-        }) { callback() }
+        withTestApplication({ dummyApi() }) { callback() }
     }
 }

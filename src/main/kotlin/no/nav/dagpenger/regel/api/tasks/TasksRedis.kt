@@ -1,11 +1,14 @@
 package no.nav.dagpenger.regel.api.tasks
 
 import io.lettuce.core.api.sync.RedisCommands
+import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.moshiInstance
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+
+private val LOGGER = KotlinLogging.logger {}
 
 class TasksRedis(val redisCommands: RedisCommands<String, String>) : Tasks {
 
@@ -40,6 +43,9 @@ class TasksRedis(val redisCommands: RedisCommands<String, String>) : Tasks {
         task.status = TaskStatus.DONE
         task.subsumsjonsId = subsumsjonsId
         redisCommands.setTask(task.taskId, task)
+
+        LOGGER.info("Updated task with id ${task.taskId}")
+
         return task
     }
 

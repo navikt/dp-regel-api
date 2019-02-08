@@ -14,7 +14,8 @@ data class SubsumsjonsBehov (
 
     var tasks: List<String>? = null,
 
-    var minsteinntektResultat: MinsteinntektResultat? = null
+    var minsteinntektResultat: MinsteinntektResultat? = null,
+    var periodeResultat: PeriodeResultat? = null
 )
 
 data class MinsteinntektResultat(
@@ -22,6 +23,13 @@ data class MinsteinntektResultat(
     val subsumsjonsId: String,
     val regelIdentifikator: String,
     val oppfyllerMinsteinntekt: Boolean
+)
+
+data class PeriodeResultat(
+    val sporingsId: String,
+    val subsumsjonsId: String,
+    val regelIdentifikator: String,
+    val periodeAntallUker: Int
 )
 
 data class Inntekt(val inntektsId: String, val inntekt: Int)

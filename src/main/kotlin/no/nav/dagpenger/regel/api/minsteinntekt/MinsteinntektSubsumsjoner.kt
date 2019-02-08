@@ -6,5 +6,3 @@ interface MinsteinntektSubsumsjoner {
 
     fun insertMinsteinntektSubsumsjon(minsteinntektSubsumsjon: MinsteinntektSubsumsjon)
 }
-
-class MinsteinntektSubsumsjonNotFoundException(override val message: String) : RuntimeException(message)

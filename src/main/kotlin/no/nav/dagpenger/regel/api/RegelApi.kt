@@ -24,6 +24,9 @@ import no.nav.dagpenger.regel.api.grunnlag.grunnlag
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjoner
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerRedis
 import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
+import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjoner
+import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjonerRedis
+import no.nav.dagpenger.regel.api.periode.periode
 import no.nav.dagpenger.regel.api.tasks.TaskNotFoundException
 import no.nav.dagpenger.regel.api.tasks.TaskStatus
 import no.nav.dagpenger.regel.api.tasks.Tasks
@@ -41,7 +44,9 @@ data class TaskResponse(
 )
 
 enum class Regel {
-    MINSTEINNTEKT, GRUNNLAG
+    MINSTEINNTEKT,
+    PERIODE,
+    GRUNNLAG
 }
 
 fun main(args: Array<String>) {
@@ -54,14 +59,21 @@ fun main(args: Array<String>) {
 
     val tasks = TasksRedis(redisCommands)
     val minsteinntektSubsumsjoner = MinsteinntektSubsumsjonerRedis(redisCommands)
+    val periodeSubsumsjoner = PeriodeSubsumsjonerRedis(redisCommands)
     val grunnlagSubsumsjoner = GrunnlagSubsumsjonerRedis(redisCommands)
 
     val kafkaProducer = KafkaDagpengerBehovProducer(env)
-    val kafkaConsumer = KafkaDagpengerBehovConsumer(env, tasks, minsteinntektSubsumsjoner)
+    val kafkaConsumer = KafkaDagpengerBehovConsumer(env, tasks, minsteinntektSubsumsjoner, periodeSubsumsjoner)
     kafkaConsumer.start()
 
     val app = embeddedServer(Netty, port = 8092) {
-        api(tasks, minsteinntektSubsumsjoner, grunnlagSubsumsjoner, kafkaProducer)
+        api(
+            tasks,
+            minsteinntektSubsumsjoner,
+            periodeSubsumsjoner,
+            grunnlagSubsumsjoner,
+            kafkaProducer
+        )
     }
 
     app.start(wait = false)
@@ -77,6 +89,7 @@ fun main(args: Array<String>) {
 fun Application.api(
     tasks: Tasks,
     minsteinntektSubsumsjoner: MinsteinntektSubsumsjoner,
+    periodeSubsumsjoner: PeriodeSubsumsjoner,
     grunnlagSubsumsjoner: GrunnlagSubsumsjoner,
     kafkaProducer: DagpengerBehovProducer
 ) {
@@ -102,14 +115,21 @@ fun Application.api(
             LOGGER.warn("Unknown task id") { cause }
             call.respond(HttpStatusCode.NotFound)
         }
+        exception<SubsumsjonNotFoundException> { cause ->
+            LOGGER.warn("Unknown subsumsjon id") { cause }
+            call.respond(HttpStatusCode.NotFound)
+        }
     }
 
     routing {
         task(tasks)
         minsteinntekt(minsteinntektSubsumsjoner, tasks, kafkaProducer)
+        periode(periodeSubsumsjoner, tasks, kafkaProducer)
         grunnlag(grunnlagSubsumsjoner, tasks, kafkaProducer)
         naischecks()
     }
 }
 
 class BadRequestException : RuntimeException()
+
+class SubsumsjonNotFoundException(override val message: String) : RuntimeException(message)

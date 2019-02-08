@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api.minsteinntekt
 
 import io.lettuce.core.api.sync.RedisCommands
+import no.nav.dagpenger.regel.api.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.moshiInstance
 
 class MinsteinntektSubsumsjonerRedis(val redisCommands: RedisCommands<String, String>) : MinsteinntektSubsumsjoner {
@@ -9,7 +10,7 @@ class MinsteinntektSubsumsjonerRedis(val redisCommands: RedisCommands<String, St
 
     override fun getMinsteinntektSubsumsjon(subsumsjonsId: String): MinsteinntektSubsumsjon {
         val json = redisCommands.getResult(subsumsjonsId)
-        return jsonAdapter.fromJson(json) ?: throw MinsteinntektSubsumsjonNotFoundException(
+        return jsonAdapter.fromJson(json) ?: throw SubsumsjonNotFoundException(
             "Could not find subsumsjon with id $subsumsjonsId")
     }
 

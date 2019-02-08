@@ -1,22 +1,22 @@
-package no.nav.dagpenger.regel.api.grunnlag
+package no.nav.dagpenger.regel.api.periode
 
 import io.lettuce.core.api.sync.RedisCommands
 import no.nav.dagpenger.regel.api.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.moshiInstance
 
-class GrunnlagSubsumsjonerRedis(val redisCommands: RedisCommands<String, String>) : GrunnlagSubsumsjoner {
+class PeriodeSubsumsjonerRedis(val redisCommands: RedisCommands<String, String>) : PeriodeSubsumsjoner {
 
-    val jsonAdapter = moshiInstance.adapter(GrunnlagSubsumsjon::class.java)
+    val jsonAdapter = moshiInstance.adapter(PeriodeSubsumsjon::class.java)
 
-    override fun getGrunnlagSubsumsjon(subsumsjonsId: String): GrunnlagSubsumsjon {
+    override fun getPeriodeSubsumsjon(subsumsjonsId: String): PeriodeSubsumsjon {
         val json = redisCommands.getResult(subsumsjonsId)
         return jsonAdapter.fromJson(json) ?: throw SubsumsjonNotFoundException(
             "Could not find subsumsjon with id $subsumsjonsId")
     }
 
-    override fun setGrunnlagSubsumsjon(grunnlagSubsumsjon: GrunnlagSubsumsjon) {
-        val json = jsonAdapter.toJson(grunnlagSubsumsjon)
-        redisCommands.setResult(grunnlagSubsumsjon.subsumsjonsId, json)
+    override fun insertPeriodeSubsumsjon(periodeSubsumsjon: PeriodeSubsumsjon) {
+        val json = jsonAdapter.toJson(periodeSubsumsjon)
+        redisCommands.setResult(periodeSubsumsjon.subsumsjonsId, json)
     }
 }
 

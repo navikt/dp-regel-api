@@ -10,6 +10,7 @@ class TasksDummy : Tasks {
     companion object {
         val minsteinntektPendingTaskId = "pendingMinsteinntekt"
         val minsteinntektDoneTaskId = "doneMinsteinntekt"
+        val periodePendingTaskId = "pendingPeriode"
         val grunnlagPendingTaskId = "pendingGrunnlag"
     }
 
@@ -28,6 +29,15 @@ class TasksDummy : Tasks {
             Regel.MINSTEINNTEKT,
             "behov",
             TaskStatus.DONE,
+            ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(
+                DateTimeFormatter.ISO_ZONED_DATE_TIME
+            )
+        ),
+        periodePendingTaskId to Task(
+            periodePendingTaskId,
+            Regel.PERIODE,
+            "behov",
+            TaskStatus.PENDING,
             ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(
                 DateTimeFormatter.ISO_ZONED_DATE_TIME
             )

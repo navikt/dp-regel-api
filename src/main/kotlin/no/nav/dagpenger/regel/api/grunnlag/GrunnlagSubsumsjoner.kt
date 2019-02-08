@@ -5,5 +5,3 @@ interface GrunnlagSubsumsjoner {
 
     fun setGrunnlagSubsumsjon(grunnlagSubsumsjon: GrunnlagSubsumsjon)
 }
-
-class GrunnlagSubsumsjonNotFoundException(override val message: String) : RuntimeException(message)

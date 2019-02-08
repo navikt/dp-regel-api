@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api
 
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerDummy
+import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.tasks.TasksDummy
 import no.nav.dagpenger.streams.Topics
 import org.apache.kafka.common.serialization.Serdes
@@ -31,7 +32,7 @@ class KafkaDagpengerBehovConsumerTest {
 
     @Test
     fun ` Should store received minsteinntektSubsumsjon `() {
-        val minsteinntektSubsumsjoner = MinsteinntektSubsumsjonerDummy()
+        val minsteinntektSubsumsjonerDummy = MinsteinntektSubsumsjonerDummy()
         val tasks = TasksDummy()
         val consumer = KafkaDagpengerBehovConsumer(
             Environment(
@@ -39,12 +40,13 @@ class KafkaDagpengerBehovConsumerTest {
                 password = "bogus"
             ),
             tasks,
-            minsteinntektSubsumsjoner
+            minsteinntektSubsumsjonerDummy,
+            PeriodeSubsumsjonerDummy()
         )
 
         val minsteinntektResultat = MinsteinntektResultat(
             "123",
-            "id",
+            "minsteinntektSubsumsjon",
             "regel",
             true)
 
@@ -62,6 +64,47 @@ class KafkaDagpengerBehovConsumerTest {
             topologyTestDriver.pipeInput(inputRecord)
         }
 
-        assertEquals("id", minsteinntektResultat.subsumsjonsId)
+        assertEquals(
+            "minsteinntektSubsumsjon",
+            minsteinntektSubsumsjonerDummy.storedMinsteinntektSubsumsjon!!.subsumsjonsId)
+    }
+
+    @Test
+    fun ` Should store received periodeSubsumsjon `() {
+        val tasks = TasksDummy()
+        val periodeSubsumsjonerDummy = PeriodeSubsumsjonerDummy()
+        val consumer = KafkaDagpengerBehovConsumer(
+            Environment(
+                username = "bogus",
+                password = "bogus"
+            ),
+            tasks,
+            MinsteinntektSubsumsjonerDummy(),
+            periodeSubsumsjonerDummy
+        )
+
+        val periodeResultat = PeriodeResultat(
+            "123",
+            "periodeSubsumsjon",
+            "regel",
+            52)
+
+        val behov = SubsumsjonsBehov(
+            TasksDummy.periodePendingTaskId,
+            "12345",
+            Random().nextInt(),
+            LocalDate.now(),
+            periodeResultat = periodeResultat
+        )
+        val behovJson = jsonAdapter.toJson(behov)
+
+        TopologyTestDriver(consumer.buildTopology(), config).use { topologyTestDriver ->
+            val inputRecord = factory.create(behovJson)
+            topologyTestDriver.pipeInput(inputRecord)
+        }
+
+        assertEquals(
+            "periodeSubsumsjon",
+            periodeSubsumsjonerDummy.storedPeriodeSubsumsjon!!.subsumsjonsId)
     }
 }

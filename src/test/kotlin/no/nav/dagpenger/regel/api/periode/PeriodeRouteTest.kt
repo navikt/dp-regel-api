@@ -1,4 +1,4 @@
-package no.nav.dagpenger.regel.api.grunnlag
+package no.nav.dagpenger.regel.api.periode
 
 import com.squareup.moshi.JsonEncodingException
 import io.ktor.http.HttpHeaders
@@ -10,7 +10,7 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import no.nav.dagpenger.regel.api.api
 import no.nav.dagpenger.regel.api.dummyApi
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertTrue
@@ -28,16 +28,16 @@ val jsonMissingFields = """
 	"aktorId": "9000000028204",
 }
 """.trimIndent()
-class GrunnlagRouteTest {
+class PeriodeRouteTest {
 
     @Test
     fun `post request with good json`() = testApp {
-        handleRequest(HttpMethod.Post, "/dagpengegrunnlag") {
+        handleRequest(HttpMethod.Post, "/periode") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(validJson)
         }.apply {
             assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.Accepted, response.status())
+            assertEquals(HttpStatusCode.Accepted, response.status())
             assertTrue(response.headers.contains(HttpHeaders.Location))
         }
     }
@@ -46,11 +46,11 @@ class GrunnlagRouteTest {
     fun `post request with bad json`() {
         assertThrows<JsonEncodingException> {
             testApp {
-                handleRequest(HttpMethod.Post, "/dagpengegrunnlag") {
+                handleRequest(HttpMethod.Post, "/periode") {
                     addHeader(HttpHeaders.ContentType, "application/json")
                     setBody(jsonMissingFields)
                 }.apply {
-                    Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
+                    assertEquals(HttpStatusCode.BadRequest, response.status())
                 }
             }
         }

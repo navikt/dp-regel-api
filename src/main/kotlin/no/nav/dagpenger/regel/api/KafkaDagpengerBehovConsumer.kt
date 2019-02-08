@@ -5,6 +5,10 @@ import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektFaktum
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektResultat
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjon
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjoner
+import no.nav.dagpenger.regel.api.periode.PeriodeFaktum
+import no.nav.dagpenger.regel.api.periode.PeriodeResultat
+import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjon
+import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjoner
 import no.nav.dagpenger.regel.api.tasks.TaskStatus
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.streams.KafkaCredential
@@ -24,7 +28,8 @@ private val LOGGER = KotlinLogging.logger {}
 class KafkaDagpengerBehovConsumer(
     val env: Environment,
     val tasks: Tasks,
-    val minsteinntektSubsumsjoner: MinsteinntektSubsumsjoner
+    val minsteinntektSubsumsjoner: MinsteinntektSubsumsjoner,
+    val periodeSubsumsjoner: PeriodeSubsumsjoner
 ) {
 
     val SERVICE_APP_ID = "dp-regel-api"
@@ -69,6 +74,10 @@ class KafkaDagpengerBehovConsumer(
         return behov.minsteinntektResultat != null && hasPendingTask(Regel.MINSTEINNTEKT, behov.behovId)
     }
 
+    fun hasNeededPeriodeResult(behov: SubsumsjonsBehov): Boolean {
+        return behov.periodeResultat != null && hasPendingTask(Regel.PERIODE, behov.behovId)
+    }
+
     fun hasPendingTask(regel: Regel, behovId: String): Boolean {
         val task = tasks.getTask(regel, behovId)
         return task?.status == TaskStatus.PENDING
@@ -77,6 +86,7 @@ class KafkaDagpengerBehovConsumer(
     fun storeResult(behov: SubsumsjonsBehov) {
         when {
             hasNeededMinsteinntektResult(behov) -> storeMinsteinntektSubsumsjon(behov)
+            hasNeededPeriodeResult(behov) -> storePeriodeSubsumsjon(behov)
             else -> LOGGER.info("Ignoring behov with id ${behov.behovId}")
         }
     }
@@ -85,10 +95,14 @@ class KafkaDagpengerBehovConsumer(
         val minsteinntektSubsumsjon = mapToMinsteinntektSubsumsjon(behov)
 
         minsteinntektSubsumsjoner.insertMinsteinntektSubsumsjon(minsteinntektSubsumsjon)
+        tasks.updateTask(Regel.MINSTEINNTEKT, behov.behovId, minsteinntektSubsumsjon.subsumsjonsId)
+    }
 
-        val task = tasks.updateTask(Regel.MINSTEINNTEKT, behov.behovId, minsteinntektSubsumsjon.subsumsjonsId)
+    fun storePeriodeSubsumsjon(behov: SubsumsjonsBehov) {
+        val periodeSubsumsjon = mapToPeriodeSubsumsjon(behov)
 
-        LOGGER.info("Updated task with id ${task.taskId}")
+        periodeSubsumsjoner.insertPeriodeSubsumsjon(periodeSubsumsjon)
+        tasks.updateTask(Regel.PERIODE, behov.behovId, periodeSubsumsjon.subsumsjonsId)
     }
 
     fun mapToMinsteinntektSubsumsjon(behov: SubsumsjonsBehov): MinsteinntektSubsumsjon {
@@ -99,6 +113,37 @@ class KafkaDagpengerBehovConsumer(
             LocalDateTime.now(),
             MinsteinntektFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
+            setOf(
+                InntektResponse(
+                    inntekt = 0,
+                    periode = 1,
+                    inneholderNaeringsinntekter = false,
+                    andel = 39982
+                ),
+                InntektResponse(
+                    inntekt = 0,
+                    periode = 2,
+                    inneholderNaeringsinntekter = false,
+                    andel = 39982
+                ),
+                InntektResponse(
+                    inntekt = 0,
+                    periode = 3,
+                    inneholderNaeringsinntekter = false,
+                    andel = 39982
+                )
+            )
+        )
+    }
+
+    fun mapToPeriodeSubsumsjon(behov: SubsumsjonsBehov): PeriodeSubsumsjon {
+        val periodeResultat = behov.periodeResultat!!
+        return PeriodeSubsumsjon(
+            periodeResultat.subsumsjonsId,
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            PeriodeFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato),
+            PeriodeResultat(periodeResultat.periodeAntallUker),
             setOf(
                 InntektResponse(
                     inntekt = 0,

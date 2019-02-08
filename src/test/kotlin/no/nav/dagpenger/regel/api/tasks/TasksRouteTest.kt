@@ -6,10 +6,8 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
-import no.nav.dagpenger.regel.api.DagpengerBehovProducerDummy
 import no.nav.dagpenger.regel.api.api
-import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjonerDummy
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerDummy
+import no.nav.dagpenger.regel.api.dummyApi
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
@@ -42,11 +40,6 @@ class TasksRouteTest {
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication({ api(
-            TasksDummy(),
-            MinsteinntektSubsumsjonerDummy(),
-            GrunnlagSubsumsjonerDummy(),
-            DagpengerBehovProducerDummy())
-        }) { callback() }
+        withTestApplication({ dummyApi() }) { callback() }
     }
 }
