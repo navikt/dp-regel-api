@@ -42,7 +42,7 @@ class KafkaDagpengerBehovConsumerTest {
             minsteinntektBeregninger
         )
 
-        val minsteinntektSubsumsjon = MinsteinntektSubsumsjon(
+        val minsteinntektSubsumsjon = MinsteinntektResultat(
             "123",
             "id",
             "regel",

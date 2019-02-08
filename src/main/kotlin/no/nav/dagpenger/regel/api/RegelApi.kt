@@ -18,9 +18,10 @@ import io.ktor.server.netty.Netty
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.grunnlag.GrunnlagBeregninger
+import no.nav.dagpenger.regel.api.grunnlag.DagpengegrunnlagBeregninger
+import no.nav.dagpenger.regel.api.grunnlag.DagpengegrunnlagBeregningerRedis
 import no.nav.dagpenger.regel.api.grunnlag.grunnlag
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregninger
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjoner
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregningerRedis
 import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
 import no.nav.dagpenger.regel.api.tasks.TaskNotFoundException
@@ -53,13 +54,14 @@ fun main(args: Array<String>) {
 
     val tasks = TasksRedis(redisCommands)
     val minsteinntektBeregninger = MinsteinntektBeregningerRedis(redisCommands)
+    val dagpengegrunnlagBeregninger = DagpengegrunnlagBeregningerRedis(redisCommands)
 
     val kafkaProducer = KafkaDagpengerBehovProducer(env)
     val kafkaConsumer = KafkaDagpengerBehovConsumer(env, tasks, minsteinntektBeregninger)
     kafkaConsumer.start()
 
     val app = embeddedServer(Netty, port = 8092) {
-        api(tasks, minsteinntektBeregninger, GrunnlagBeregninger(), kafkaProducer)
+        api(tasks, minsteinntektBeregninger, dagpengegrunnlagBeregninger, kafkaProducer)
     }
 
     app.start(wait = false)
@@ -74,8 +76,8 @@ fun main(args: Array<String>) {
 
 fun Application.api(
     tasks: Tasks,
-    minsteinntektBeregninger: MinsteinntektBeregninger,
-    grunnlagBeregninger: GrunnlagBeregninger,
+    minsteinntektBeregninger: MinsteinntektSubsumsjoner,
+    grunnlagBeregninger: DagpengegrunnlagBeregninger,
     kafkaProducer: DagpengerBehovProducer
 ) {
     install(DefaultHeaders)

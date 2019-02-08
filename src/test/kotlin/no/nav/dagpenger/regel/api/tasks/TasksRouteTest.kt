@@ -7,9 +7,9 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
 import no.nav.dagpenger.regel.api.DagpengerBehovProducerDummy
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregningerDummy
 import no.nav.dagpenger.regel.api.api
-import no.nav.dagpenger.regel.api.grunnlag.GrunnlagBeregninger
+import no.nav.dagpenger.regel.api.grunnlag.DagpengegrunnlagBeregningerDummy
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregningerDummy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
@@ -44,6 +44,9 @@ class TasksRouteTest {
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
         withTestApplication({ api(
             TasksDummy(),
-            MinsteinntektBeregningerDummy(), GrunnlagBeregninger(), DagpengerBehovProducerDummy()) }) { callback() }
+            MinsteinntektBeregningerDummy(),
+            DagpengegrunnlagBeregningerDummy(),
+            DagpengerBehovProducerDummy())
+        }) { callback() }
     }
 }

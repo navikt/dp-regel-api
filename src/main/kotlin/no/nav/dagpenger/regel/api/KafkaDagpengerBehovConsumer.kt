@@ -1,10 +1,11 @@
 package no.nav.dagpenger.regel.api
 
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregning
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregninger
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektFaktum
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektResultat
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektResultatParametere
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjon
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjoner
+import no.nav.dagpenger.regel.api.tasks.TaskStatus
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.Topics
@@ -23,7 +24,7 @@ private val LOGGER = KotlinLogging.logger {}
 class KafkaDagpengerBehovConsumer(
     val env: Environment,
     val tasks: Tasks,
-    val minsteinntektBeregninger: MinsteinntektBeregninger
+    val minsteinntektBeregninger: MinsteinntektSubsumsjoner
 ) {
 
     val SERVICE_APP_ID = "dp-regel-api"
@@ -50,7 +51,7 @@ class KafkaDagpengerBehovConsumer(
         )
 
         stream
-            .peek { key, value -> LOGGER.info("Processing behov with id ${value.behovId}") }
+            .peek { key, value -> LOGGER.info("Consuming behov with id ${value.behovId}") }
             .foreach { _, behov -> storeResult(behov) }
 
         return builder.build()
@@ -65,7 +66,12 @@ class KafkaDagpengerBehovConsumer(
     }
 
     fun hasNeededMinsteinntektResult(behov: SubsumsjonsBehov): Boolean {
-        return behov.minsteinntektSubsumsjon != null && tasks.getTask(Regel.MINSTEINNTEKT, behov.behovId) != null
+        return behov.minsteinntektResultat != null && hasPendingTask(Regel.MINSTEINNTEKT, behov.behovId)
+    }
+
+    fun hasPendingTask(regel: Regel, behovId: String): Boolean {
+        val task = tasks.getTask(regel, behovId)
+        return task?.status == TaskStatus.PENDING
     }
 
     fun storeResult(behov: SubsumsjonsBehov) {
@@ -76,43 +82,42 @@ class KafkaDagpengerBehovConsumer(
     }
 
     fun storeMinsteinntektBeregning(behov: SubsumsjonsBehov) {
-        val minsteinntektBeregning = mapToMinsteinntektBeregning(behov)
+        val minsteinntektBeregning = mapToMinsteinntektSubsumsjon(behov)
 
-        minsteinntektBeregninger.setMinsteinntektBeregning(minsteinntektBeregning)
+        minsteinntektBeregninger.insertMinsteinntektSubsumsjon(minsteinntektBeregning)
 
         val task = tasks.updateTask(Regel.MINSTEINNTEKT, behov.behovId, minsteinntektBeregning.subsumsjonsId)
 
         LOGGER.info("Updated task with id ${task.taskId}")
     }
 
-    fun mapToMinsteinntektBeregning(behov: SubsumsjonsBehov): MinsteinntektBeregning {
-        val minsteinntektSubsumsjon = behov.minsteinntektSubsumsjon!!
-        return MinsteinntektBeregning(
-            minsteinntektSubsumsjon.subsumsjonsId,
+    fun mapToMinsteinntektSubsumsjon(behov: SubsumsjonsBehov): MinsteinntektSubsumsjon {
+        val minsteinntektResultat = behov.minsteinntektResultat!!
+        return MinsteinntektSubsumsjon(
+            minsteinntektResultat.subsumsjonsId,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            MinsteinntektResultatParametere(behov.aktørId, behov.vedtakId, behov.beregningsDato),
-            MinsteinntektResultat(minsteinntektSubsumsjon.oppfyllerMinsteinntektKrav),
+            MinsteinntektFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato),
+            MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
             setOf(
-                Inntekt(
+                InntektResponse(
                     inntekt = 0,
                     periode = 1,
                     inneholderNaeringsinntekter = false,
                     andel = 39982
                 ),
-                Inntekt(
+                InntektResponse(
                     inntekt = 0,
                     periode = 2,
                     inneholderNaeringsinntekter = false,
                     andel = 39982
                 ),
-                Inntekt(
+                InntektResponse(
                     inntekt = 0,
                     periode = 3,
                     inneholderNaeringsinntekter = false,
                     andel = 39982
                 )
-
             )
         )
     }

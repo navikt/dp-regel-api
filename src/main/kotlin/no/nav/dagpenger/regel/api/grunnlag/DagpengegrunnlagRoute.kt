@@ -12,20 +12,22 @@ import io.ktor.routing.post
 import io.ktor.routing.route
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
-import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
+import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
 import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks, kafkaProducer: DagpengerBehovProducer) {
+fun Routing.grunnlag(dagpengegrunnlagBeregninger: DagpengegrunnlagBeregninger, tasks: Tasks, kafkaProducer: DagpengerBehovProducer) {
     route("/dagpengegrunnlag") {
         post {
             val parametere = call.receive<DagpengegrunnlagParametere>()
 
-            val task = tasks.createTask(Regel.DAGPENGEGRUNNLAG, "temp")
+            // todo: what if this call or next fails? either way?
+            val behov = kafkaProducer.produceDagpengegrunnlagEvent(parametere)
+            val task = tasks.createTask(Regel.DAGPENGEGRUNNLAG, behov.behovId)
 
             call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
             call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
@@ -34,7 +36,9 @@ fun Routing.grunnlag(grunnlagBeregninger: GrunnlagBeregninger, tasks: Tasks, kaf
         get("/{subsumsjonsid}") {
             val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
 
-            call.respond(HttpStatusCode.OK)
+            val dagpengegrunnlagBeregning = dagpengegrunnlagBeregninger.getGrunnlagBeregning(subsumsjonsId)
+
+            call.respond(HttpStatusCode.OK, dagpengegrunnlagBeregning)
         }
     }
 }

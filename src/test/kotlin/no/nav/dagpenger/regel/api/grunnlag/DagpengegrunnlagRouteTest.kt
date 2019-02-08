@@ -1,4 +1,4 @@
-package no.nav.dagpenger.regel.api.minsteinntekt
+package no.nav.dagpenger.regel.api.grunnlag
 
 import com.squareup.moshi.JsonEncodingException
 import io.ktor.http.HttpHeaders
@@ -10,9 +10,9 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import no.nav.dagpenger.regel.api.DagpengerBehovProducerDummy
 import no.nav.dagpenger.regel.api.api
-import no.nav.dagpenger.regel.api.grunnlag.DagpengegrunnlagBeregningerDummy
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektBeregningerDummy
 import no.nav.dagpenger.regel.api.tasks.TasksDummy
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertTrue
@@ -30,16 +30,16 @@ val jsonMissingFields = """
 	"aktorId": "9000000028204",
 }
 """.trimIndent()
-class MinsteinntektRouteTest {
+class DagpengegrunnlagRouteTest {
 
     @Test
     fun `post request with good json`() = testApp {
-        handleRequest(HttpMethod.Post, "/minsteinntekt") {
+        handleRequest(HttpMethod.Post, "/dagpengegrunnlag") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(validJson)
         }.apply {
             assertTrue(requestHandled)
-            assertEquals(HttpStatusCode.Accepted, response.status())
+            Assertions.assertEquals(HttpStatusCode.Accepted, response.status())
             assertTrue(response.headers.contains(HttpHeaders.Location))
         }
     }
@@ -48,22 +48,22 @@ class MinsteinntektRouteTest {
     fun `post request with bad json`() {
         assertThrows<JsonEncodingException> {
             testApp {
-                handleRequest(HttpMethod.Post, "/minsteinntekt") {
+                handleRequest(HttpMethod.Post, "/dagpengegrunnlag") {
                     addHeader(HttpHeaders.ContentType, "application/json")
                     setBody(jsonMissingFields)
                 }.apply {
-                    assertEquals(HttpStatusCode.BadRequest, response.status())
+                    Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
                 }
             }
         }
     }
 
     private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication({ api(
-            TasksDummy(),
-            MinsteinntektBeregningerDummy(),
-            DagpengegrunnlagBeregningerDummy(),
-            DagpengerBehovProducerDummy())
+        withTestApplication({
+            api(TasksDummy(),
+                MinsteinntektBeregningerDummy(),
+                DagpengegrunnlagBeregningerDummy(),
+                DagpengerBehovProducerDummy())
         }) { callback() }
     }
 }

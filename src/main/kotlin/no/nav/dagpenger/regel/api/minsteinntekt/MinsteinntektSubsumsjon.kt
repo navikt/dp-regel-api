@@ -1,24 +1,24 @@
 package no.nav.dagpenger.regel.api.minsteinntekt
 
-import no.nav.dagpenger.regel.api.Inntekt
+import no.nav.dagpenger.regel.api.InntektResponse
 import no.nav.dagpenger.regel.api.InntektsPeriode
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class MinsteinntektBeregning(
+data class MinsteinntektSubsumsjon(
     val subsumsjonsId: String,
     val opprettet: LocalDateTime, // todo: ZonedDateTime?
     val utfort: LocalDateTime, // todo: ZonedDateTime?,
-    val parametere: MinsteinntektResultatParametere,
+    val parametere: MinsteinntektFaktum,
     val resultat: MinsteinntektResultat,
-    val inntekt: Set<Inntekt>
+    val inntekt: Set<InntektResponse>
 )
 
 data class MinsteinntektResultat(
     val oppfyllerKravTilMinsteArbeidsinntekt: Boolean
 )
 
-data class MinsteinntektResultatParametere(
+data class MinsteinntektFaktum(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,

@@ -10,16 +10,18 @@ data class SubsumsjonsBehov (
     val avtjentVerneplikt: Boolean? = false,
     val eøs: Boolean? = false,
     val antallBarn: Int? = 0,
-    val inntekt: Int? = null,
+    val inntekt: Inntekt? = null,
 
     var tasks: List<String>? = null,
 
-    var minsteinntektSubsumsjon: MinsteinntektSubsumsjon? = null
+    var minsteinntektResultat: MinsteinntektResultat? = null
 )
 
-data class MinsteinntektSubsumsjon(
+data class MinsteinntektResultat(
     val sporingsId: String,
     val subsumsjonsId: String,
     val regelIdentifikator: String,
-    val oppfyllerMinsteinntektKrav: Boolean
+    val oppfyllerMinsteinntekt: Boolean
 )
+
+data class Inntekt(val inntektsId: String, val inntekt: Int)

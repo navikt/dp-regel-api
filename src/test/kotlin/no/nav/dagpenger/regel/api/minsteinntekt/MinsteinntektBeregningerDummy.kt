@@ -1,13 +1,13 @@
 package no.nav.dagpenger.regel.api.minsteinntekt
 
-class MinsteinntektBeregningerDummy : MinsteinntektBeregninger {
-    var storedMinsteinntektBeregning: MinsteinntektBeregning? = null
+class MinsteinntektBeregningerDummy : MinsteinntektSubsumsjoner {
+    var storedMinsteinntektBeregning: MinsteinntektSubsumsjon? = null
 
-    override fun getMinsteinntektBeregning(subsumsjonsId: String): MinsteinntektBeregning {
+    override fun getMinsteinntektSubsumsjon(subsumsjonsId: String): MinsteinntektSubsumsjon {
         return storedMinsteinntektBeregning!!
     }
 
-    override fun setMinsteinntektBeregning(minsteinntektBeregning: MinsteinntektBeregning) {
-        storedMinsteinntektBeregning = minsteinntektBeregning
+    override fun insertMinsteinntektSubsumsjon(minsteinntektSubsumsjon: MinsteinntektSubsumsjon) {
+        storedMinsteinntektBeregning = minsteinntektSubsumsjon
     }
 }

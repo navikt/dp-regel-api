@@ -2,7 +2,7 @@ package no.nav.dagpenger.regel.api
 
 import java.time.YearMonth
 
-data class Inntekt(
+data class InntektResponse(
     val inntekt: Int,
     val periode: Int, // todo: enum?
     val inneholderNaeringsinntekter: Boolean,

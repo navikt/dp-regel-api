@@ -20,11 +20,15 @@ import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, tasks: Tasks, kafkaProducer: DagpengerBehovProducer) {
+fun Routing.minsteinntekt(
+    minsteinntektSubsumsjoner: MinsteinntektSubsumsjoner,
+    tasks: Tasks,
+    kafkaProducer: DagpengerBehovProducer
+) {
 
     route("/minsteinntekt") {
         post {
-            val parametere = call.receive<MinsteinntektParametere>()
+            val parametere = call.receive<MinsteinntektRequestParametere>()
 
             // todo: what if this call or next fails? either way?
             val behov = kafkaProducer.produceMinsteInntektEvent(parametere)
@@ -37,14 +41,14 @@ fun Routing.minsteinntekt(minsteinntektBeregninger: MinsteinntektBeregninger, ta
         get("/{subsumsjonsid}") {
             val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
 
-            val minsteinntektBeregning = minsteinntektBeregninger.getMinsteinntektBeregning(subsumsjonsId)
+            val minsteinntektSubsumsjon = minsteinntektSubsumsjoner.getMinsteinntektSubsumsjon(subsumsjonsId)
 
-            call.respond(HttpStatusCode.OK, minsteinntektBeregning)
+            call.respond(HttpStatusCode.OK, minsteinntektSubsumsjon)
         }
     }
 }
 
-data class MinsteinntektParametere(
+data class MinsteinntektRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate

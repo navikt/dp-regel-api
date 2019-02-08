@@ -3,19 +3,19 @@ package no.nav.dagpenger.regel.api.minsteinntekt
 import io.lettuce.core.api.sync.RedisCommands
 import no.nav.dagpenger.regel.api.moshiInstance
 
-class MinsteinntektBeregningerRedis(val redisCommands: RedisCommands<String, String>) : MinsteinntektBeregninger {
+class MinsteinntektBeregningerRedis(val redisCommands: RedisCommands<String, String>) : MinsteinntektSubsumsjoner {
 
-    val jsonAdapter = moshiInstance.adapter(MinsteinntektBeregning::class.java)
+    val jsonAdapter = moshiInstance.adapter(MinsteinntektSubsumsjon::class.java)
 
-    override fun getMinsteinntektBeregning(subsumsjonsId: String): MinsteinntektBeregning {
+    override fun getMinsteinntektSubsumsjon(subsumsjonsId: String): MinsteinntektSubsumsjon {
         val json = redisCommands.getResult(subsumsjonsId)
-        return jsonAdapter.fromJson(json) ?: throw MinsteinntektBeregningNotFoundException(
+        return jsonAdapter.fromJson(json) ?: throw MinsteinntektSubsumsjonNotFoundException(
             "Could not find subsumsjon with id $subsumsjonsId")
     }
 
-    override fun setMinsteinntektBeregning(minsteinntektBeregning: MinsteinntektBeregning) {
-        val json = jsonAdapter.toJson(minsteinntektBeregning)
-        redisCommands.setResult(minsteinntektBeregning.subsumsjonsId, json)
+    override fun insertMinsteinntektSubsumsjon(minsteinntektSubsumsjon: MinsteinntektSubsumsjon) {
+        val json = jsonAdapter.toJson(minsteinntektSubsumsjon)
+        redisCommands.setResult(minsteinntektSubsumsjon.subsumsjonsId, json)
     }
 }
 
