@@ -8,7 +8,7 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
 import no.nav.dagpenger.regel.api.DagpengerBehovProducerDummy
 import no.nav.dagpenger.regel.api.api
-import no.nav.dagpenger.regel.api.grunnlag.DagpengegrunnlagBeregningerDummy
+import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerDummy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -45,7 +45,7 @@ class TasksRouteTest {
         withTestApplication({ api(
             TasksDummy(),
             MinsteinntektSubsumsjonerDummy(),
-            DagpengegrunnlagBeregningerDummy(),
+            GrunnlagSubsumsjonerDummy(),
             DagpengerBehovProducerDummy())
         }) { callback() }
     }

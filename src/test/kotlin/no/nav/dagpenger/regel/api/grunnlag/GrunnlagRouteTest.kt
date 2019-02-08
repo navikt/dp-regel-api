@@ -30,7 +30,7 @@ val jsonMissingFields = """
 	"aktorId": "9000000028204",
 }
 """.trimIndent()
-class DagpengegrunnlagRouteTest {
+class GrunnlagRouteTest {
 
     @Test
     fun `post request with good json`() = testApp {
@@ -62,7 +62,7 @@ class DagpengegrunnlagRouteTest {
         withTestApplication({
             api(TasksDummy(),
                 MinsteinntektSubsumsjonerDummy(),
-                DagpengegrunnlagBeregningerDummy(),
+                GrunnlagSubsumsjonerDummy(),
                 DagpengerBehovProducerDummy())
         }) { callback() }
     }

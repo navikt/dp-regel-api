@@ -13,9 +13,9 @@ class GrunnlagSubsumsjonerRedis(val redisCommands: RedisCommands<String, String>
             "Could not find subsumsjon with id $subsumsjonsId")
     }
 
-    override fun setGrunnlagSubsumsjon(dagpengegrunnlagSubsumsjon: GrunnlagSubsumsjon) {
-        val json = jsonAdapter.toJson(dagpengegrunnlagSubsumsjon)
-        redisCommands.setResult(dagpengegrunnlagSubsumsjon.subsumsjonsId, json)
+    override fun setGrunnlagSubsumsjon(grunnlagSubsumsjon: GrunnlagSubsumsjon) {
+        val json = jsonAdapter.toJson(grunnlagSubsumsjon)
+        redisCommands.setResult(grunnlagSubsumsjon.subsumsjonsId, json)
     }
 }
 
