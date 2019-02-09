@@ -5,6 +5,7 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagRequestParametere
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektRequestParametere
 import no.nav.dagpenger.regel.api.periode.PeriodeRequestParametere
+import no.nav.dagpenger.regel.api.sats.SatsRequestParametere
 import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.Topics
 import org.apache.kafka.clients.CommonClientConfigs
@@ -101,6 +102,14 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
         return behov
     }
 
+    override fun produceSatsEvent(request: SatsRequestParametere): SubsumsjonsBehov {
+        val behovId = ulidGenerator.nextULID()
+        val behov = mapRequestToBehov(request, behovId)
+        produceEvent(behov, behovId)
+
+        return behov
+    }
+
     fun produceEvent(behov: SubsumsjonsBehov, key: String) {
         val behovJson = jsonAdapter.toJson(behov)
         LOGGER.info { "Producing dagpenger behov $behovJson" }
@@ -129,6 +138,14 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
         )
 
     fun mapRequestToBehov(request: GrunnlagRequestParametere, behovId: String): SubsumsjonsBehov =
+        SubsumsjonsBehov(
+            behovId,
+            request.aktorId,
+            request.vedtakId,
+            request.beregningsdato
+        )
+
+    fun mapRequestToBehov(request: SatsRequestParametere, behovId: String): SubsumsjonsBehov =
         SubsumsjonsBehov(
             behovId,
             request.aktorId,

@@ -2,6 +2,7 @@ package no.nav.dagpenger.regel.api
 
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjonerDummy
+import no.nav.dagpenger.regel.api.sats.SatsSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.tasks.TasksDummy
 import no.nav.dagpenger.streams.Topics
 import org.apache.kafka.common.serialization.Serdes
@@ -9,6 +10,7 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.test.ConsumerRecordFactory
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.Properties
@@ -41,7 +43,8 @@ class KafkaDagpengerBehovConsumerTest {
             ),
             tasks,
             minsteinntektSubsumsjonerDummy,
-            PeriodeSubsumsjonerDummy()
+            PeriodeSubsumsjonerDummy(),
+            SatsSubsumsjonerDummy()
         )
 
         val minsteinntektResultat = MinsteinntektResultat(
@@ -51,7 +54,7 @@ class KafkaDagpengerBehovConsumerTest {
             true)
 
         val behov = SubsumsjonsBehov(
-            TasksDummy.minsteinntektPendingTaskId,
+            TasksDummy.minsteinntektPendingBehovId,
             "12345",
             Random().nextInt(),
             LocalDate.now(),
@@ -64,6 +67,7 @@ class KafkaDagpengerBehovConsumerTest {
             topologyTestDriver.pipeInput(inputRecord)
         }
 
+        assertNotNull(minsteinntektSubsumsjonerDummy.storedMinsteinntektSubsumsjon)
         assertEquals(
             "minsteinntektSubsumsjon",
             minsteinntektSubsumsjonerDummy.storedMinsteinntektSubsumsjon!!.subsumsjonsId)
@@ -80,7 +84,8 @@ class KafkaDagpengerBehovConsumerTest {
             ),
             tasks,
             MinsteinntektSubsumsjonerDummy(),
-            periodeSubsumsjonerDummy
+            periodeSubsumsjonerDummy,
+            SatsSubsumsjonerDummy()
         )
 
         val periodeResultat = PeriodeResultat(
@@ -90,7 +95,7 @@ class KafkaDagpengerBehovConsumerTest {
             52)
 
         val behov = SubsumsjonsBehov(
-            TasksDummy.periodePendingTaskId,
+            TasksDummy.periodePendingBehovId,
             "12345",
             Random().nextInt(),
             LocalDate.now(),
@@ -103,8 +108,52 @@ class KafkaDagpengerBehovConsumerTest {
             topologyTestDriver.pipeInput(inputRecord)
         }
 
+        assertNotNull(periodeSubsumsjonerDummy.storedPeriodeSubsumsjon)
         assertEquals(
             "periodeSubsumsjon",
             periodeSubsumsjonerDummy.storedPeriodeSubsumsjon!!.subsumsjonsId)
+    }
+
+    @Test
+    fun ` Should store received satsSubsumsjon `() {
+        val tasks = TasksDummy()
+        val satsSubsumsjonerDummy = SatsSubsumsjonerDummy()
+        val consumer = KafkaDagpengerBehovConsumer(
+            Environment(
+                username = "bogus",
+                password = "bogus"
+            ),
+            tasks,
+            MinsteinntektSubsumsjonerDummy(),
+            PeriodeSubsumsjonerDummy(),
+            satsSubsumsjonerDummy
+        )
+
+        val satsResultat = SatsResultat(
+            "123",
+            "satsSubsumsjon",
+            "regel",
+            0,
+            0)
+
+        val behov = SubsumsjonsBehov(
+            TasksDummy.satsPendingBehovId,
+            "12345",
+            Random().nextInt(),
+            LocalDate.now(),
+            grunnlag = 1000,
+            satsResultat = satsResultat
+        )
+        val behovJson = jsonAdapter.toJson(behov)
+
+        TopologyTestDriver(consumer.buildTopology(), config).use { topologyTestDriver ->
+            val inputRecord = factory.create(behovJson)
+            topologyTestDriver.pipeInput(inputRecord)
+        }
+
+        assertNotNull(satsSubsumsjonerDummy.storedSatsSubsumsjon)
+        assertEquals(
+            "satsSubsumsjon",
+            satsSubsumsjonerDummy.storedSatsSubsumsjon!!.subsumsjonsId)
     }
 }

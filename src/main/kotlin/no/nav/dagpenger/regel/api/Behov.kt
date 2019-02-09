@@ -11,11 +11,13 @@ data class SubsumsjonsBehov (
     val eøs: Boolean? = false,
     val antallBarn: Int? = 0,
     val inntekt: Inntekt? = null,
+    val grunnlag: Int? = null,
 
-    var tasks: List<String>? = null,
+    val tasks: List<String>? = null,
 
     var minsteinntektResultat: MinsteinntektResultat? = null,
-    var periodeResultat: PeriodeResultat? = null
+    var periodeResultat: PeriodeResultat? = null,
+    var satsResultat: SatsResultat? = null
 )
 
 data class MinsteinntektResultat(
@@ -30,6 +32,14 @@ data class PeriodeResultat(
     val subsumsjonsId: String,
     val regelIdentifikator: String,
     val periodeAntallUker: Int
+)
+
+data class SatsResultat(
+    val sporingsId: String,
+    val subsumsjonsId: String,
+    val regelIdentifikator: String,
+    val dagsats: Int,
+    val ukesats: Int
 )
 
 data class Inntekt(val inntektsId: String, val inntekt: Int)

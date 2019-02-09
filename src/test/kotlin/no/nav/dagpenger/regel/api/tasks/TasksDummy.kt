@@ -8,15 +8,16 @@ import java.time.format.DateTimeFormatter
 class TasksDummy : Tasks {
 
     companion object {
-        val minsteinntektPendingTaskId = "pendingMinsteinntekt"
-        val minsteinntektDoneTaskId = "doneMinsteinntekt"
-        val periodePendingTaskId = "pendingPeriode"
-        val grunnlagPendingTaskId = "pendingGrunnlag"
+        val minsteinntektPendingBehovId = "pendingMinsteinntekt"
+        val minsteinntektDoneBehovId = "doneMinsteinntekt"
+        val periodePendingBehovId = "pendingPeriode"
+        val grunnlagPendingBehovId = "pendingGrunnlag"
+        val satsPendingBehovId = "pendingSats"
     }
 
     val tasks: HashMap<String, Task> = hashMapOf(
-        minsteinntektPendingTaskId to Task(
-            minsteinntektPendingTaskId,
+        createTaskId(Regel.MINSTEINNTEKT, minsteinntektPendingBehovId) to Task(
+            minsteinntektPendingBehovId,
             Regel.MINSTEINNTEKT,
             "behov",
             TaskStatus.PENDING,
@@ -24,8 +25,8 @@ class TasksDummy : Tasks {
                 DateTimeFormatter.ISO_ZONED_DATE_TIME
             )
         ),
-        minsteinntektDoneTaskId to Task(
-            minsteinntektDoneTaskId,
+        createTaskId(Regel.MINSTEINNTEKT, minsteinntektDoneBehovId) to Task(
+            minsteinntektDoneBehovId,
             Regel.MINSTEINNTEKT,
             "behov",
             TaskStatus.DONE,
@@ -33,8 +34,8 @@ class TasksDummy : Tasks {
                 DateTimeFormatter.ISO_ZONED_DATE_TIME
             )
         ),
-        periodePendingTaskId to Task(
-            periodePendingTaskId,
+        createTaskId(Regel.PERIODE, periodePendingBehovId) to Task(
+            periodePendingBehovId,
             Regel.PERIODE,
             "behov",
             TaskStatus.PENDING,
@@ -42,36 +43,48 @@ class TasksDummy : Tasks {
                 DateTimeFormatter.ISO_ZONED_DATE_TIME
             )
         ),
-        grunnlagPendingTaskId to Task(
-            grunnlagPendingTaskId,
+        createTaskId(Regel.GRUNNLAG, grunnlagPendingBehovId) to Task(
+            grunnlagPendingBehovId,
             Regel.GRUNNLAG,
             "behov",
             TaskStatus.PENDING,
             ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(
                 DateTimeFormatter.ISO_ZONED_DATE_TIME
             )
+        ),
+        createTaskId(Regel.SATS, satsPendingBehovId) to Task(
+            satsPendingBehovId,
+            Regel.SATS,
+            "behov",
+            TaskStatus.PENDING,
+            ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(2).format(
+                DateTimeFormatter.ISO_ZONED_DATE_TIME
+            )
         )
+
     )
 
     override fun createTask(regel: Regel, behovId: String): Task {
-        if (regel == Regel.MINSTEINNTEKT) {
-            return tasks[minsteinntektPendingTaskId]!!
-        } else {
-            return tasks[grunnlagPendingTaskId]!!
-        }
+       return when(regel) {
+           Regel.MINSTEINNTEKT -> tasks[createTaskId(regel, minsteinntektPendingBehovId)]!!
+           Regel.PERIODE -> tasks[createTaskId(regel, periodePendingBehovId)]!!
+           Regel.GRUNNLAG -> tasks[createTaskId(regel, grunnlagPendingBehovId)]!!
+           Regel.SATS -> tasks[createTaskId(regel, satsPendingBehovId)]!!
+       }
     }
 
-    override fun getTask(regel: Regel, behovId: String): Task? = getTask(behovId)
+    override fun getTask(regel: Regel, behovId: String): Task? = getTask(createTaskId(regel, behovId))
 
-    override fun getTask(taskId: String): Task? = tasks[taskId] ?: throw TaskNotFoundException(
-        "no task found for id:{$taskId}"
-    )
+    override fun getTask(taskId: String): Task? = tasks[taskId]
 
-    // skal bli kalt av kafka-consumer når en regelberegning er ferdig
     override fun updateTask(regel: Regel, behovId: String, subsumsjonsId: String): Task {
-        val task = tasks[behovId]!!
+        val task = tasks[createTaskId(regel, behovId)]!!
         task.status = TaskStatus.DONE
         task.subsumsjonsId = subsumsjonsId
         return task
     }
+}
+
+fun createTaskId(regel: Regel, behovId: String): String {
+    return "$regel:$behovId"
 }

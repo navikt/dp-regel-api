@@ -9,6 +9,10 @@ import no.nav.dagpenger.regel.api.periode.PeriodeFaktum
 import no.nav.dagpenger.regel.api.periode.PeriodeResultat
 import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjon
 import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjoner
+import no.nav.dagpenger.regel.api.sats.SatsFaktum
+import no.nav.dagpenger.regel.api.sats.SatsResultat
+import no.nav.dagpenger.regel.api.sats.SatsSubsumsjon
+import no.nav.dagpenger.regel.api.sats.SatsSubsumsjoner
 import no.nav.dagpenger.regel.api.tasks.TaskStatus
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.streams.KafkaCredential
@@ -29,7 +33,8 @@ class KafkaDagpengerBehovConsumer(
     val env: Environment,
     val tasks: Tasks,
     val minsteinntektSubsumsjoner: MinsteinntektSubsumsjoner,
-    val periodeSubsumsjoner: PeriodeSubsumsjoner
+    val periodeSubsumsjoner: PeriodeSubsumsjoner,
+    val satsSubsumsjoner: SatsSubsumsjoner
 ) {
 
     val SERVICE_APP_ID = "dp-regel-api"
@@ -70,12 +75,16 @@ class KafkaDagpengerBehovConsumer(
         return props
     }
 
-    fun hasNeededMinsteinntektResult(behov: SubsumsjonsBehov): Boolean {
+    fun hasNeededMinsteinntektResultat(behov: SubsumsjonsBehov): Boolean {
         return behov.minsteinntektResultat != null && hasPendingTask(Regel.MINSTEINNTEKT, behov.behovId)
     }
 
-    fun hasNeededPeriodeResult(behov: SubsumsjonsBehov): Boolean {
+    fun hasNeededPeriodeResultat(behov: SubsumsjonsBehov): Boolean {
         return behov.periodeResultat != null && hasPendingTask(Regel.PERIODE, behov.behovId)
+    }
+
+    fun hasNeededSatsResultat(behov: SubsumsjonsBehov): Boolean {
+        return behov.satsResultat != null && hasPendingTask(Regel.SATS, behov.behovId)
     }
 
     fun hasPendingTask(regel: Regel, behovId: String): Boolean {
@@ -85,8 +94,9 @@ class KafkaDagpengerBehovConsumer(
 
     fun storeResult(behov: SubsumsjonsBehov) {
         when {
-            hasNeededMinsteinntektResult(behov) -> storeMinsteinntektSubsumsjon(behov)
-            hasNeededPeriodeResult(behov) -> storePeriodeSubsumsjon(behov)
+            hasNeededMinsteinntektResultat(behov) -> storeMinsteinntektSubsumsjon(behov)
+            hasNeededPeriodeResultat(behov) -> storePeriodeSubsumsjon(behov)
+            hasNeededSatsResultat(behov) -> storeSatsSubsumsjon(behov)
             else -> LOGGER.info("Ignoring behov with id ${behov.behovId}")
         }
     }
@@ -103,6 +113,13 @@ class KafkaDagpengerBehovConsumer(
 
         periodeSubsumsjoner.insertPeriodeSubsumsjon(periodeSubsumsjon)
         tasks.updateTask(Regel.PERIODE, behov.behovId, periodeSubsumsjon.subsumsjonsId)
+    }
+
+    fun storeSatsSubsumsjon(behov: SubsumsjonsBehov) {
+        val satsSubsumsjon = mapToSatsSubsumsjon(behov)
+
+        satsSubsumsjoner.insertSatsSubsumsjon(satsSubsumsjon)
+        tasks.updateTask(Regel.SATS, behov.behovId, satsSubsumsjon.subsumsjonsId)
     }
 
     fun mapToMinsteinntektSubsumsjon(behov: SubsumsjonsBehov): MinsteinntektSubsumsjon {
@@ -164,6 +181,18 @@ class KafkaDagpengerBehovConsumer(
                     andel = 39982
                 )
             )
+        )
+    }
+
+    fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
+        val satsResultat = behov.satsResultat!!
+        val grunnlag = behov.grunnlag!!
+        return SatsSubsumsjon(
+            satsResultat.subsumsjonsId,
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, grunnlag),
+            SatsResultat(satsResultat.dagsats, satsResultat.ukesats)
         )
     }
 }

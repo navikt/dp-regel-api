@@ -27,6 +27,9 @@ import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
 import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjoner
 import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjonerRedis
 import no.nav.dagpenger.regel.api.periode.periode
+import no.nav.dagpenger.regel.api.sats.SatsSubsumsjoner
+import no.nav.dagpenger.regel.api.sats.SatsSubsumsjonerRedis
+import no.nav.dagpenger.regel.api.sats.sats
 import no.nav.dagpenger.regel.api.tasks.TaskNotFoundException
 import no.nav.dagpenger.regel.api.tasks.TaskStatus
 import no.nav.dagpenger.regel.api.tasks.Tasks
@@ -46,7 +49,8 @@ data class TaskResponse(
 enum class Regel {
     MINSTEINNTEKT,
     PERIODE,
-    GRUNNLAG
+    GRUNNLAG,
+    SATS
 }
 
 fun main(args: Array<String>) {
@@ -61,9 +65,18 @@ fun main(args: Array<String>) {
     val minsteinntektSubsumsjoner = MinsteinntektSubsumsjonerRedis(redisCommands)
     val periodeSubsumsjoner = PeriodeSubsumsjonerRedis(redisCommands)
     val grunnlagSubsumsjoner = GrunnlagSubsumsjonerRedis(redisCommands)
+    val satsSubsumsjoner = SatsSubsumsjonerRedis(redisCommands)
 
     val kafkaProducer = KafkaDagpengerBehovProducer(env)
-    val kafkaConsumer = KafkaDagpengerBehovConsumer(env, tasks, minsteinntektSubsumsjoner, periodeSubsumsjoner)
+
+    val kafkaConsumer =
+        KafkaDagpengerBehovConsumer(
+            env,
+            tasks,
+            minsteinntektSubsumsjoner,
+            periodeSubsumsjoner,
+            satsSubsumsjoner
+        )
     kafkaConsumer.start()
 
     val app = embeddedServer(Netty, port = 8092) {
@@ -72,6 +85,7 @@ fun main(args: Array<String>) {
             minsteinntektSubsumsjoner,
             periodeSubsumsjoner,
             grunnlagSubsumsjoner,
+            satsSubsumsjoner,
             kafkaProducer
         )
     }
@@ -91,6 +105,7 @@ fun Application.api(
     minsteinntektSubsumsjoner: MinsteinntektSubsumsjoner,
     periodeSubsumsjoner: PeriodeSubsumsjoner,
     grunnlagSubsumsjoner: GrunnlagSubsumsjoner,
+    satsSubsumsjoner: SatsSubsumsjoner,
     kafkaProducer: DagpengerBehovProducer
 ) {
     install(DefaultHeaders)
@@ -126,6 +141,7 @@ fun Application.api(
         minsteinntekt(minsteinntektSubsumsjoner, tasks, kafkaProducer)
         periode(periodeSubsumsjoner, tasks, kafkaProducer)
         grunnlag(grunnlagSubsumsjoner, tasks, kafkaProducer)
+        sats(satsSubsumsjoner, tasks, kafkaProducer)
         naischecks()
     }
 }
