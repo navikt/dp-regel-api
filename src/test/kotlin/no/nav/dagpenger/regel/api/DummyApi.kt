@@ -4,7 +4,6 @@ import io.ktor.application.Application
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjonerDummy
-import no.nav.dagpenger.regel.api.sats.SatsSubsumsjoner
 import no.nav.dagpenger.regel.api.sats.SatsSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.tasks.TasksDummy
 

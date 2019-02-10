@@ -65,12 +65,12 @@ class TasksDummy : Tasks {
     )
 
     override fun createTask(regel: Regel, behovId: String): Task {
-       return when(regel) {
-           Regel.MINSTEINNTEKT -> tasks[createTaskId(regel, minsteinntektPendingBehovId)]!!
-           Regel.PERIODE -> tasks[createTaskId(regel, periodePendingBehovId)]!!
-           Regel.GRUNNLAG -> tasks[createTaskId(regel, grunnlagPendingBehovId)]!!
-           Regel.SATS -> tasks[createTaskId(regel, satsPendingBehovId)]!!
-       }
+        return when (regel) {
+            Regel.MINSTEINNTEKT -> tasks[createTaskId(regel, minsteinntektPendingBehovId)]!!
+            Regel.PERIODE -> tasks[createTaskId(regel, periodePendingBehovId)]!!
+            Regel.GRUNNLAG -> tasks[createTaskId(regel, grunnlagPendingBehovId)]!!
+            Regel.SATS -> tasks[createTaskId(regel, satsPendingBehovId)]!!
+        }
     }
 
     override fun getTask(regel: Regel, behovId: String): Task? = getTask(createTaskId(regel, behovId))
