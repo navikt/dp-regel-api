@@ -51,5 +51,6 @@ fun Routing.periode(
 data class PeriodeRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
-    val beregningsdato: LocalDate
+    val beregningsdato: LocalDate,
+    val harAvtjentVerneplikt: Boolean? = false
 )

@@ -104,6 +104,7 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
+            inntekt = Inntekt("", 0),
             grunnlagResultat = grunnlagResultat
         )
         val behovJson = jsonAdapter.toJson(behov)

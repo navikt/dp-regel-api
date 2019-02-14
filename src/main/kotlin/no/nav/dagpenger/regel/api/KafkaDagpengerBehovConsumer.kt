@@ -146,7 +146,12 @@ class KafkaDagpengerBehovConsumer(
             minsteinntektResultat.subsumsjonsId,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            MinsteinntektFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, inntekt.inntektsId),
+            MinsteinntektFaktum(
+                behov.aktørId,
+                behov.vedtakId,
+                behov.beregningsDato,
+                inntekt.inntektsId,
+                behov.harAvtjentVerneplikt),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
             setOf(
                 InntektResponse(
@@ -178,7 +183,12 @@ class KafkaDagpengerBehovConsumer(
             periodeResultat.subsumsjonsId,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            PeriodeFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, inntekt.inntektsId),
+            PeriodeFaktum(
+                behov.aktørId,
+                behov.vedtakId,
+                behov.beregningsDato,
+                inntekt.inntektsId,
+                behov.harAvtjentVerneplikt),
             PeriodeResultat(periodeResultat.periodeAntallUker),
             setOf(
                 InntektResponse(
@@ -205,11 +215,17 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToGrunnlagSubsumsjon(behov: SubsumsjonsBehov): GrunnlagSubsumsjon {
         val grunnlagResultat = behov.grunnlagResultat!!
+        val inntekt = behov.inntekt!!
         return GrunnlagSubsumsjon(
             grunnlagResultat.subsumsjonsId,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            GrunnlagFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, ""),
+            GrunnlagFaktum(
+                behov.aktørId,
+                behov.vedtakId,
+                behov.beregningsDato,
+                inntekt.inntektsId,
+                behov.harAvtjentVerneplikt),
             GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet),
             setOf(
                 InntektResponse(

@@ -126,7 +126,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             behovId,
             request.aktorId,
             request.vedtakId,
-            request.beregningsdato
+            request.beregningsdato,
+            request.harAvtjentVerneplikt
         )
 
     fun mapRequestToBehov(request: PeriodeRequestParametere, behovId: String): SubsumsjonsBehov =
@@ -134,7 +135,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             behovId,
             request.aktorId,
             request.vedtakId,
-            request.beregningsdato
+            request.beregningsdato,
+            request.harAvtjentVerneplikt
         )
 
     fun mapRequestToBehov(request: GrunnlagRequestParametere, behovId: String): SubsumsjonsBehov =
@@ -142,7 +144,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             behovId,
             request.aktorId,
             request.vedtakId,
-            request.beregningsdato
+            request.beregningsdato,
+            request.harAvtjentVerneplikt
         )
 
     fun mapRequestToBehov(request: SatsRequestParametere, behovId: String): SubsumsjonsBehov =

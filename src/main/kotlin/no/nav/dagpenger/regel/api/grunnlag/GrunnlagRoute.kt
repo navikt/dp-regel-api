@@ -46,5 +46,6 @@ fun Routing.grunnlag(grunnlagsubsumsjoner: GrunnlagSubsumsjoner, tasks: Tasks, k
 data class GrunnlagRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
-    val beregningsdato: LocalDate
+    val beregningsdato: LocalDate,
+    val harAvtjentVerneplikt: Boolean? = false
 )

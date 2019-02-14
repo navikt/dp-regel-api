@@ -7,7 +7,7 @@ data class SubsumsjonsBehov (
     val aktørId: String,
     val vedtakId: Int,
     val beregningsDato: LocalDate,
-    val avtjentVerneplikt: Boolean? = false,
+    val harAvtjentVerneplikt: Boolean? = false,
     val eøs: Boolean? = false,
     val antallBarn: Int? = 0,
     val inntekt: Inntekt? = null,

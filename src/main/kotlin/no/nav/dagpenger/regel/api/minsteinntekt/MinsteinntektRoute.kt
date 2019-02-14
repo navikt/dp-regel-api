@@ -51,5 +51,7 @@ fun Routing.minsteinntekt(
 data class MinsteinntektRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
-    val beregningsdato: LocalDate
+    val beregningsdato: LocalDate,
+    val harAvtjentVerneplikt: Boolean? = false,
+    val oppfyllerKravTilFangstOgFisk: Boolean? = false
 )
