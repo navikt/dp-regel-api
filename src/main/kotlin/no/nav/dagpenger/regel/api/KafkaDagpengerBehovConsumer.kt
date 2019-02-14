@@ -124,11 +124,12 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToMinsteinntektSubsumsjon(behov: SubsumsjonsBehov): MinsteinntektSubsumsjon {
         val minsteinntektResultat = behov.minsteinntektResultat!!
+        val inntekt = behov.inntekt!!
         return MinsteinntektSubsumsjon(
             minsteinntektResultat.subsumsjonsId,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            MinsteinntektFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato),
+            MinsteinntektFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, inntekt.inntektsId),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
             setOf(
                 InntektResponse(
@@ -155,11 +156,12 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToPeriodeSubsumsjon(behov: SubsumsjonsBehov): PeriodeSubsumsjon {
         val periodeResultat = behov.periodeResultat!!
+        val inntekt = behov.inntekt!!
         return PeriodeSubsumsjon(
             periodeResultat.subsumsjonsId,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            PeriodeFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato),
+            PeriodeFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, inntekt.inntektsId),
             PeriodeResultat(periodeResultat.periodeAntallUker),
             setOf(
                 InntektResponse(

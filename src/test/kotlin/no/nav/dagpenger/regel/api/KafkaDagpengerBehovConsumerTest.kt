@@ -58,6 +58,7 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
+            inntekt = Inntekt("", 0),
             minsteinntektResultat = minsteinntektResultat
         )
         val behovJson = jsonAdapter.toJson(behov)
@@ -99,6 +100,7 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
+            inntekt = Inntekt("", 0),
             periodeResultat = periodeResultat
         )
         val behovJson = jsonAdapter.toJson(behov)
