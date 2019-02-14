@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api
 
+import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.sats.SatsSubsumsjonerDummy
@@ -44,6 +45,7 @@ class KafkaDagpengerBehovConsumerTest {
             tasks,
             minsteinntektSubsumsjonerDummy,
             PeriodeSubsumsjonerDummy(),
+            GrunnlagSubsumsjonerDummy(),
             SatsSubsumsjonerDummy()
         )
 
@@ -74,6 +76,49 @@ class KafkaDagpengerBehovConsumerTest {
     }
 
     @Test
+    fun ` Should store received grunnlagSubsumsjon `() {
+        val grunnlagSubsumsjonerDummy = GrunnlagSubsumsjonerDummy()
+        val tasks = TasksDummy()
+        val consumer = KafkaDagpengerBehovConsumer(
+            Environment(
+                username = "bogus",
+                password = "bogus"
+            ),
+            tasks,
+            MinsteinntektSubsumsjonerDummy(),
+            PeriodeSubsumsjonerDummy(),
+            grunnlagSubsumsjonerDummy,
+            SatsSubsumsjonerDummy()
+        )
+
+        val grunnlagResultat = GrunnlagResultat(
+            "123",
+            "grunnlagSubsumsjon",
+            "regel",
+            1000,
+            1500)
+
+        val behov = SubsumsjonsBehov(
+            TasksDummy.grunnlagPendingBehovId,
+            "12345",
+            Random().nextInt(),
+            LocalDate.now(),
+            grunnlagResultat = grunnlagResultat
+        )
+        val behovJson = jsonAdapter.toJson(behov)
+
+        TopologyTestDriver(consumer.buildTopology(), config).use { topologyTestDriver ->
+            val inputRecord = factory.create(behovJson)
+            topologyTestDriver.pipeInput(inputRecord)
+        }
+
+        assertNotNull(grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon)
+        assertEquals(
+            "grunnlagSubsumsjon",
+            grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon!!.subsumsjonsId)
+    }
+
+    @Test
     fun ` Should store received periodeSubsumsjon `() {
         val tasks = TasksDummy()
         val periodeSubsumsjonerDummy = PeriodeSubsumsjonerDummy()
@@ -85,6 +130,7 @@ class KafkaDagpengerBehovConsumerTest {
             tasks,
             MinsteinntektSubsumsjonerDummy(),
             periodeSubsumsjonerDummy,
+            GrunnlagSubsumsjonerDummy(),
             SatsSubsumsjonerDummy()
         )
 
@@ -126,6 +172,7 @@ class KafkaDagpengerBehovConsumerTest {
             tasks,
             MinsteinntektSubsumsjonerDummy(),
             PeriodeSubsumsjonerDummy(),
+            GrunnlagSubsumsjonerDummy(),
             satsSubsumsjonerDummy
         )
 
