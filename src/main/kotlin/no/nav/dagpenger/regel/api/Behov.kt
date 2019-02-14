@@ -17,6 +17,7 @@ data class SubsumsjonsBehov (
 
     var minsteinntektResultat: MinsteinntektResultat? = null,
     var periodeResultat: PeriodeResultat? = null,
+    var grunnlagResultat: GrunnlagResultat? = null,
     var satsResultat: SatsResultat? = null
 )
 
@@ -32,6 +33,14 @@ data class PeriodeResultat(
     val subsumsjonsId: String,
     val regelIdentifikator: String,
     val periodeAntallUker: Int
+)
+
+data class GrunnlagResultat(
+    val sporingsId: String,
+    val subsumsjonsId: String,
+    val regelIdentifikator: String,
+    val avkortet: Int,
+    val uavkortet: Int
 )
 
 data class SatsResultat(

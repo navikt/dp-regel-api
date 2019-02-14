@@ -6,7 +6,7 @@ class GrunnlagSubsumsjonerDummy : GrunnlagSubsumsjoner {
         return storedGrunnlagSubsumsjon!!
     }
 
-    override fun setGrunnlagSubsumsjon(grunnlagSubsumsjon: GrunnlagSubsumsjon) {
+    override fun insertGrunnlagSubsumsjon(grunnlagSubsumsjon: GrunnlagSubsumsjon) {
         storedGrunnlagSubsumsjon = grunnlagSubsumsjon
     }
 }

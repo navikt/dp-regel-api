@@ -75,6 +75,7 @@ fun main(args: Array<String>) {
             tasks,
             minsteinntektSubsumsjoner,
             periodeSubsumsjoner,
+            grunnlagSubsumsjoner,
             satsSubsumsjoner
         )
     kafkaConsumer.start()

@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.grunnlag
 
+import no.nav.dagpenger.regel.api.InntektResponse
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -8,7 +9,8 @@ data class GrunnlagSubsumsjon(
     val opprettet: LocalDateTime, // todo: ZonedDateTime?
     val utfort: LocalDateTime, // todo: ZonedDateTime?,
     val parametere: GrunnlagFaktum,
-    val resultat: GrunnlagResultat
+    val resultat: GrunnlagResultat,
+    val inntekt: Set<InntektResponse>
 )
 
 data class GrunnlagResultat(
