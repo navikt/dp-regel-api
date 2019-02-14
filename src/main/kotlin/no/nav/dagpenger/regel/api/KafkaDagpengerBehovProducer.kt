@@ -153,6 +153,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             behovId,
             request.aktorId,
             request.vedtakId,
-            request.beregningsdato
+            request.beregningsdato,
+            antallBarn = request.antallBarn,
+            grunnlag = request.grunnlag
         )
 }

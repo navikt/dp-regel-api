@@ -21,7 +21,5 @@ data class SatsFaktum(
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val grunnlag: Int,
-    val antallBarn: Int? = 0,
-    val harAvtjentVerneplikt: Boolean? = false,
-    val oppfyllerKravTilFangstOgFisk: Boolean? = false
+    val antallBarn: Int? = 0
 )
