@@ -7,7 +7,7 @@ data class SatsSubsumsjon(
     val subsumsjonsId: String,
     val opprettet: LocalDateTime, // todo: ZonedDateTime?
     val utfort: LocalDateTime, // todo: ZonedDateTime?,
-    val parametere: SatsFaktum,
+    val faktum: SatsFaktum,
     val resultat: SatsResultat
 )
 

@@ -3,6 +3,7 @@ package no.nav.dagpenger.regel.api
 import com.ryanharter.ktor.moshi.moshi
 import com.squareup.moshi.JsonDataException
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CallLogging
@@ -15,6 +16,7 @@ import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.util.pipeline.PipelineContext
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
 import mu.KotlinLogging
@@ -120,20 +122,16 @@ fun Application.api(
 
     install(StatusPages) {
         exception<BadRequestException> { cause ->
-            LOGGER.warn("Bad request") { cause }
-            call.respond(HttpStatusCode.BadRequest)
+            badRequest(cause)
         }
         exception<JsonDataException> { cause ->
-            LOGGER.warn("Bad request") { cause }
-            call.respond(HttpStatusCode.BadRequest)
+            badRequest(cause)
         }
         exception<TaskNotFoundException> { cause ->
-            LOGGER.warn("Unknown task id") { cause }
-            call.respond(HttpStatusCode.NotFound)
+            notFound(cause)
         }
         exception<SubsumsjonNotFoundException> { cause ->
-            LOGGER.warn("Unknown subsumsjon id") { cause }
-            call.respond(HttpStatusCode.NotFound)
+            notFound(cause)
         }
     }
 
@@ -145,6 +143,20 @@ fun Application.api(
         sats(satsSubsumsjoner, tasks, kafkaProducer)
         naischecks()
     }
+}
+
+private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.badRequest(
+    cause: T
+) {
+    call.respond(HttpStatusCode.BadRequest)
+    throw cause
+}
+
+private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.notFound(
+    cause: T
+) {
+    call.respond(HttpStatusCode.NotFound)
+    throw cause
 }
 
 class BadRequestException : RuntimeException()

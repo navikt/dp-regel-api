@@ -8,7 +8,7 @@ data class GrunnlagSubsumsjon(
     val subsumsjonsId: String,
     val opprettet: LocalDateTime, // todo: ZonedDateTime?
     val utfort: LocalDateTime, // todo: ZonedDateTime?,
-    val parametere: GrunnlagFaktum,
+    val faktum: GrunnlagFaktum,
     val resultat: GrunnlagResultat,
     val inntekt: Set<InntektResponse>
 )

@@ -21,7 +21,7 @@ import java.time.LocalDate
 private val LOGGER = KotlinLogging.logger {}
 
 fun Routing.grunnlag(grunnlagsubsumsjoner: GrunnlagSubsumsjoner, tasks: Tasks, kafkaProducer: DagpengerBehovProducer) {
-    route("/dagpengegrunnlag") {
+    route("/grunnlag") {
         post {
             val parametere = call.receive<GrunnlagRequestParametere>()
 
