@@ -227,7 +227,7 @@ class KafkaDagpengerBehovConsumer(
             satsResultat.subsumsjonsId,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, grunnlag),
+            SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, grunnlag, behov.antallBarn),
             SatsResultat(satsResultat.dagsats, satsResultat.ukesats)
         )
     }
