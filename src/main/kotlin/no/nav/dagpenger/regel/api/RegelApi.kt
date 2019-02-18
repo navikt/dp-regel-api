@@ -12,6 +12,7 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.locations.Locations
+import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
@@ -114,6 +115,11 @@ fun Application.api(
     install(DefaultHeaders)
     install(CallLogging) {
         level = Level.INFO
+
+        filter { call ->
+            !call.request.path().startsWith("/isAlive") &&
+            !call.request.path().startsWith("/isReady")
+        }
     }
     install(ContentNegotiation) {
         moshi(moshiInstance)
