@@ -118,7 +118,8 @@ fun Application.api(
 
         filter { call ->
             !call.request.path().startsWith("/isAlive") &&
-            !call.request.path().startsWith("/isReady")
+                !call.request.path().startsWith("/isReady") &&
+                !call.request.path().startsWith("/metrics")
         }
     }
     install(ContentNegotiation) {
