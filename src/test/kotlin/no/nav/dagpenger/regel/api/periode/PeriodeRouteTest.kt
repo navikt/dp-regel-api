@@ -49,8 +49,6 @@ class PeriodeRouteTest {
                 handleRequest(HttpMethod.Post, "/periode") {
                     addHeader(HttpHeaders.ContentType, "application/json")
                     setBody(jsonMissingFields)
-                }.apply {
-                    assertEquals(HttpStatusCode.BadRequest, response.status())
                 }
             }
         }

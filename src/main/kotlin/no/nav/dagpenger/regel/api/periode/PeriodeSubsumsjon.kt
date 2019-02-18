@@ -1,7 +1,7 @@
 package no.nav.dagpenger.regel.api.periode
 
-import no.nav.dagpenger.regel.api.InntektResponse
-import no.nav.dagpenger.regel.api.InntektsPeriode
+import no.nav.dagpenger.regel.api.arena.adapter.v1.models.common.InntektResponse
+import no.nav.dagpenger.regel.api.arena.adapter.v1.models.common.InntektsPeriode
 import java.time.LocalDate
 import java.time.LocalDateTime
 

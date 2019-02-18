@@ -10,6 +10,7 @@ import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.dummyApi
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertTrue
 
 class TasksRouteTest {
@@ -35,9 +36,8 @@ class TasksRouteTest {
 
     @Test
     fun `get request for unknown task`() = testApp {
-        handleRequest(HttpMethod.Get, "/task/unkown!").apply {
-            assertTrue(requestHandled)
-            assertEquals(HttpStatusCode.NotFound, response.status())
+        assertThrows<TaskNotFoundException> {
+            handleRequest(HttpMethod.Get, "/task/unkown!")
         }
     }
 

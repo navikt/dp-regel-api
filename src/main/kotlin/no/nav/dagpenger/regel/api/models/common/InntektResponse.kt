@@ -1,10 +1,9 @@
-package no.nav.dagpenger.regel.api
-
-import java.time.YearMonth
+package no.nav.dagpenger.regel.api.arena.adapter.v1.models.common
 
 data class InntektResponse(
     val inntekt: Int,
     val periode: Int, // todo: enum?
+    val inntektsPeriode: InntektsPeriode,
     val inneholderNaeringsinntekter: Boolean,
     val andel: Int
 ) {
@@ -15,8 +14,3 @@ data class InntektResponse(
         }
     }
 }
-
-data class InntektsPeriode(
-    val foersteMaaned: YearMonth? = null,
-    val sisteMaaned: YearMonth
-)

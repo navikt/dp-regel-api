@@ -32,7 +32,7 @@ class GrunnlagRouteTest {
 
     @Test
     fun `post request with good json`() = testApp {
-        handleRequest(HttpMethod.Post, "/dagpengegrunnlag") {
+        handleRequest(HttpMethod.Post, "/grunnlag") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(validJson)
         }.apply {
@@ -46,11 +46,9 @@ class GrunnlagRouteTest {
     fun `post request with bad json`() {
         assertThrows<JsonEncodingException> {
             testApp {
-                handleRequest(HttpMethod.Post, "/dagpengegrunnlag") {
+                handleRequest(HttpMethod.Post, "/grunnlag") {
                     addHeader(HttpHeaders.ContentType, "application/json")
                     setBody(jsonMissingFields)
-                }.apply {
-                    Assertions.assertEquals(HttpStatusCode.BadRequest, response.status())
                 }
             }
         }

@@ -50,8 +50,6 @@ class SatsRouteTest {
                 handleRequest(HttpMethod.Post, "/sats") {
                     addHeader(HttpHeaders.ContentType, "application/json")
                     setBody(jsonMissingFields)
-                }.apply {
-                    assertEquals(HttpStatusCode.BadRequest, response.status())
                 }
             }
         }

@@ -1,6 +1,6 @@
 package no.nav.dagpenger.regel.api.grunnlag
 
-import no.nav.dagpenger.regel.api.InntektResponse
+import no.nav.dagpenger.regel.api.arena.adapter.v1.models.common.InntektResponse
 import java.time.LocalDate
 import java.time.LocalDateTime
 

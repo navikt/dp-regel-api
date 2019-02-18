@@ -49,8 +49,6 @@ class MinsteinntektRouteTest {
                 handleRequest(HttpMethod.Post, "/minsteinntekt") {
                     addHeader(HttpHeaders.ContentType, "application/json")
                     setBody(jsonMissingFields)
-                }.apply {
-                    assertEquals(HttpStatusCode.BadRequest, response.status())
                 }
             }
         }
