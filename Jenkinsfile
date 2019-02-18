@@ -75,7 +75,7 @@ pipeline {
     stage('Deploy to non-production') {
       steps {
         script {
-          response = naisDeploy.createNaisAutodeployment(env.APPLICATION_NAME, env.VERSION,"t6",env.ZONE ,env.NAMESPACE, "")
+          response = naisDeploy.createNaisAutodeployment(env.APPLICATION_NAME, env.VERSION,"t5",env.ZONE ,env.NAMESPACE, "")
         }
       }
     }
