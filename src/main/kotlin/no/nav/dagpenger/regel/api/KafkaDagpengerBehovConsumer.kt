@@ -160,9 +160,23 @@ class KafkaDagpengerBehovConsumer(
                 InntektResponse(
                     inntekt = 0,
                     periode = 1,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 1), YearMonth.of(2019, 1)),
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
                     inneholderNaeringsinntekter = false,
-                    andel = 39982
+                    andel = 0
+                ),
+                InntektResponse(
+                    inntekt = 0,
+                    periode = 2,
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
+                    inneholderNaeringsinntekter = false,
+                    andel = 0
+                ),
+                InntektResponse(
+                    inntekt = 0,
+                    periode = 3,
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
+                    inneholderNaeringsinntekter = false,
+                    andel = 0
                 )
             )
         )
@@ -186,9 +200,23 @@ class KafkaDagpengerBehovConsumer(
                 InntektResponse(
                     inntekt = 0,
                     periode = 1,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 1), YearMonth.of(2019, 1)),
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
                     inneholderNaeringsinntekter = false,
-                    andel = 39982
+                    andel = 0
+                ),
+                InntektResponse(
+                    inntekt = 0,
+                    periode = 2,
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
+                    inneholderNaeringsinntekter = false,
+                    andel = 0
+                ),
+                InntektResponse(
+                    inntekt = 0,
+                    periode = 3,
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
+                    inneholderNaeringsinntekter = false,
+                    andel = 0
                 )
             )
         )
@@ -212,9 +240,23 @@ class KafkaDagpengerBehovConsumer(
                 InntektResponse(
                     inntekt = 0,
                     periode = 1,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 1), YearMonth.of(2019, 1)),
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
                     inneholderNaeringsinntekter = false,
-                    andel = 39982
+                    andel = 0
+                ),
+                InntektResponse(
+                    inntekt = 0,
+                    periode = 2,
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
+                    inneholderNaeringsinntekter = false,
+                    andel = 0
+                ),
+                InntektResponse(
+                    inntekt = 0,
+                    periode = 3,
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
+                    inneholderNaeringsinntekter = false,
+                    andel = 0
                 )
             )
         )
