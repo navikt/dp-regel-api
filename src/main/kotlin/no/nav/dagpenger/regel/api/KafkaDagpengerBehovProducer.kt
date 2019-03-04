@@ -16,6 +16,7 @@ import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.StringSerializer
 import java.io.File
+import java.time.YearMonth
 import java.util.Properties
 
 private val LOGGER = KotlinLogging.logger {}
@@ -80,7 +81,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     override fun produceMinsteInntektEvent(request: MinsteinntektRequestParametere): SubsumsjonsBehov {
         val behovId = ulidGenerator.nextULID()
-        val behov = mapRequestToBehov(request, behovId)
+        val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
+        val behov = mapRequestToBehov(request, behovId, senesteInntektsmåned)
         produceEvent(behov, behovId)
 
         return behov
@@ -121,13 +123,18 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
         }
     }
 
-    fun mapRequestToBehov(request: MinsteinntektRequestParametere, behovId: String): SubsumsjonsBehov =
+    fun mapRequestToBehov(
+        request: MinsteinntektRequestParametere,
+        behovId: String,
+        senesteInntektsmåned: YearMonth): SubsumsjonsBehov =
+
         SubsumsjonsBehov(
             behovId,
             request.aktorId,
             request.vedtakId,
             request.beregningsdato,
-            request.harAvtjentVerneplikt
+            request.harAvtjentVerneplikt,
+            senesteInntektsmåned = senesteInntektsmåned
         )
 
     fun mapRequestToBehov(request: PeriodeRequestParametere, behovId: String): SubsumsjonsBehov =

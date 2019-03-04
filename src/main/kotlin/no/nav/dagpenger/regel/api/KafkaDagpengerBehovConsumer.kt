@@ -144,7 +144,7 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToMinsteinntektSubsumsjon(behov: SubsumsjonsBehov): MinsteinntektSubsumsjon {
         val minsteinntektResultat = behov.minsteinntektResultat!!
-        val inntekt = behov.inntekt!!
+        val inntekt = behov.inntektV1!!
         return MinsteinntektSubsumsjon(
             minsteinntektResultat.subsumsjonsId,
             LocalDateTime.now(),
@@ -184,7 +184,7 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToPeriodeSubsumsjon(behov: SubsumsjonsBehov): PeriodeSubsumsjon {
         val periodeResultat = behov.periodeResultat!!
-        val inntekt = behov.inntekt!!
+        val inntekt = behov.inntektV1!!
         return PeriodeSubsumsjon(
             periodeResultat.subsumsjonsId,
             LocalDateTime.now(),
@@ -224,7 +224,7 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToGrunnlagSubsumsjon(behov: SubsumsjonsBehov): GrunnlagSubsumsjon {
         val grunnlagResultat = behov.grunnlagResultat!!
-        val inntekt = behov.inntekt!!
+        val inntekt = behov.inntektV1!!
         return GrunnlagSubsumsjon(
             grunnlagResultat.subsumsjonsId,
             LocalDateTime.now(),

@@ -1,16 +1,15 @@
 package no.nav.dagpenger.regel.api
 
 data class Environment(
-    val username: String = getEnvVar("SRVDP_REGEL_API_USERNAME", "igroup"),
-    val password: String = getEnvVar("SRVDP_REGEL_API_PASSWORD", "itest"),
+    val username: String = getEnvVar("SRVDP_REGEL_API_USERNAME"),
+    val password: String = getEnvVar("SRVDP_REGEL_API_PASSWORD"),
     val bootstrapServersUrl: String = getEnvVar("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"),
     val fasitEnvironmentName: String = getEnvVar(
         "FASIT_ENVIRONMENT_NAME",
         ""
     ),
-    val kafkaApiPort: Int = 8080,
     val redisHost: String = getEnvVar("REDIS_HOST", "localhost"),
-    val httpPort: Int? = null
+    val httpPort: Int = 8092
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

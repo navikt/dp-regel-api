@@ -83,7 +83,7 @@ fun main(args: Array<String>) {
         )
     kafkaConsumer.start()
 
-    val app = embeddedServer(Netty, port = 8092) {
+    val app = embeddedServer(Netty, port = env.httpPort) {
         api(
             tasks,
             minsteinntektSubsumsjoner,
