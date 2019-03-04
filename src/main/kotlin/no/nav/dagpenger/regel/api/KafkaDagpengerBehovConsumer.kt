@@ -1,8 +1,8 @@
 package no.nav.dagpenger.regel.api
 
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.arena.adapter.v1.models.common.InntektResponse
-import no.nav.dagpenger.regel.api.arena.adapter.v1.models.common.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.common.InntektResponse
+import no.nav.dagpenger.regel.api.models.common.InntektsPeriode
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagFaktum
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagResultat
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjon

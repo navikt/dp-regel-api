@@ -1,4 +1,4 @@
-package no.nav.dagpenger.regel.api.arena.adapter.v1.models.common
+package no.nav.dagpenger.regel.api.models.common
 
 data class InntektResponse(
     val inntekt: Int,
@@ -10,7 +10,7 @@ data class InntektResponse(
     init {
         val gyldigePerioder = setOf(1, 2, 3)
         if (!gyldigePerioder.contains(periode)) {
-            throw IllegalArgumentException("Ugyldig periode for inntektgrunnlat, gyldige verdier er ${gyldigePerioder.joinToString { "$it" }}")
+            throw IllegalArgumentException("Ugyldig periode for inntektgrunnlag, gyldige verdier er ${gyldigePerioder.joinToString { "$it" }}")
         }
     }
 }

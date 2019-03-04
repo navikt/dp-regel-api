@@ -126,34 +126,60 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
     fun mapRequestToBehov(
         request: MinsteinntektRequestParametere,
         behovId: String,
-        senesteInntektsmåned: YearMonth): SubsumsjonsBehov =
+        senesteInntektsmåned: YearMonth): SubsumsjonsBehov {
 
-        SubsumsjonsBehov(
+        val bruktInntektsPeriode =
+            if (request.bruktInntektsPeriode != null)
+                BruktInntektsPeriode(request.bruktInntektsPeriode.førsteMåned, request.bruktInntektsPeriode.sisteMåned)
+            else null
+
+        return SubsumsjonsBehov(
             behovId,
             request.aktorId,
             request.vedtakId,
             request.beregningsdato,
             request.harAvtjentVerneplikt,
-            senesteInntektsmåned = senesteInntektsmåned
+            senesteInntektsmåned = senesteInntektsmåned,
+            bruktInntektsPeriode = bruktInntektsPeriode
         )
+    }
 
-    fun mapRequestToBehov(request: PeriodeRequestParametere, behovId: String): SubsumsjonsBehov =
-        SubsumsjonsBehov(
+
+    fun mapRequestToBehov(request: PeriodeRequestParametere, behovId: String): SubsumsjonsBehov {
+
+        val bruktInntektsPeriode =
+            if (request.bruktInntektsPeriode != null)
+                BruktInntektsPeriode(request.bruktInntektsPeriode.førsteMåned, request.bruktInntektsPeriode.sisteMåned)
+            else null
+
+
+        return SubsumsjonsBehov(
             behovId,
             request.aktorId,
             request.vedtakId,
             request.beregningsdato,
-            request.harAvtjentVerneplikt
+            request.harAvtjentVerneplikt,
+            bruktInntektsPeriode = bruktInntektsPeriode
         )
+    }
 
-    fun mapRequestToBehov(request: GrunnlagRequestParametere, behovId: String): SubsumsjonsBehov =
-        SubsumsjonsBehov(
+    fun mapRequestToBehov(request: GrunnlagRequestParametere, behovId: String): SubsumsjonsBehov {
+
+        val bruktInntektsPeriode =
+            if (request.bruktInntektsPeriode != null)
+                BruktInntektsPeriode(request.bruktInntektsPeriode.førsteMåned, request.bruktInntektsPeriode.sisteMåned)
+            else null
+
+
+        return SubsumsjonsBehov(
             behovId,
             request.aktorId,
             request.vedtakId,
             request.beregningsdato,
-            request.harAvtjentVerneplikt
+            request.harAvtjentVerneplikt,
+            bruktInntektsPeriode = bruktInntektsPeriode
         )
+    }
 
     fun mapRequestToBehov(request: SatsRequestParametere, behovId: String): SubsumsjonsBehov =
         SubsumsjonsBehov(

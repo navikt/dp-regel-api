@@ -14,6 +14,7 @@ data class SubsumsjonsBehov (
     val inntektV1: Inntekt? = null,
     val grunnlag: Int? = null,
     val senesteInntektsmåned: YearMonth? = null,
+    val bruktInntektsPeriode: BruktInntektsPeriode? = null,
 
     val tasks: List<String>? = null,
 
@@ -21,6 +22,11 @@ data class SubsumsjonsBehov (
     var periodeResultat: PeriodeResultat? = null,
     var grunnlagResultat: GrunnlagResultat? = null,
     var satsResultat: SatsResultat? = null
+)
+
+data class BruktInntektsPeriode(
+    val førsteMåned: YearMonth,
+    val sisteMåned: YearMonth
 )
 
 data class MinsteinntektResultat(
