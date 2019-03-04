@@ -57,4 +57,3 @@ data class MinsteinntektRequestParametere(
     val oppfyllerKravTilFangstOgFisk: Boolean? = false,
     val bruktInntektsPeriode: InntektsPeriode? = null
 )
-
