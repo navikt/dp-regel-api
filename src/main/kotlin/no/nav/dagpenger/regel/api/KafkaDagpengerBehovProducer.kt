@@ -150,7 +150,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
     fun mapRequestToBehov(
         request: PeriodeRequestParametere,
         behovId: String,
-        senesteInntektsmåned: YearMonth): SubsumsjonsBehov {
+        senesteInntektsmåned: YearMonth
+    ): SubsumsjonsBehov {
 
         val bruktInntektsPeriode =
             if (request.bruktInntektsPeriode != null)
@@ -171,7 +172,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
     fun mapRequestToBehov(
         request: GrunnlagRequestParametere,
         behovId: String,
-        senesteInntektsmåned: YearMonth): SubsumsjonsBehov {
+        senesteInntektsmåned: YearMonth
+    ): SubsumsjonsBehov {
 
         val bruktInntektsPeriode =
             if (request.bruktInntektsPeriode != null)
