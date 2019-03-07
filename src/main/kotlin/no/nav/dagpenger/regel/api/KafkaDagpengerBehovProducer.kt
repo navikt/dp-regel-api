@@ -90,7 +90,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     override fun producePeriodeEvent(request: PeriodeRequestParametere): SubsumsjonsBehov {
         val behovId = ulidGenerator.nextULID()
-        val behov = mapRequestToBehov(request, behovId)
+        val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
+        val behov = mapRequestToBehov(request, behovId, senesteInntektsmåned)
         produceEvent(behov, behovId)
 
         return behov
@@ -98,7 +99,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     override fun produceGrunnlagEvent(request: GrunnlagRequestParametere): SubsumsjonsBehov {
         val behovId = ulidGenerator.nextULID()
-        val behov = mapRequestToBehov(request, behovId)
+        val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
+        val behov = mapRequestToBehov(request, behovId, senesteInntektsmåned)
         produceEvent(behov, behovId)
 
         return behov
@@ -145,7 +147,10 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
         )
     }
 
-    fun mapRequestToBehov(request: PeriodeRequestParametere, behovId: String): SubsumsjonsBehov {
+    fun mapRequestToBehov(
+        request: PeriodeRequestParametere,
+        behovId: String,
+        senesteInntektsmåned: YearMonth): SubsumsjonsBehov {
 
         val bruktInntektsPeriode =
             if (request.bruktInntektsPeriode != null)
@@ -158,11 +163,15 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             request.vedtakId,
             request.beregningsdato,
             request.harAvtjentVerneplikt,
+            senesteInntektsmåned = senesteInntektsmåned,
             bruktInntektsPeriode = bruktInntektsPeriode
         )
     }
 
-    fun mapRequestToBehov(request: GrunnlagRequestParametere, behovId: String): SubsumsjonsBehov {
+    fun mapRequestToBehov(
+        request: GrunnlagRequestParametere,
+        behovId: String,
+        senesteInntektsmåned: YearMonth): SubsumsjonsBehov {
 
         val bruktInntektsPeriode =
             if (request.bruktInntektsPeriode != null)
@@ -175,6 +184,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             request.vedtakId,
             request.beregningsdato,
             request.harAvtjentVerneplikt,
+            senesteInntektsmåned = senesteInntektsmåned,
             bruktInntektsPeriode = bruktInntektsPeriode
         )
     }
