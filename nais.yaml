@@ -5,6 +5,8 @@ metadata:
   namespace: dp
   labels:
     team: teamdagpenger
+  annotations:
+    zone: fss
 spec:
   image: repo.adeo.no:5443/dp-regel-api:latest
   port: 8092
