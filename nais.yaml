@@ -2,7 +2,7 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: dp-regel-api
-  namespace: dp
+  namespace: default
   labels:
     team: teamdagpenger
   annotations:
@@ -31,8 +31,8 @@ spec:
     enabled: true
   env:
   - name: REDIS_HOST
-    value: dp-regel-api-redis.dp.svc.nais.local
+    value: dp-regel-api-redis.default.svc.nais.local
   - name: KAFKA_BOOTSTRAP_SERVERS
     value: d26apvl00159.test.local:8443,d26apvl00160.test.local:8443,d26apvl00161.test.local:8443
   ingresses:
-    - "https://dp-regel-api-dp.nais.preprod.local"
+    - "https://dp-regel-api.nais.preprod.local"

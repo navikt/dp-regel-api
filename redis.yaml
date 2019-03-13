@@ -1,11 +1,11 @@
-        
+---        
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   labels:
     team: teamdagpenger
   name: dp-regel-api-redis
-  namespace: dp
+  namespace: default
 spec:
   image: redis:5-alpine # or a custom Redis-image
   port: 6379
@@ -21,7 +21,6 @@ spec:
       memory: 256Mi
   service:
     port: 6379
-
 ---
 
 apiVersion: "nais.io/v1alpha1"
@@ -30,7 +29,7 @@ metadata:
   labels:
     team: teamdagpenger
   name: dp-regel-api-redisexporter
-  namespace: dp
+  namespace: default
 spec:
   image: oliver006/redis_exporter:v0.29.0-alpine
   port: 9121
@@ -48,4 +47,4 @@ spec:
       memory: 100Mi
   env:
     - name: REDIS_ADDR
-      value: dp-regler-api-redis.dp.svc.nais.local:6379
+      value: dp-regler-api-redis.default.svc.nais.local:6379
