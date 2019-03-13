@@ -1,36 +1,38 @@
-name: dp-regel-api
-image: repo.adeo.no:5443/dp-regel-api
-team: teamdagpenger
-port: 8092
-replicas:
-  min: 2
-  max: 4
-resources:
-  limits:
-    cpu: 1000m
-    memory: 384Mi
-  requests:
-    cpu: 100m
-    memory: 256Mi
-prometheus:
-  enabled: true
-redis:
-  enabled: true
-  limits:
-    cpu: 100m
-    memory: 128Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-fasitResources:
-  used:
-    - alias: dp-regel-api-properties
-      resourceType: applicationproperties
-    - alias: srvdp-regel-api
-      resourceType: credential
-    - alias:  kafka-schema-registry
-      resourceType: baseUrl
-  exposed:
-    - alias: dagpenger-regel-api-rest
-      resourceType: restservice
-      path: /
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: dp-regel-api
+  namespace: default
+  labels:
+    team: teamdagpenger
+  annotations:
+    zone: fss
+spec:
+  image: repo.adeo.no:5443/dp-regel-api:latest
+  port: 8092
+  liveness:
+    path: /isAlive
+  readiness:
+    path: /isReady
+  prometheus:
+    enabled: true
+    path: /metrics
+  replicas:
+    min: 2
+    max: 4
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  vault:
+    enabled: true
+  env:
+  - name: REDIS_HOST
+    value: dp-regel-api-redis.default.svc.nais.local
+  - name: KAFKA_BOOTSTRAP_SERVERS
+    value: d26apvl00159.test.local:8443,d26apvl00160.test.local:8443,d26apvl00161.test.local:8443
+  ingresses:
+    - "https://dp-regel-api.nais.preprod.local"
