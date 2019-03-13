@@ -59,7 +59,7 @@ enum class Regel {
 fun main(args: Array<String>) {
     val env = Environment()
 
-    val redisUri = RedisURI.Builder.sentinel(env.redisHost, "mymaster").build()
+    val redisUri = RedisURI.Builder.redis(env.redisHost).build()
     val redisClient = RedisClient.create(redisUri)
     val connection = redisClient.connect()
     val redisCommands = connection.sync()
@@ -73,24 +73,24 @@ fun main(args: Array<String>) {
     val kafkaProducer = KafkaDagpengerBehovProducer(env)
 
     val kafkaConsumer =
-        KafkaDagpengerBehovConsumer(
-            env,
-            tasks,
-            minsteinntektSubsumsjoner,
-            periodeSubsumsjoner,
-            grunnlagSubsumsjoner,
-            satsSubsumsjoner
-        )
+            KafkaDagpengerBehovConsumer(
+                    env,
+                    tasks,
+                    minsteinntektSubsumsjoner,
+                    periodeSubsumsjoner,
+                    grunnlagSubsumsjoner,
+                    satsSubsumsjoner
+            )
     kafkaConsumer.start()
 
     val app = embeddedServer(Netty, port = env.httpPort) {
         api(
-            tasks,
-            minsteinntektSubsumsjoner,
-            periodeSubsumsjoner,
-            grunnlagSubsumsjoner,
-            satsSubsumsjoner,
-            kafkaProducer
+                tasks,
+                minsteinntektSubsumsjoner,
+                periodeSubsumsjoner,
+                grunnlagSubsumsjoner,
+                satsSubsumsjoner,
+                kafkaProducer
         )
     }
 
@@ -118,8 +118,8 @@ fun Application.api(
 
         filter { call ->
             !call.request.path().startsWith("/isAlive") &&
-                !call.request.path().startsWith("/isReady") &&
-                !call.request.path().startsWith("/metrics")
+                    !call.request.path().startsWith("/isReady") &&
+                    !call.request.path().startsWith("/metrics")
         }
     }
     install(ContentNegotiation) {

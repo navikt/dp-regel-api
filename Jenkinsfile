@@ -1,24 +1,49 @@
 pipeline {
   agent any
   environment {
-    APPLICATION_NAME = 'dp-regel-api'
-    ZONE = 'fss'
-    NAMESPACE = 'default'
-    VERSION = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-    DOCKER_REPO = 'repo.adeo.no:5443/'
-    DOCKER_IMAGE_VERSION = '${DOCKER_REPO}${APPLICATION_NAME}:${VERSION}'
+    DEPLOYMENT = readYaml(file: './nais.yaml')
+    APPLICATION_NAME = "${DEPLOYMENT.metadata.name}"
+    ZONE = "${DEPLOYMENT.metadata.annotations.zone}"
+    NAMESPACE = "${DEPLOYMENT.metadata.namespace}"
+    VERSION = sh(label: 'Get git sha1 as version', script: 'git rev-parse --short HEAD', returnStdout: true).trim()
   }
 
   stages {
-    stage('Install dependencies') {
-      steps {
-        sh "./gradlew assemble"
-      }
-    }
-
     stage('Build') {
+      // Create tested artifacts that can be used for later stages
+      environment {
+        DOCKER_REPO = 'repo.adeo.no:5443'
+        DOCKER_IMAGE_VERSION = '${DOCKER_REPO}/${APPLICATION_NAME}:${VERSION}'
+      }
+
       steps {
-        sh "./gradlew build"
+        sh label: 'Install dependencies', script: """
+          ./gradlew assemble
+        """
+
+        // Should run a set of tests like: unit, functional, component,
+        // coverage, contract, lint, mutation.
+        sh label: 'Test code', script: """
+          ./gradlew test
+        """
+
+        sh label: 'Build artifact', script: """
+          ./gradlew build
+        """
+
+        withDockerRegistry(
+          credentialsId: 'repo.adeo.no',
+          url: "https://${DOCKER_REPO}"
+        ) {
+          sh label: 'Build and push Docker image', script: """
+            docker build . --pull -t ${DOCKER_IMAGE_VERSION}
+            docker push ${DOCKER_IMAGE_VERSION} || true
+          """
+        }
+
+        sh label: 'Prepare service contract', script: """
+          sed 's/latest/${VERSION}/' nais.yaml | tee nais-deployed.yaml
+        """
       }
 
       post {
@@ -34,49 +59,117 @@ pipeline {
 
           junit 'build/test-results/test/*.xml'
         }
-      }
-    }
 
-    stage('Publish') {
-      steps {
-        timeout(10) {
-                input 'Keep going?'
-        }
-
-        withCredentials([usernamePassword(
-          credentialsId: 'repo.adeo.no',
-          usernameVariable: 'REPO_USERNAME',
-          passwordVariable: 'REPO_PASSWORD'
-        )]) {
-            sh "docker login -u ${REPO_USERNAME} -p ${REPO_PASSWORD} repo.adeo.no:5443"
-        }
-
-        script {
-          sh "docker build . --pull -t ${DOCKER_IMAGE_VERSION}"
-        }
-        script {
-          sh "docker push ${DOCKER_IMAGE_VERSION}"
+        success {
+          archiveArtifacts artifacts: 'nais*.yaml', fingerprint: true
         }
       }
     }
 
-    stage("Publish service contract") {
-      steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'repo.adeo.no',
-          usernameVariable: 'REPO_USERNAME',
-          passwordVariable: 'REPO_PASSWORD'
-        )]) {
-          sh "curl -vvv --user ${REPO_USERNAME}:${REPO_PASSWORD} --upload-file nais.yaml https://repo.adeo.no/repository/raw/nais/${APPLICATION_NAME}/${VERSION}/nais.yaml"
+    stage('Acceptance testing') {
+      stages {
+        stage('Deploy to pre-production') {
+          steps {
+            sh label: 'Deploy with kubectl', script: """
+              kubectl config use-context dev-${env.ZONE}
+              kubectl apply -n ${env.NAMESPACE} -f redis.yaml --wait
+              kubectl apply -n ${env.NAMESPACE} -f nais-deployed.yaml --wait
+              kubectl rollout status -w deployment/${APPLICATION_NAME}
+            """
+          }
+        }
+
+        stage('Run tests') {
+          // Since these tests usually are quite expensive, running them as
+          // separate stages allows distributing them on seperate agents
+          failFast true
+
+          parallel {
+            stage('User Acceptance Tests') {
+              agent any
+
+              when {
+                beforeAgent true
+                expression {
+                  sh(
+                    label: 'Does the repository define any UAT tests?',
+                    script: 'test -f ./scripts/test/uat',
+                    returnStatus: true
+                  ) == 0
+                }
+              }
+
+              steps {
+                sh label: 'User Acceptance Tests', script: """
+                  ./scripts/test/uat || true
+                """
+              }
+            }
+
+            stage('Integration Tests') {
+              agent any
+
+              when {
+                beforeAgent true
+                expression {
+                  sh(
+                    label: 'Does the repository define any integration tests?',
+                    script: 'test -f ./scripts/test/integration',
+                    returnStatus: true
+                  ) == 0
+                }
+              }
+
+              steps {
+                sh label: 'Integration Tests', script: """
+                  ./scripts/test/integration || true
+                """
+              }
+            }
+
+            stage('Benchmark Tests') {
+              agent any
+
+              when {
+                beforeAgent true
+                expression {
+                  sh(
+                    label: 'Does the repository define any benchmark tests?',
+                    script: 'test -f ./scripts/test/benchmark',
+                    returnStatus: true
+                  ) == 0
+                }
+              }
+
+              steps {
+                sh label: 'Run benchmark', script: """
+                  ./scripts/test/benchmark || true
+                """
+              }
+            }
+          }
         }
       }
     }
 
-    stage('Deploy to non-production') {
+    stage('Deploy') {
+      when { branch 'master' }
+
       steps {
-        script {
-          response = naisDeploy.createNaisAutodeployment(env.APPLICATION_NAME, env.VERSION,"t5",env.ZONE ,env.NAMESPACE, "")
-        }
+        sh label: 'Deploy with kubectl', script: """
+          kubectl config use-context prod-${env.ZONE}
+          kubectl apply -n ${env.NAMESPACE} -f redis.yaml --wait
+          kubectl apply -n ${env.NAMESPACE} -f nais.yaml --wait
+          kubectl rollout status -w deployment/${APPLICATION_NAME}
+        """
+      }
+    }
+
+    stage('Release') {
+      when { branch 'master' }
+
+      steps {
+        sh "echo true"
       }
     }
   }
