@@ -45,27 +45,21 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("io.ktor:ktor-locations:$ktorVersion")
-
     implementation("com.squareup.moshi:moshi-adapters:$moshiVersion")
     implementation("com.squareup.moshi:moshi-kotlin:$moshiVersion")
     implementation("com.squareup.moshi:moshi:$moshiVersion")
     implementation("com.ryanharter.ktor:ktor-moshi:$ktorMoshiVersion")
-
     implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
-
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
-    compile("org.slf4j:slf4j-api:1.7.25")
-
+    implementation("org.slf4j:slf4j-api:1.7.25")
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
-
     implementation("io.lettuce:lettuce-core:5.1.3.RELEASE")
-
-    compile("org.apache.kafka:kafka-clients:$kafkaVersion")
-    compile("org.apache.kafka:kafka-streams:$kafkaVersion")
-    compile("io.confluent:kafka-streams-avro-serde:$confluentVersion")
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
+    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
+    implementation("io.confluent:kafka-streams-avro-serde:$confluentVersion")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
