@@ -8,6 +8,6 @@ spec:
   - name: REDIS_HOST
     value: dp-regel-api-redis.default.svc.nais.local
   - name: KAFKA_BOOTSTRAP_SERVERS
-    value: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl150.adeo.no:8443,
+    value: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl150.adeo.no:8443
   ingresses:
     - "https://dp-regel-api.nais.adeo.no"
