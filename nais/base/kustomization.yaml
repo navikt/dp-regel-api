@@ -1,0 +1,6 @@
+commonLabels:
+  app: dp-regel-api
+  team: teamdagpenger
+resources:
+- nais.yaml
+- redis.yaml

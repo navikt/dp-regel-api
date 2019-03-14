@@ -1,0 +1,13 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: dp-regel-api
+spec:
+  image: repo.adeo.no:5443/dp-regel-api:latest
+  env:
+  - name: REDIS_HOST
+    value: dp-regel-api-redis.default.svc.nais.local
+  - name: KAFKA_BOOTSTRAP_SERVERS
+    value: d26apvl00159.test.local:8443,d26apvl00160.test.local:8443,d26apvl00161.test.local:8443
+  ingresses:
+    - "https://dp-regel-api.nais.preprod.local"

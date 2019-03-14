@@ -1,0 +1,38 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: dp-regel-api
+  namespace: default
+  labels:
+    team: teamdagpenger
+  annotations:
+    zone: fss
+spec:
+  image: repo.adeo.no:5443/dp-regel-api:latest
+  port: 8092
+  liveness:
+    path: /isAlive
+  readiness:
+    path: /isReady
+  prometheus:
+    enabled: true
+    path: /metrics
+  replicas:
+    min: 2
+    max: 4
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  vault:
+    enabled: true
+  env:
+  - name: REDIS_HOST
+    value: redis
+  - name: KAFKA_BOOTSTRAP_SERVERS
+    value: kafka
+  ingresses:
+    - "https://app"
