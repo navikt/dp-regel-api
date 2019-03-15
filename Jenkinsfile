@@ -55,10 +55,6 @@ pipeline {
 
           junit 'build/test-results/test/*.xml'
         }
-
-        success {
-          archiveArtifacts artifacts: './nais/nais*.yaml', fingerprint: true
-        }
       }
     }
 
