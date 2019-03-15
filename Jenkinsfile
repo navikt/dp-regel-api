@@ -73,12 +73,14 @@ pipeline {
               kubectl apply -n ${env.NAMESPACE} -f nais/nais-dev-deployed.yaml --wait
               kubectl rollout status -w deployment/${APPLICATION_NAME}
             """
-            post {
-              success {
-                archiveArtifacts artifacts: './nais/nais-dev-deployed.yaml', fingerprint: true
-              }
+          } 
+
+          post {
+            success {
+              archiveArtifacts artifacts: './nais/nais-dev-deployed.yaml', fingerprint: true
             }
           }
+
         }
 
         stage('Run tests') {
@@ -169,12 +171,14 @@ pipeline {
           kubectl apply -n ${env.NAMESPACE} -f nais/nais-deployed-prod.yaml --wait
           kubectl rollout status -w deployment/${APPLICATION_NAME}
         """
-        post {
-          success {
-            archiveArtifacts artifacts: './nais/nais-prod-deployed.yaml', fingerprint: true
-          }
+      }
+      
+      post {
+        success {
+          archiveArtifacts artifacts: './nais/nais-dev-deployed.yaml', fingerprint: true
         }
       }
+
     }
 
     stage('Release') {
