@@ -77,7 +77,7 @@ pipeline {
 
           post {
             success {
-              archiveArtifacts artifacts: './nais/nais-dev-deployed.yaml', fingerprint: true
+              archiveArtifacts artifacts: '/nais/nais-dev-deployed.yaml', fingerprint: true
             }
           }
 
@@ -175,7 +175,7 @@ pipeline {
       
       post {
         success {
-          archiveArtifacts artifacts: './nais/nais-dev-deployed.yaml', fingerprint: true
+          archiveArtifacts artifacts: 'nais/nais-prod-deployed.yaml', fingerprint: true
         }
       }
 
