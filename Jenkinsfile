@@ -1,7 +1,7 @@
 pipeline {
   agent any
   environment {
-    DEPLOYMENT = readYaml(file: './nais.yaml')
+    DEPLOYMENT = readYaml(file: './nais/base/nais.yaml')
     APPLICATION_NAME = "${DEPLOYMENT.metadata.name}"
     ZONE = "${DEPLOYMENT.metadata.annotations.zone}"
     NAMESPACE = "${DEPLOYMENT.metadata.namespace}"
@@ -40,10 +40,6 @@ pipeline {
             docker push ${DOCKER_IMAGE_VERSION} || true
           """
         }
-
-        sh label: 'Prepare service contract', script: """
-          sed 's/latest/${VERSION}/' nais.yaml | tee nais-deployed.yaml
-        """
       }
 
       post {
@@ -61,7 +57,7 @@ pipeline {
         }
 
         success {
-          archiveArtifacts artifacts: 'nais*.yaml', fingerprint: true
+          archiveArtifacts artifacts: './nais/nais*.yaml', fingerprint: true
         }
       }
     }
@@ -70,11 +66,15 @@ pipeline {
       stages {
         stage('Deploy to pre-production') {
           steps {
+
+            sh label: 'Prepare dev service contract', script: """
+              sed 's/latest/${VERSION}/' ./nais/dev/nais.yaml | tee ./nais/dev/nais.yaml
+              kustomize build nais/dev -o nais/nais-dev-deployed.yaml
+            """
+
             sh label: 'Deploy with kubectl', script: """
-              echo $PATH
               kubectl config use-context dev-${env.ZONE}
-              kubectl apply -n ${env.NAMESPACE} -f redis.yaml --wait
-              kubectl apply -n ${env.NAMESPACE} -f nais-deployed.yaml --wait
+              kubectl apply -n ${env.NAMESPACE} -f nais/nais-dev-deployed.yaml --wait
               kubectl rollout status -w deployment/${APPLICATION_NAME}
             """
           }
@@ -157,10 +157,15 @@ pipeline {
       when { branch 'master' }
 
       steps {
+
+        sh label: 'Prepare prod service contract', script: """
+           sed 's/latest/${VERSION}/' ./nais/prod/nais.yaml | tee ./nais/prod/nais.yaml
+           kustomize build nais/prod -o nais/nais-prod-deployed.yaml
+        """
+
         sh label: 'Deploy with kubectl', script: """
           kubectl config use-context prod-${env.ZONE}
-          kubectl apply -n ${env.NAMESPACE} -f redis.yaml --wait
-          kubectl apply -n ${env.NAMESPACE} -f nais-deployed-.yaml --wait
+          kubectl apply -n ${env.NAMESPACE} -f nais/nais-deployed-prod.yaml --wait
           kubectl rollout status -w deployment/${APPLICATION_NAME}
         """
       }
