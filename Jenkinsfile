@@ -71,6 +71,7 @@ pipeline {
         stage('Deploy to pre-production') {
           steps {
             sh label: 'Deploy with kubectl', script: """
+              echo $PATH
               kubectl config use-context dev-${env.ZONE}
               kubectl apply -n ${env.NAMESPACE} -f redis.yaml --wait
               kubectl apply -n ${env.NAMESPACE} -f nais-deployed.yaml --wait
