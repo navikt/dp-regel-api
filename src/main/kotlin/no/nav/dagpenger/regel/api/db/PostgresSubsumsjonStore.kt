@@ -4,7 +4,6 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import javax.sql.DataSource
 
-
 class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonStore {
     override fun insert(subsumsjonsId: String, json: String) {
         sessionOf(dataSource).run(queryOf(

@@ -54,7 +54,7 @@ class PostgresSubsumssjonStoreTest {
         withMigratedDb {
 
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                assertFailsWith<SubsumsjonNotFoundException> { get("hubba")  }
+                assertFailsWith<SubsumsjonNotFoundException> { get("hubba") }
             }
         }
     }
