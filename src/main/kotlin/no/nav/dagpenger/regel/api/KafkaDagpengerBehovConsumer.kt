@@ -69,7 +69,7 @@ class KafkaDagpengerBehovConsumer(
         )
 
         stream
-            .peek { key, value -> LOGGER.info("Consuming behov with id ${value.behovId}") }
+            .peek { key, value -> LOGGER.info("Consuming behov with id $value") }
             .foreach { _, behov -> storeResult(behov) }
 
         return builder.build()
