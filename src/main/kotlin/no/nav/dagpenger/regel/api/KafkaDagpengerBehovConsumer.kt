@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api
 
 import mu.KotlinLogging
+import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.models.common.InntektResponse
 import no.nav.dagpenger.regel.api.models.common.InntektsPeriode
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagFaktum
@@ -144,7 +145,8 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToMinsteinntektSubsumsjon(behov: SubsumsjonsBehov): MinsteinntektSubsumsjon {
         val minsteinntektResultat = behov.minsteinntektResultat!!
-        val inntekt = behov.inntektV1!!
+        val inntektString = behov.inntektV1!!
+        val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
         return MinsteinntektSubsumsjon(
             minsteinntektResultat.subsumsjonsId,
             LocalDateTime.now(),
@@ -153,7 +155,7 @@ class KafkaDagpengerBehovConsumer(
                 behov.aktørId,
                 behov.vedtakId,
                 behov.beregningsDato,
-                inntekt.inntektsId,
+                inntekt?.inntektsId ?: "12345", // fixme
                 behov.harAvtjentVerneplikt),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
             setOf(
@@ -184,7 +186,8 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToPeriodeSubsumsjon(behov: SubsumsjonsBehov): PeriodeSubsumsjon {
         val periodeResultat = behov.periodeResultat!!
-        val inntekt = behov.inntektV1!!
+        val inntektString = behov.inntektV1!!
+        val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
         return PeriodeSubsumsjon(
             periodeResultat.subsumsjonsId,
             LocalDateTime.now(),
@@ -193,7 +196,7 @@ class KafkaDagpengerBehovConsumer(
                 behov.aktørId,
                 behov.vedtakId,
                 behov.beregningsDato,
-                inntekt.inntektsId,
+                inntekt?.inntektsId ?: "12345", // fixme
                 behov.harAvtjentVerneplikt),
             PeriodeResultat(periodeResultat.periodeAntallUker),
             setOf(
@@ -224,7 +227,8 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToGrunnlagSubsumsjon(behov: SubsumsjonsBehov): GrunnlagSubsumsjon {
         val grunnlagResultat = behov.grunnlagResultat!!
-        val inntekt = behov.inntektV1!!
+        val inntektString = behov.inntektV1!!
+        val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
         return GrunnlagSubsumsjon(
             grunnlagResultat.subsumsjonsId,
             LocalDateTime.now(),
@@ -233,7 +237,7 @@ class KafkaDagpengerBehovConsumer(
                 behov.aktørId,
                 behov.vedtakId,
                 behov.beregningsDato,
-                inntekt.inntektsId,
+                inntekt?.inntektsId ?: "12345", // fixme
                 behov.harAvtjentVerneplikt),
             GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet),
             setOf(
@@ -261,6 +265,8 @@ class KafkaDagpengerBehovConsumer(
             )
         )
     }
+
+    val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)
 
     fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
         val satsResultat = behov.satsResultat!!
