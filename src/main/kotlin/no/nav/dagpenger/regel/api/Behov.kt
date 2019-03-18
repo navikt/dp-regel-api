@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.YearMonth
 
-data class SubsumsjonsBehov (
+data class SubsumsjonsBehov(
     val behovId: String,
     val aktørId: String,
     val vedtakId: Int,
@@ -30,6 +30,7 @@ data class BruktInntektsPeriode(
 )
 
 data class MinsteinntektResultat(
+    @Deprecated("Hvorfor er denne her? ")
     val sporingsId: String,
     val subsumsjonsId: String,
     val regelIdentifikator: String,
@@ -37,6 +38,7 @@ data class MinsteinntektResultat(
 )
 
 data class PeriodeResultat(
+    @Deprecated("Hvorfor er denne her? ")
     val sporingsId: String,
     val subsumsjonsId: String,
     val regelIdentifikator: String,
@@ -44,6 +46,7 @@ data class PeriodeResultat(
 )
 
 data class GrunnlagResultat(
+    @Deprecated("Hvorfor er denne her? ")
     val sporingsId: String,
     val subsumsjonsId: String,
     val regelIdentifikator: String,
@@ -52,6 +55,7 @@ data class GrunnlagResultat(
 )
 
 data class SatsResultat(
+    @Deprecated("Hvorfor er denne her? ")
     val sporingsId: String,
     val subsumsjonsId: String,
     val regelIdentifikator: String,
