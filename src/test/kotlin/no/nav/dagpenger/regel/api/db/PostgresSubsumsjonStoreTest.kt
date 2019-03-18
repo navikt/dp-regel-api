@@ -5,6 +5,7 @@ import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 private object PostgresContainer {
     val instance by lazy {
@@ -74,6 +75,13 @@ class PostgresSubsumssjonStoreTest {
                 insert(subsumsjonId, json2)
                 assertEquals(json2, get(subsumsjonId))
             }
+        }
+    }
+
+    @Test
+    fun `Health check`() {
+        with(PostgresSubsumsjonStore(DataSource.instance)) {
+            assertTrue(isHealthy())
         }
     }
 }
