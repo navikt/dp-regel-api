@@ -8,7 +8,6 @@ class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonSt
 
     override fun isHealthy() = sessionOf(dataSource).run(queryOf("SELECT 1").asExecute)
 
-
     override fun insert(subsumsjonsId: String, json: String) {
         sessionOf(dataSource).run(queryOf(
                 """
