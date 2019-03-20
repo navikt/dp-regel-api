@@ -1,7 +1,7 @@
 package no.nav.dagpenger.regel.api.db
 
 import com.zaxxer.hikari.HikariDataSource
-import org.flywaydb.core.Flyway
+import no.nav.dagpenger.regel.api.Configuration
 import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import kotlin.test.assertEquals
@@ -10,14 +10,14 @@ import kotlin.test.assertTrue
 
 private object PostgresContainer {
     val instance by lazy {
-        PostgreSQLContainer<Nothing>("postgres:11").apply {
+        PostgreSQLContainer<Nothing>("postgres:11.2").apply {
             start()
         }
     }
 }
 
 private object DataSource {
-    val instance: javax.sql.DataSource by lazy {
+    val instance: HikariDataSource by lazy {
         HikariDataSource().apply {
             username = PostgresContainer.instance.username
             password = PostgresContainer.instance.password
@@ -26,15 +26,12 @@ private object DataSource {
     }
 }
 
-private fun migrate(ds: javax.sql.DataSource) = Flyway.configure().dataSource(ds).load().migrate()
-
-private fun clean(ds: javax.sql.DataSource) = Flyway.configure().dataSource(ds).load().clean()
-
 private fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
 
 private fun withMigratedDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
 
-class PostgresSubsumssjonStoreTest {
+class PostgresTest {
+
     @Test
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
@@ -42,6 +39,16 @@ class PostgresSubsumssjonStoreTest {
             assertEquals(1, migrations, "Wrong number of migrations")
         }
     }
+
+    @Test
+    fun `JDBC url is set correctly from  config values `() {
+        with(hikariConfigFrom(Configuration())) {
+            assertEquals("jdbc:postgresql://localhost:5432/dp-regel-api", jdbcUrl)
+        }
+    }
+}
+
+class PostgresSubsumsjonStoreTest {
 
     @Test
     fun `CRUD Operations`() {
