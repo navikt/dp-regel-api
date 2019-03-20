@@ -15,7 +15,6 @@ class ConfigurationTest {
         }
     }
 
-
     @Test
     fun `Configuration is loaded based on application profile`() {
         withProps(mapOf("NAIS_CLUSTER_NAME" to "dev-fss")) {
@@ -58,5 +57,4 @@ class ConfigurationTest {
     fun `Document mapping conventions when using environment variables`() {
         TODO("On the JVM it is hard to overidde environment variables.. Maybe use KotlinTest")
     }
-
 }
