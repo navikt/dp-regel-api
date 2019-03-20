@@ -42,7 +42,7 @@ val hikariVersion = "3.3.1"
 val postgresVersion = "42.2.5"
 val vaultJdbcVersion = "1.2.2"
 val kotliqueryVersion = "1.3.0"
-val vaultJavaDriverVersion = "4.0.0"
+val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
 
 dependencies {
