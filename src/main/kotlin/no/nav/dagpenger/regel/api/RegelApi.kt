@@ -21,6 +21,7 @@ import io.ktor.util.pipeline.PipelineContext
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
 import mu.KotlinLogging
+import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjoner
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjonerRedis
 import no.nav.dagpenger.regel.api.grunnlag.grunnlag
@@ -57,6 +58,11 @@ enum class Regel {
 }
 
 fun main(args: Array<String>) {
+    val config = Configuration()
+
+    if (config.application.profile != Profile.LOCAL) {
+        migrate(config)
+    }
     val env = Environment()
 
     val redisUri = RedisURI.Builder.redis(env.redisHost).build()

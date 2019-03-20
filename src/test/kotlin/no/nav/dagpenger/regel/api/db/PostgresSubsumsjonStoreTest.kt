@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api.db
 
 import com.zaxxer.hikari.HikariDataSource
+import org.flywaydb.core.Flyway
 import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import kotlin.test.assertEquals
@@ -16,7 +17,7 @@ private object PostgresContainer {
 }
 
 private object DataSource {
-    val instance by lazy {
+    val instance: javax.sql.DataSource by lazy {
         HikariDataSource().apply {
             username = PostgresContainer.instance.username
             password = PostgresContainer.instance.password
@@ -24,6 +25,10 @@ private object DataSource {
         }
     }
 }
+
+private fun migrate(ds: javax.sql.DataSource) = Flyway.configure().dataSource(ds).load().migrate()
+
+private fun clean(ds: javax.sql.DataSource) = Flyway.configure().dataSource(ds).load().clean()
 
 private fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
 

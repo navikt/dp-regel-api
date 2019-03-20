@@ -40,6 +40,10 @@ val testcontainers_version = "1.10.6"
 val flywayVersion = "6.0.0-beta"
 val hikariVersion = "3.3.1"
 val postgresVersion = "42.2.5"
+val vaultJdbcVersion = "1.2.2"
+val kotliqueryVersion = "1.3.0"
+val vaultJavaDriverVersion = "4.0.0"
+val konfigVersion = "1.6.10.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -67,7 +71,13 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.postgresql:postgresql:$postgresVersion")
-    implementation("com.github.seratch:kotliquery:1.3.0")
+    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
+    implementation("com.natpryce:konfig:$konfigVersion")
+    implementation("no.nav:vault-jdbc:$vaultJdbcVersion") {
+        exclude(module = "slf4j-simple")
+        exclude(module = "slf4j-api")
+    }
+    runtime("com.bettercloud:vault-java-driver:$vaultJavaDriverVersion")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
