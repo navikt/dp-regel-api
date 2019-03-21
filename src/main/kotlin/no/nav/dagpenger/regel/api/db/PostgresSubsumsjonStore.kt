@@ -2,6 +2,7 @@ package no.nav.dagpenger.regel.api.db
 
 import kotliquery.queryOf
 import kotliquery.sessionOf
+import org.postgresql.util.PSQLException
 import javax.sql.DataSource
 
 class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonStore {
@@ -9,12 +10,12 @@ class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonSt
     override fun isHealthy() = sessionOf(dataSource).run(queryOf("SELECT 1").asExecute)
 
     override fun insert(subsumsjonsId: String, json: String) {
-        sessionOf(dataSource).run(queryOf(
-                """
-            INSERT INTO subsumsjon VALUES (?, (to_json(?::json)))
-            ON CONFLICT(ulid) DO UPDATE SET data = (to_json(?::json))
-            """
-                        .trimIndent(), subsumsjonsId, json, json).asUpdate)
+        try {
+            sessionOf(dataSource).run(queryOf(""" INSERT INTO subsumsjon VALUES (?, (to_json(?::json))) """
+                    .trimIndent(), subsumsjonsId, json).asUpdate)
+        } catch (p: PSQLException) {
+            throw StoreException(p.message!!)
+        }
     }
 
     override fun get(subsumsjonsId: String): String {

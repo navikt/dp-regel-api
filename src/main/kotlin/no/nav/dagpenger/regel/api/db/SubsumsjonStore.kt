@@ -9,3 +9,5 @@ interface SubsumsjonStore {
 }
 
 class SubsumsjonNotFoundException(override val message: String) : RuntimeException(message)
+
+class StoreException(override val message: String) : RuntimeException(message)

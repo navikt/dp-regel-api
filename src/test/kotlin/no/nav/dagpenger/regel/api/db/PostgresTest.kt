@@ -83,19 +83,15 @@ class PostgresSubsumsjonStoreTest {
     }
 
     @Test
-    fun `Upsert on duplicate subsumsjon ids`() {
+    fun `Exception on duplicate subsumsjon ids`() {
         withMigratedDb {
 
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val json1 = """{"test": 1}""".trimIndent()
-                val json2 = """{"test": 2}""".trimIndent()
+                val json = """{"test": 1}""".trimIndent()
                 val subsumsjonId = "1"
 
-                insert(subsumsjonId, json1)
-                assertEquals(json1, get(subsumsjonId))
-
-                insert(subsumsjonId, json2)
-                assertEquals(json2, get(subsumsjonId))
+                insert(subsumsjonId, json)
+                assertFailsWith<StoreException> { insert(subsumsjonId, json) }
             }
         }
     }
