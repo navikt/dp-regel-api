@@ -36,6 +36,14 @@ val kafkaVersion = "2.0.1"
 val confluentVersion = "5.0.2"
 val moshiVersion = "1.8.0"
 val ktorMoshiVersion = "1.0.1"
+val testcontainers_version = "1.10.6"
+val flywayVersion = "6.0.0-beta"
+val hikariVersion = "3.3.1"
+val postgresVersion = "42.2.5"
+val vaultJdbcVersion = "1.2.2"
+val kotliqueryVersion = "1.3.0"
+val vaultJavaDriverVersion = "3.1.0"
+val konfigVersion = "1.6.10.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -60,13 +68,24 @@ dependencies {
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
     implementation("io.confluent:kafka-streams-avro-serde:$confluentVersion")
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("org.postgresql:postgresql:$postgresVersion")
+    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
+    implementation("com.natpryce:konfig:$konfigVersion")
+    implementation("no.nav:vault-jdbc:$vaultJdbcVersion") {
+        exclude(module = "slf4j-simple")
+        exclude(module = "slf4j-api")
+    }
+    runtime("com.bettercloud:vault-java-driver:$vaultJavaDriverVersion")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:$kafkaVersion")
+    testImplementation("org.testcontainers:postgresql:$testcontainers_version")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:$jupiterVersion")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:$kafkaVersion")
 }
 
 spotless {
