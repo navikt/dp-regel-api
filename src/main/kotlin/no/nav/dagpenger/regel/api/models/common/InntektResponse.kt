@@ -1,11 +1,13 @@
 package no.nav.dagpenger.regel.api.models.common
 
+import java.math.BigDecimal
+
 data class InntektResponse(
-    val inntekt: Int,
+    val inntekt: BigDecimal,
     val periode: Int, // todo: enum?
     val inntektsPeriode: InntektsPeriode,
-    val inneholderNaeringsinntekter: Boolean,
-    val andel: Int
+    val inneholderFangstOgFisk: Boolean,
+    val andel: BigDecimal
 ) {
     init {
         val gyldigePerioder = setOf(1, 2, 3)

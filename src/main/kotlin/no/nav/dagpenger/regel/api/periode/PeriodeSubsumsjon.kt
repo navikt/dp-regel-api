@@ -1,6 +1,5 @@
 package no.nav.dagpenger.regel.api.periode
 
-import no.nav.dagpenger.regel.api.models.common.InntektResponse
 import no.nav.dagpenger.regel.api.models.common.InntektsPeriode
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -10,8 +9,7 @@ data class PeriodeSubsumsjon(
     val opprettet: LocalDateTime, // todo: ZonedDateTime?
     val utfort: LocalDateTime, // todo: ZonedDateTime?,
     val faktum: PeriodeFaktum,
-    val resultat: PeriodeResultat,
-    val inntekt: Set<InntektResponse>
+    val resultat: PeriodeResultat
 )
 
 data class PeriodeResultat(

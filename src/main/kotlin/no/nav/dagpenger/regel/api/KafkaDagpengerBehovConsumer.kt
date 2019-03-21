@@ -30,6 +30,7 @@ import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.kstream.Consumed
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.util.Properties
@@ -158,29 +159,7 @@ class KafkaDagpengerBehovConsumer(
                 inntekt?.inntektsId ?: "12345", // fixme
                 behov.harAvtjentVerneplikt),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
-            setOf(
-                InntektResponse(
-                    inntekt = 0,
-                    periode = 1,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
-                    inneholderNaeringsinntekter = false,
-                    andel = 0
-                ),
-                InntektResponse(
-                    inntekt = 0,
-                    periode = 2,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
-                    inneholderNaeringsinntekter = false,
-                    andel = 0
-                ),
-                InntektResponse(
-                    inntekt = 0,
-                    periode = 3,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
-                    inneholderNaeringsinntekter = false,
-                    andel = 0
-                )
-            )
+                behov.minsteinntektInntektsPerioder!!
         )
     }
 
@@ -198,30 +177,7 @@ class KafkaDagpengerBehovConsumer(
                 behov.beregningsDato,
                 inntekt?.inntektsId ?: "12345", // fixme
                 behov.harAvtjentVerneplikt),
-            PeriodeResultat(periodeResultat.periodeAntallUker),
-            setOf(
-                InntektResponse(
-                    inntekt = 0,
-                    periode = 1,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
-                    inneholderNaeringsinntekter = false,
-                    andel = 0
-                ),
-                InntektResponse(
-                    inntekt = 0,
-                    periode = 2,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
-                    inneholderNaeringsinntekter = false,
-                    andel = 0
-                ),
-                InntektResponse(
-                    inntekt = 0,
-                    periode = 3,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
-                    inneholderNaeringsinntekter = false,
-                    andel = 0
-                )
-            )
+            PeriodeResultat(periodeResultat.periodeAntallUker)
         )
     }
 
@@ -242,25 +198,25 @@ class KafkaDagpengerBehovConsumer(
             GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet),
             setOf(
                 InntektResponse(
-                    inntekt = 0,
+                    inntekt = BigDecimal.ZERO,
                     periode = 1,
                     inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
-                    inneholderNaeringsinntekter = false,
-                    andel = 0
+                    inneholderFangstOgFisk = false,
+                    andel = BigDecimal.ZERO
                 ),
                 InntektResponse(
-                    inntekt = 0,
+                    inntekt = BigDecimal.ZERO,
                     periode = 2,
                     inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
-                    inneholderNaeringsinntekter = false,
-                    andel = 0
+                    inneholderFangstOgFisk = false,
+                    andel = BigDecimal.ZERO
                 ),
                 InntektResponse(
-                    inntekt = 0,
+                    inntekt = BigDecimal.ZERO,
                     periode = 3,
                     inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
-                    inneholderNaeringsinntekter = false,
-                    andel = 0
+                    inneholderFangstOgFisk = false,
+                    andel = BigDecimal.ZERO
                 )
             )
         )
