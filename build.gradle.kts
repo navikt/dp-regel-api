@@ -77,6 +77,7 @@ dependencies {
         exclude(module = "slf4j-simple")
         exclude(module = "slf4j-api")
     }
+    implementation("no.bekk.bekkopen:nocommons:0.8.2")
     runtime("com.bettercloud:vault-java-driver:$vaultJavaDriverVersion")
 
     testImplementation(kotlin("test"))
