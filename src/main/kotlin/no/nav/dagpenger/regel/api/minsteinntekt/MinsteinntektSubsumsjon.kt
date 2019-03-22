@@ -11,7 +11,7 @@ data class MinsteinntektSubsumsjon(
     val utfort: LocalDateTime, // todo: ZonedDateTime?,
     val faktum: MinsteinntektFaktum,
     val resultat: MinsteinntektResultat,
-    val inntekt: List<InntektResponse>
+    val inntekt: Set<InntektResponse>
 )
 
 data class MinsteinntektResultat(

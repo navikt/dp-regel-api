@@ -18,7 +18,7 @@ data class SubsumsjonsBehov(
 
     val tasks: List<String>? = null,
 
-    val minsteinntektInntektsPerioder: List<InntektResponse>? = null,
+    val minsteinntektInntektsPerioder: Set<InntektResponse>? = null,
     var minsteinntektResultat: MinsteinntektResultat? = null,
     var periodeResultat: PeriodeResultat? = null,
     var grunnlagResultat: GrunnlagResultat? = null,

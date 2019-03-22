@@ -55,7 +55,7 @@ class KafkaDagpengerBehovConsumerTest {
                 SatsSubsumsjonerDummy()
         )
 
-        val inntektsPerioder = listOf(
+        val inntektsPerioder = setOf(
                 InntektResponse(
                         inntekt = BigDecimal.ZERO,
                         periode = 1,
