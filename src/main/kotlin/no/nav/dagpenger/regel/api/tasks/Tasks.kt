@@ -2,6 +2,14 @@ package no.nav.dagpenger.regel.api.tasks
 
 import no.nav.dagpenger.regel.api.Regel
 
+data class TaskResponse(
+    val regel: Regel,
+    val status: TaskStatus,
+    val expires: String
+)
+
+fun taskPending(regel: Regel) = TaskResponse(regel, TaskStatus.PENDING, "not in use")
+
 enum class TaskStatus {
     PENDING, DONE
 }
@@ -15,13 +23,3 @@ data class Task(
     var subsumsjonsId: String? = null
 )
 
-interface Tasks {
-
-    fun createTask(regel: Regel, behovId: String): Task
-
-    fun getTask(regel: Regel, behovId: String): Task?
-
-    fun getTask(taskId: String): Task?
-
-    fun updateTask(regel: Regel, behovId: String, subsumsjonsId: String): Task
-}

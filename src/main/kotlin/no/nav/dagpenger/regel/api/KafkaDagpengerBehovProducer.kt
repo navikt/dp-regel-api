@@ -1,13 +1,8 @@
 package no.nav.dagpenger.regel.api
 
-import de.huxhorn.sulky.ulid.ULID
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.grunnlag.GrunnlagRequestParametere
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektRequestParametere
-import no.nav.dagpenger.regel.api.periode.PeriodeRequestParametere
-import no.nav.dagpenger.regel.api.sats.SatsRequestParametere
 import no.nav.dagpenger.streams.KafkaCredential
-import no.nav.dagpenger.streams.Topics
+import no.nav.dagpenger.streams.Topics.DAGPENGER_BEHOV_PACKET_EVENT
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -16,23 +11,22 @@ import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.StringSerializer
 import java.io.File
-import java.time.YearMonth
 import java.util.Properties
 
 private val LOGGER = KotlinLogging.logger {}
 
-class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
-    private val jsonAdapter = moshiInstance.adapter(SubsumsjonsBehov::class.java)
-    private val clientId = "dp-regel-api"
-    private val ulidGenerator = ULID()
-
-    private val kafkaConfig = Properties().apply {
+fun producerConfig(
+    appId: String,
+    bootStapServerUrl: String,
+    credential: KafkaCredential? = null
+): Properties {
+    return Properties().apply {
         putAll(
             listOf(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to env.bootstrapServersUrl,
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootStapServerUrl,
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
-                ProducerConfig.CLIENT_ID_CONFIG to clientId,
+                ProducerConfig.CLIENT_ID_CONFIG to appId,
                 ProducerConfig.ACKS_CONFIG to "all",
                 ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
                 ProducerConfig.RETRIES_CONFIG to Int.MAX_VALUE.toString(),
@@ -43,9 +37,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             )
         )
 
-        val kafkaCredential = KafkaCredential(env.username, env.password)
-
-        kafkaCredential.let { credential ->
+        credential?.let { credential ->
             LOGGER.info { "Using user name ${credential.username} to authenticate against Kafka brokers " }
             put(SaslConfigs.SASL_MECHANISM, "PLAIN")
             put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
@@ -67,137 +59,30 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             }
         }
     }
+}
 
-    private val kafkaProducer = KafkaProducer<String, String>(kafkaConfig)
+class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProducer {
+
+    private val jsonAdapter = moshiInstance.adapter(SubsumsjonsBehov::class.java)
+    private val kafkaProducer = KafkaProducer<String, String>(kafkaProps)
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
-            LOGGER.info("Closing $clientId Kafka producer")
+            LOGGER.info("Closing $APPLICATION_NAME Kafka producer")
             kafkaProducer.flush()
             kafkaProducer.close()
             LOGGER.info("done! ")
         })
     }
 
-    override fun produceMinsteInntektEvent(request: MinsteinntektRequestParametere): SubsumsjonsBehov {
-        val behovId = ulidGenerator.nextULID()
-        val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
-        val behov = mapRequestToBehov(request, behovId, senesteInntektsmåned)
-        produceEvent(behov, behovId)
-
-        return behov
-    }
-
-    override fun producePeriodeEvent(request: PeriodeRequestParametere): SubsumsjonsBehov {
-        val behovId = ulidGenerator.nextULID()
-        val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
-        val behov = mapRequestToBehov(request, behovId, senesteInntektsmåned)
-        produceEvent(behov, behovId)
-
-        return behov
-    }
-
-    override fun produceGrunnlagEvent(request: GrunnlagRequestParametere): SubsumsjonsBehov {
-        val behovId = ulidGenerator.nextULID()
-        val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
-        val behov = mapRequestToBehov(request, behovId, senesteInntektsmåned)
-        produceEvent(behov, behovId)
-
-        return behov
-    }
-
-    override fun produceSatsEvent(request: SatsRequestParametere): SubsumsjonsBehov {
-        val behovId = ulidGenerator.nextULID()
-        val behov = mapRequestToBehov(request, behovId)
-        produceEvent(behov, behovId)
-
-        return behov
-    }
-
-    fun produceEvent(behov: SubsumsjonsBehov, key: String) {
+    override fun produceEvent(behov: SubsumsjonsBehov) {
         val behovJson = jsonAdapter.toJson(behov)
         LOGGER.info { "Producing dagpenger behov $behovJson" }
         kafkaProducer.send(
-            ProducerRecord(Topics.DAGPENGER_BEHOV_EVENT.name, key, behovJson)
+            ProducerRecord(DAGPENGER_BEHOV_PACKET_EVENT.name, behov.behovId, behovJson)
         ) { metadata, exception ->
             exception?.let { LOGGER.error { "Failed to produce dagpenger behov" } }
             metadata?.let { LOGGER.info { "Produced -> ${metadata.topic()}  to offset ${metadata.offset()}" } }
         }
     }
-
-    fun mapRequestToBehov(
-        request: MinsteinntektRequestParametere,
-        behovId: String,
-        senesteInntektsmåned: YearMonth
-    ): SubsumsjonsBehov {
-
-        val bruktInntektsPeriode =
-            if (request.bruktInntektsPeriode != null)
-                BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
-            else null
-
-        return SubsumsjonsBehov(
-            behovId,
-            request.aktorId,
-            request.vedtakId,
-            request.beregningsdato,
-            request.harAvtjentVerneplikt,
-            senesteInntektsmåned = senesteInntektsmåned,
-            bruktInntektsPeriode = bruktInntektsPeriode
-        )
-    }
-
-    fun mapRequestToBehov(
-        request: PeriodeRequestParametere,
-        behovId: String,
-        senesteInntektsmåned: YearMonth
-    ): SubsumsjonsBehov {
-
-        val bruktInntektsPeriode =
-            if (request.bruktInntektsPeriode != null)
-                BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
-            else null
-
-        return SubsumsjonsBehov(
-            behovId,
-            request.aktorId,
-            request.vedtakId,
-            request.beregningsdato,
-            request.harAvtjentVerneplikt,
-            senesteInntektsmåned = senesteInntektsmåned,
-            bruktInntektsPeriode = bruktInntektsPeriode
-        )
-    }
-
-    fun mapRequestToBehov(
-        request: GrunnlagRequestParametere,
-        behovId: String,
-        senesteInntektsmåned: YearMonth
-    ): SubsumsjonsBehov {
-
-        val bruktInntektsPeriode =
-            if (request.bruktInntektsPeriode != null)
-                BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
-            else null
-
-        return SubsumsjonsBehov(
-            behovId,
-            request.aktorId,
-            request.vedtakId,
-            request.beregningsdato,
-            request.harAvtjentVerneplikt,
-            senesteInntektsmåned = senesteInntektsmåned,
-            bruktInntektsPeriode = bruktInntektsPeriode
-        )
-    }
-
-    fun mapRequestToBehov(request: SatsRequestParametere, behovId: String): SubsumsjonsBehov =
-        SubsumsjonsBehov(
-            behovId,
-            request.aktorId,
-            request.vedtakId,
-            request.beregningsdato,
-            antallBarn = request.antallBarn,
-            grunnlag = request.grunnlag
-        )
 }

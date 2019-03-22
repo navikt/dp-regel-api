@@ -1,8 +1,13 @@
 package no.nav.dagpenger.regel.api
 
-import no.nav.dagpenger.regel.api.models.common.InntektResponse
+import de.huxhorn.sulky.ulid.ULID
+import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektRequestParametere
+import no.nav.dagpenger.regel.api.models.InntektResponse
+import no.nav.dagpenger.regel.api.periode.PeriodeRequestParametere
 import java.time.LocalDate
 import java.time.YearMonth
+
+internal val ulidGenerator = ULID()
 
 data class SubsumsjonsBehov(
     val behovId: String,
@@ -24,6 +29,18 @@ data class SubsumsjonsBehov(
     var grunnlagResultat: GrunnlagResultat? = null,
     var satsResultat: SatsResultat? = null
 )
+
+sealed class Status {
+    data class Done(val subsumsjonsId: String) : Status() {
+        companion object {
+            override fun toString() = "Done"
+        }
+    }
+
+    object Pending : Status() {
+        override fun toString() = "Pending"
+    }
+}
 
 data class BruktInntektsPeriode(
     val førsteMåned: YearMonth,
@@ -63,3 +80,46 @@ data class SatsResultat(
     val dagsats: Int,
     val ukesats: Int
 )
+
+fun mapRequestToBehov(
+    request: MinsteinntektRequestParametere
+): SubsumsjonsBehov {
+
+    val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
+    val bruktInntektsPeriode =
+        if (request.bruktInntektsPeriode != null)
+            BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
+        else null
+
+    return SubsumsjonsBehov(
+        ulidGenerator.nextULID(),
+        request.aktorId,
+        request.vedtakId,
+        request.beregningsdato,
+        request.harAvtjentVerneplikt,
+        senesteInntektsmåned = senesteInntektsmåned,
+        bruktInntektsPeriode = bruktInntektsPeriode
+    )
+}
+
+fun mapRequestToBehov(
+    request: PeriodeRequestParametere
+): SubsumsjonsBehov {
+
+    val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
+
+    val bruktInntektsPeriode =
+        if (request.bruktInntektsPeriode != null)
+            BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
+        else null
+
+    return SubsumsjonsBehov(
+        ulidGenerator.nextULID(),
+        request.aktorId,
+        request.vedtakId,
+        request.beregningsdato,
+        request.harAvtjentVerneplikt,
+        senesteInntektsmåned = senesteInntektsmåned,
+        bruktInntektsPeriode = bruktInntektsPeriode
+    )
+}

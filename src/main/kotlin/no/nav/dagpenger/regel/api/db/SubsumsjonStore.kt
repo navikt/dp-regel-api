@@ -1,13 +1,21 @@
 package no.nav.dagpenger.regel.api.db
 
+import no.nav.dagpenger.regel.api.Status
+import no.nav.dagpenger.regel.api.SubsumsjonsBehov
+import no.nav.dagpenger.regel.api.models.Subsumsjon
+
 interface SubsumsjonStore {
-    fun get(subsumsjonsId: String): String
+    fun insertBehov(subsumsjonsBehov: SubsumsjonsBehov)
 
-    fun insert(subsumsjonsId: String, json: String)
+    fun behovStatus(behovId: String): Status
 
-    fun isHealthy(): Boolean
+    fun insertSubsumsjon(subsumsjon: Subsumsjon)
+
+    fun getSubsumsjon(subsumsjonId: String): Subsumsjon
 }
 
 class SubsumsjonNotFoundException(override val message: String) : RuntimeException(message)
+
+class BehovNotFoundException(override val message: String) : RuntimeException(message)
 
 class StoreException(override val message: String) : RuntimeException(message)

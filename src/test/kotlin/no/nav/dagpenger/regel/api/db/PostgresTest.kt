@@ -5,8 +5,6 @@ import no.nav.dagpenger.regel.api.Configuration
 import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 private object PostgresContainer {
     val instance by lazy {
@@ -22,6 +20,7 @@ private object DataSource {
             username = PostgresContainer.instance.username
             password = PostgresContainer.instance.password
             jdbcUrl = PostgresContainer.instance.jdbcUrl
+            connectionTimeout = 1000L
         }
     }
 }
@@ -58,48 +57,4 @@ class PostgresTest {
     }
 }
 
-class PostgresSubsumsjonStoreTest {
-
-    @Test
-    fun `CRUD Operations`() {
-        withMigratedDb {
-            val json = """{"test": 1}""".trimIndent()
-
-            with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insert("1", json)
-                assertEquals(json, get("1"))
-            }
-        }
-    }
-
-    @Test
-    fun `Exeception if subsumsjon not found `() {
-        withMigratedDb {
-
-            with(PostgresSubsumsjonStore(DataSource.instance)) {
-                assertFailsWith<SubsumsjonNotFoundException> { get("hubba") }
-            }
-        }
-    }
-
-    @Test
-    fun `Exception on duplicate subsumsjon ids`() {
-        withMigratedDb {
-
-            with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val json = """{"test": 1}""".trimIndent()
-                val subsumsjonId = "1"
-
-                insert(subsumsjonId, json)
-                assertFailsWith<StoreException> { insert(subsumsjonId, json) }
-            }
-        }
-    }
-
-    @Test
-    fun `Health check`() {
-        with(PostgresSubsumsjonStore(DataSource.instance)) {
-            assertTrue(isHealthy())
-        }
-    }
-}
+class PostgresSubsumsjonStoreTest
