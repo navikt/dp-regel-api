@@ -133,7 +133,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
         val bruktInntektsPeriode =
             if (request.bruktInntektsPeriode != null)
-                BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
+                BruktInntektsPeriode(request.bruktInntektsPeriode.førsteMåned, request.bruktInntektsPeriode.sisteMåned)
             else null
 
         return SubsumsjonsBehov(
@@ -155,7 +155,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
         val bruktInntektsPeriode =
             if (request.bruktInntektsPeriode != null)
-                BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
+                BruktInntektsPeriode(request.bruktInntektsPeriode.førsteMåned, request.bruktInntektsPeriode.sisteMåned)
             else null
 
         return SubsumsjonsBehov(
@@ -177,7 +177,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
         val bruktInntektsPeriode =
             if (request.bruktInntektsPeriode != null)
-                BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
+                BruktInntektsPeriode(request.bruktInntektsPeriode.førsteMåned, request.bruktInntektsPeriode.sisteMåned)
             else null
 
         return SubsumsjonsBehov(
