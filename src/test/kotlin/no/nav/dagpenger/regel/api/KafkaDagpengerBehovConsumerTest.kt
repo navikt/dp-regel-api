@@ -1,5 +1,7 @@
 package no.nav.dagpenger.regel.api
 
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Types
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjonerDummy
 import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerDummy
@@ -25,6 +27,9 @@ import java.util.Random
 class KafkaDagpengerBehovConsumerTest {
     val jsonAdapter = moshiInstance.adapter(SubsumsjonsBehov::class.java)
     val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)
+
+    val inntektsPerioderAdapter: JsonAdapter<Set<InntektResponse>> =
+            moshiInstance.adapter(Types.newParameterizedType(Set::class.java, InntektResponse::class.java))
 
     companion object {
         val factory = ConsumerRecordFactory<String, String>(
@@ -55,7 +60,7 @@ class KafkaDagpengerBehovConsumerTest {
                 SatsSubsumsjonerDummy()
         )
 
-        val inntektsPerioder = listOf(
+        val inntektsPerioder = setOf(
                 InntektResponse(
                         inntekt = BigDecimal.ZERO,
                         periode = 1,
@@ -92,7 +97,7 @@ class KafkaDagpengerBehovConsumerTest {
                 LocalDate.now(),
                 inntektV1 = inntektAdapter.toJson(Inntekt("", emptyList())),
                 minsteinntektResultat = minsteinntektResultat,
-                minsteinntektInntektsPerioder = inntektsPerioder
+                minsteinntektInntektsPerioder = inntektsPerioderAdapter.toJson(inntektsPerioder)
         )
         val behovJson = jsonAdapter.toJson(behov)
 
