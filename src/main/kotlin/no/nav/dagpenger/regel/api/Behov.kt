@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api
 
+import no.nav.dagpenger.regel.api.models.common.InntektResponse
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -17,6 +18,7 @@ data class SubsumsjonsBehov(
 
     val tasks: List<String>? = null,
 
+    val minsteinntektInntektsPerioder: List<InntektResponse>? = null,
     var minsteinntektResultat: MinsteinntektResultat? = null,
     var periodeResultat: PeriodeResultat? = null,
     var grunnlagResultat: GrunnlagResultat? = null,
