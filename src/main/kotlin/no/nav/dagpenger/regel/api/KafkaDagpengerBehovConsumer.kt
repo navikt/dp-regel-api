@@ -163,7 +163,7 @@ class KafkaDagpengerBehovConsumer(
                 inntekt?.inntektsId ?: "12345", // fixme
                 behov.harAvtjentVerneplikt),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
-                inntektsperioder ?: emptySet() //fixme
+                inntektsperioder ?: emptySet() // fixme
         )
     }
 

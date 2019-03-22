@@ -81,7 +81,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     override fun produceMinsteInntektEvent(request: MinsteinntektRequestParametere): SubsumsjonsBehov {
         val behovId = ulidGenerator.nextULID()
-        val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
+        val senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato)
         val behov = mapRequestToBehov(request, behovId, senesteInntektsmåned)
         produceEvent(behov, behovId)
 
@@ -90,7 +90,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     override fun producePeriodeEvent(request: PeriodeRequestParametere): SubsumsjonsBehov {
         val behovId = ulidGenerator.nextULID()
-        val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
+        val senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato)
         val behov = mapRequestToBehov(request, behovId, senesteInntektsmåned)
         produceEvent(behov, behovId)
 
@@ -99,7 +99,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     override fun produceGrunnlagEvent(request: GrunnlagRequestParametere): SubsumsjonsBehov {
         val behovId = ulidGenerator.nextULID()
-        val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
+        val senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato)
         val behov = mapRequestToBehov(request, behovId, senesteInntektsmåned)
         produceEvent(behov, behovId)
 
