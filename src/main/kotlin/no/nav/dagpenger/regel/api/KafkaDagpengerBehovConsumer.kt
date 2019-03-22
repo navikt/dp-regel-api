@@ -1,5 +1,7 @@
 package no.nav.dagpenger.regel.api
 
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Types
 import mu.KotlinLogging
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.models.common.InntektResponse
@@ -148,6 +150,8 @@ class KafkaDagpengerBehovConsumer(
         val minsteinntektResultat = behov.minsteinntektResultat!!
         val inntektString = behov.inntektV1!!
         val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
+        val inntektsPerioderString = behov.minsteinntektInntektsPerioder!!
+        val inntektsperioder = inntektsPerioderAdapter.fromJson(inntektsPerioderString) // TODO ADAPT TO PACKET
         return MinsteinntektSubsumsjon(
             minsteinntektResultat.subsumsjonsId,
             LocalDateTime.now(),
@@ -159,7 +163,7 @@ class KafkaDagpengerBehovConsumer(
                 inntekt?.inntektsId ?: "12345", // fixme
                 behov.harAvtjentVerneplikt),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
-                behov.minsteinntektInntektsPerioder!!
+                inntektsperioder ?: emptySet() //fixme
         )
     }
 
@@ -223,6 +227,9 @@ class KafkaDagpengerBehovConsumer(
     }
 
     val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)
+
+    val inntektsPerioderAdapter: JsonAdapter<Set<InntektResponse>> =
+            moshiInstance.adapter(Types.newParameterizedType(Set::class.java, InntektResponse::class.java))
 
     fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
         val satsResultat = behov.satsResultat!!
