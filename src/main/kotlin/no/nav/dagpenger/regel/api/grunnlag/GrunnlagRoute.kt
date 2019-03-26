@@ -49,5 +49,6 @@ data class GrunnlagRequestParametere(
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val harAvtjentVerneplikt: Boolean? = false,
+    val oppfyllerKravTilFangstOgFisk: Boolean = false,
     val bruktInntektsPeriode: InntektsPeriode? = null
 )
