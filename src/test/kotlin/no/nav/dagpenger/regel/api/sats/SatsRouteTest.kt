@@ -19,8 +19,7 @@ val validJson = """
 {
 	"aktorId": "9000000028204",
     "vedtakId": 1,
-    "beregningsdato": "2019-01-08",
-    "grunnlag": 0
+    "beregningsdato": "2019-01-08"
 }
 """.trimIndent()
 

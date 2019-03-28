@@ -54,6 +54,5 @@ data class SatsRequestParametere(
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val bruktInntektsPeriode: InntektsPeriode? = null,
-    val manueltGrunnlag: Int,
     val antallBarn: Int? = 0
 )

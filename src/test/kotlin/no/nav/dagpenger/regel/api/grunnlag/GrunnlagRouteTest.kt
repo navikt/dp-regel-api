@@ -23,6 +23,15 @@ val validJson = """
 }
 """.trimIndent()
 
+val validJsonManueltGrunnlag = """
+{
+	"aktorId": "9000000028204",
+    "vedtakId": 1,
+    "beregningsdato": "2019-01-08",
+    "manueltGrunnlag": 54200
+}
+""".trimIndent()
+
 val jsonMissingFields = """
 {
 	"aktorId": "9000000028204",
@@ -35,6 +44,18 @@ class GrunnlagRouteTest {
         handleRequest(HttpMethod.Post, "/grunnlag") {
             addHeader(HttpHeaders.ContentType, "application/json")
             setBody(validJson)
+        }.apply {
+            assertTrue(requestHandled)
+            Assertions.assertEquals(HttpStatusCode.Accepted, response.status())
+            assertTrue(response.headers.contains(HttpHeaders.Location))
+        }
+    }
+
+    @Test
+    fun `post request with good json containing optional field manueltGrunnlag`() = testApp {
+        handleRequest(HttpMethod.Post, "/grunnlag") {
+            addHeader(HttpHeaders.ContentType, "application/json")
+            setBody(validJsonManueltGrunnlag)
         }.apply {
             assertTrue(requestHandled)
             Assertions.assertEquals(HttpStatusCode.Accepted, response.status())
