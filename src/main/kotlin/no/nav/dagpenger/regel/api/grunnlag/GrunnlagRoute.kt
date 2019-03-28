@@ -50,5 +50,6 @@ data class GrunnlagRequestParametere(
     val beregningsdato: LocalDate,
     val harAvtjentVerneplikt: Boolean? = false,
     val oppfyllerKravTilFangstOgFisk: Boolean = false,
-    val bruktInntektsPeriode: InntektsPeriode? = null
+    val bruktInntektsPeriode: InntektsPeriode? = null,
+    val manueltGrunnlag: Int? = null
 )

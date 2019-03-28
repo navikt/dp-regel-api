@@ -28,19 +28,19 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     private val kafkaConfig = Properties().apply {
         putAll(
-            listOf(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to env.bootstrapServersUrl,
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
-                ProducerConfig.CLIENT_ID_CONFIG to clientId,
-                ProducerConfig.ACKS_CONFIG to "all",
-                ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
-                ProducerConfig.RETRIES_CONFIG to Int.MAX_VALUE.toString(),
-                ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION to "5", // kafka 2.0 >= 1.1 so we can keep this as 5 instead of 1
-                ProducerConfig.COMPRESSION_TYPE_CONFIG to "snappy",
-                ProducerConfig.LINGER_MS_CONFIG to "20",
-                ProducerConfig.BATCH_SIZE_CONFIG to 32.times(1024).toString() // 32Kb (default is 16 Kb)
-            )
+                listOf(
+                        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to env.bootstrapServersUrl,
+                        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
+                        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
+                        ProducerConfig.CLIENT_ID_CONFIG to clientId,
+                        ProducerConfig.ACKS_CONFIG to "all",
+                        ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
+                        ProducerConfig.RETRIES_CONFIG to Int.MAX_VALUE.toString(),
+                        ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION to "5", // kafka 2.0 >= 1.1 so we can keep this as 5 instead of 1
+                        ProducerConfig.COMPRESSION_TYPE_CONFIG to "snappy",
+                        ProducerConfig.LINGER_MS_CONFIG to "20",
+                        ProducerConfig.BATCH_SIZE_CONFIG to 32.times(1024).toString() // 32Kb (default is 16 Kb)
+                )
         )
 
         val kafkaCredential = KafkaCredential(env.username, env.password)
@@ -50,8 +50,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             put(SaslConfigs.SASL_MECHANISM, "PLAIN")
             put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
             put(
-                SaslConfigs.SASL_JAAS_CONFIG,
-                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${credential.username}\" password=\"${credential.password}\";"
+                    SaslConfigs.SASL_JAAS_CONFIG,
+                    "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${credential.username}\" password=\"${credential.password}\";"
             )
 
             val trustStoreLocation = System.getenv("NAV_TRUSTSTORE_PATH")
@@ -108,7 +108,8 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
 
     override fun produceSatsEvent(request: SatsRequestParametere): SubsumsjonsBehov {
         val behovId = ulidGenerator.nextULID()
-        val behov = mapRequestToBehov(request, behovId)
+        val senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato)
+        val behov = mapRequestToBehov(request, behovId, senesteInntektsmåned)
         produceEvent(behov, behovId)
 
         return behov
@@ -118,7 +119,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
         val behovJson = jsonAdapter.toJson(behov)
         LOGGER.info { "Producing dagpenger behov $behovJson" }
         kafkaProducer.send(
-            ProducerRecord(Topics.DAGPENGER_BEHOV_EVENT.name, key, behovJson)
+                ProducerRecord(Topics.DAGPENGER_BEHOV_EVENT.name, key, behovJson)
         ) { metadata, exception ->
             exception?.let { LOGGER.error { "Failed to produce dagpenger behov" } }
             metadata?.let { LOGGER.info { "Produced -> ${metadata.topic()}  to offset ${metadata.offset()}" } }
@@ -126,78 +127,59 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
     }
 
     fun mapRequestToBehov(
-        request: MinsteinntektRequestParametere,
-        behovId: String,
-        senesteInntektsmåned: YearMonth
-    ): SubsumsjonsBehov {
-
-        val bruktInntektsPeriode =
-            if (request.bruktInntektsPeriode != null)
-                BruktInntektsPeriode(request.bruktInntektsPeriode.førsteMåned, request.bruktInntektsPeriode.sisteMåned)
-            else null
-
-        return SubsumsjonsBehov(
+            request: MinsteinntektRequestParametere,
+            behovId: String,
+            senesteInntektsmåned: YearMonth
+    ) = SubsumsjonsBehov(
             behovId,
             request.aktorId,
             request.vedtakId,
             request.beregningsdato,
             request.harAvtjentVerneplikt,
             senesteInntektsmåned = senesteInntektsmåned,
-            bruktInntektsPeriode = bruktInntektsPeriode
-        )
-    }
+            bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) }
+    )
 
     fun mapRequestToBehov(
-        request: PeriodeRequestParametere,
-        behovId: String,
-        senesteInntektsmåned: YearMonth
-    ): SubsumsjonsBehov {
-
-        val bruktInntektsPeriode =
-            if (request.bruktInntektsPeriode != null)
-                BruktInntektsPeriode(request.bruktInntektsPeriode.førsteMåned, request.bruktInntektsPeriode.sisteMåned)
-            else null
-
-        return SubsumsjonsBehov(
+            request: PeriodeRequestParametere,
+            behovId: String,
+            senesteInntektsmåned: YearMonth
+    ) = SubsumsjonsBehov(
             behovId,
             request.aktorId,
             request.vedtakId,
             request.beregningsdato,
             request.harAvtjentVerneplikt,
             senesteInntektsmåned = senesteInntektsmåned,
-            bruktInntektsPeriode = bruktInntektsPeriode
-        )
-    }
+            bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) }
+    )
 
     fun mapRequestToBehov(
-        request: GrunnlagRequestParametere,
-        behovId: String,
-        senesteInntektsmåned: YearMonth
-    ): SubsumsjonsBehov {
-
-        val bruktInntektsPeriode =
-            if (request.bruktInntektsPeriode != null)
-                BruktInntektsPeriode(request.bruktInntektsPeriode.førsteMåned, request.bruktInntektsPeriode.sisteMåned)
-            else null
-
-        return SubsumsjonsBehov(
+            request: GrunnlagRequestParametere,
+            behovId: String,
+            senesteInntektsmåned: YearMonth
+    ) = SubsumsjonsBehov(
             behovId,
             request.aktorId,
             request.vedtakId,
             request.beregningsdato,
             request.harAvtjentVerneplikt,
+            bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) },
             senesteInntektsmåned = senesteInntektsmåned,
-            bruktInntektsPeriode = bruktInntektsPeriode
-        )
-    }
+            manueltGrunnlag = request.manueltGrunnlag
+    )
 
-    fun mapRequestToBehov(request: SatsRequestParametere, behovId: String): SubsumsjonsBehov =
-        SubsumsjonsBehov(
+    fun mapRequestToBehov(
+            request: SatsRequestParametere,
+            behovId: String,
+            senesteInntektsmåned: YearMonth
+    ) = SubsumsjonsBehov(
             behovId,
             request.aktorId,
             request.vedtakId,
             request.beregningsdato,
-            antallBarn = request.antallBarn,
-            grunnlag = request.grunnlag
-        )
+            senesteInntektsmåned = senesteInntektsmåned,
+            bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) },
+            antallBarn = request.antallBarn
+    )
 }

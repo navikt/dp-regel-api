@@ -198,7 +198,8 @@ class KafkaDagpengerBehovConsumer(
                 behov.vedtakId,
                 behov.beregningsDato,
                 inntekt?.inntektsId ?: "12345", // fixme
-                behov.harAvtjentVerneplikt),
+                behov.harAvtjentVerneplikt,
+                manueltGrunnlag = behov.manueltGrunnlag),
             GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet),
             setOf(
                 InntektResponse(
@@ -233,13 +234,12 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
         val satsResultat = behov.satsResultat!!
-        val grunnlag = behov.grunnlag!!
         return SatsSubsumsjon(
             satsResultat.subsumsjonsId,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, grunnlag, behov.antallBarn),
-            SatsResultat(satsResultat.dagsats, satsResultat.ukesats)
+            SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, behov.antallBarn),
+            SatsResultat(satsResultat.dagsats, satsResultat.ukesats, satsResultat.benyttet90ProsentRegel)
         )
     }
 }
