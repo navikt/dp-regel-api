@@ -127,9 +127,9 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
     }
 
     fun mapRequestToBehov(
-            request: MinsteinntektRequestParametere,
-            behovId: String,
-            senesteInntektsmåned: YearMonth
+        request: MinsteinntektRequestParametere,
+        behovId: String,
+        senesteInntektsmåned: YearMonth
     ) = SubsumsjonsBehov(
             behovId,
             request.aktorId,
@@ -141,9 +141,9 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
     )
 
     fun mapRequestToBehov(
-            request: PeriodeRequestParametere,
-            behovId: String,
-            senesteInntektsmåned: YearMonth
+        request: PeriodeRequestParametere,
+        behovId: String,
+        senesteInntektsmåned: YearMonth
     ) = SubsumsjonsBehov(
             behovId,
             request.aktorId,
@@ -155,9 +155,9 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
     )
 
     fun mapRequestToBehov(
-            request: GrunnlagRequestParametere,
-            behovId: String,
-            senesteInntektsmåned: YearMonth
+        request: GrunnlagRequestParametere,
+        behovId: String,
+        senesteInntektsmåned: YearMonth
     ) = SubsumsjonsBehov(
             behovId,
             request.aktorId,
@@ -170,9 +170,9 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
     )
 
     fun mapRequestToBehov(
-            request: SatsRequestParametere,
-            behovId: String,
-            senesteInntektsmåned: YearMonth
+        request: SatsRequestParametere,
+        behovId: String,
+        senesteInntektsmåned: YearMonth
     ) = SubsumsjonsBehov(
             behovId,
             request.aktorId,
