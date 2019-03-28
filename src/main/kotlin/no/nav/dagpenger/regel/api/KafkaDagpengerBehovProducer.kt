@@ -164,7 +164,6 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             request.vedtakId,
             request.beregningsdato,
             request.harAvtjentVerneplikt,
-            bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) },
             senesteInntektsmåned = senesteInntektsmåned,
             manueltGrunnlag = request.manueltGrunnlag
     )
@@ -179,7 +178,6 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             request.vedtakId,
             request.beregningsdato,
             senesteInntektsmåned = senesteInntektsmåned,
-            bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) },
             antallBarn = request.antallBarn
     )
 }
