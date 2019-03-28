@@ -221,14 +221,14 @@ class KafkaDagpengerBehovConsumerTest {
                 "satsSubsumsjon",
                 "regel",
                 0,
-                0)
+                0,
+                false)
 
         val behov = SubsumsjonsBehov(
                 TasksDummy.satsPendingBehovId,
                 "12345",
                 Random().nextInt(),
                 LocalDate.now(),
-                grunnlag = 1000,
                 satsResultat = satsResultat
         )
         val behovJson = jsonAdapter.toJson(behov)

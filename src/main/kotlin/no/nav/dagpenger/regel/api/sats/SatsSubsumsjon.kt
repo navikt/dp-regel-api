@@ -13,13 +13,13 @@ data class SatsSubsumsjon(
 
 data class SatsResultat(
     val dagsats: Int,
-    val ukesats: Int
+    val ukesats: Int,
+    val benyttet90ProsentRegel: Boolean
 )
 
 data class SatsFaktum(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
-    val grunnlag: Int,
     val antallBarn: Int? = 0
 )

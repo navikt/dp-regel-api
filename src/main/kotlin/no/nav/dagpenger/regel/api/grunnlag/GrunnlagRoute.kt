@@ -14,7 +14,6 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.Regel
-import no.nav.dagpenger.regel.api.models.common.InntektsPeriode
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
 import java.time.LocalDate
@@ -50,5 +49,5 @@ data class GrunnlagRequestParametere(
     val beregningsdato: LocalDate,
     val harAvtjentVerneplikt: Boolean? = false,
     val oppfyllerKravTilFangstOgFisk: Boolean = false,
-    val bruktInntektsPeriode: InntektsPeriode? = null
+    val manueltGrunnlag: Int? = null
 )

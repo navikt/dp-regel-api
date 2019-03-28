@@ -11,11 +11,9 @@ data class SubsumsjonsBehov(
     val harAvtjentVerneplikt: Boolean? = null,
     val antallBarn: Int? = null,
     val inntektV1: String? = null,
-    val grunnlag: Int? = null,
+    val manueltGrunnlag: Int? = null,
     val senesteInntektsmåned: YearMonth? = null,
     val bruktInntektsPeriode: BruktInntektsPeriode? = null,
-
-    val tasks: List<String>? = null,
 
     val minsteinntektInntektsPerioder: String? = null,
     var minsteinntektResultat: MinsteinntektResultat? = null,
@@ -60,5 +58,6 @@ data class SatsResultat(
     val subsumsjonsId: String,
     val regelIdentifikator: String,
     val dagsats: Int,
-    val ukesats: Int
+    val ukesats: Int,
+    val benyttet90ProsentRegel: Boolean
 )
