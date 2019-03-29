@@ -15,7 +15,8 @@ data class GrunnlagSubsumsjon(
 
 data class GrunnlagResultat(
     val avkortet: Int,
-    val uavkortet: Int
+    val uavkortet: Int,
+    val beregningsresultat: String
 )
 
 data class GrunnlagFaktum(

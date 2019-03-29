@@ -49,7 +49,8 @@ data class GrunnlagResultat(
     val subsumsjonsId: String,
     val regelIdentifikator: String,
     val avkortet: Int,
-    val uavkortet: Int
+    val uavkortet: Int,
+    val beregningsregel: String
 )
 
 data class SatsResultat(
