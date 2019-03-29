@@ -134,7 +134,8 @@ class KafkaDagpengerBehovConsumerTest {
                 "grunnlagSubsumsjon",
                 "regel",
                 1000,
-                1500)
+                1500,
+                "ArbeidsinntektSiste12")
 
         val behov = SubsumsjonsBehov(
                 TasksDummy.grunnlagPendingBehovId,

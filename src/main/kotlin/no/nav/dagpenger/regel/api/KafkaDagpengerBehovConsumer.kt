@@ -200,7 +200,7 @@ class KafkaDagpengerBehovConsumer(
                 inntekt?.inntektsId ?: "12345", // fixme
                 behov.harAvtjentVerneplikt,
                 manueltGrunnlag = behov.manueltGrunnlag),
-            GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet),
+            GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet, grunnlagResultat.beregningsregel),
             setOf(
                 InntektResponse(
                     inntekt = BigDecimal.ZERO,
