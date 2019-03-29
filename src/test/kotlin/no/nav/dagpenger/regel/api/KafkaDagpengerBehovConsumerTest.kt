@@ -153,9 +153,56 @@ class KafkaDagpengerBehovConsumerTest {
         }
 
         assertNotNull(grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon)
+        assertEquals("ArbeidsinntektSiste12", grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon?.resultat?.beregningsregel)
         assertEquals(
                 "grunnlagSubsumsjon",
                 grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon!!.subsumsjonsId)
+    }
+
+    @Test
+    fun ` Should store received grunnlagSubsumsjon without inntekt `() {
+        val grunnlagSubsumsjonerDummy = GrunnlagSubsumsjonerDummy()
+        val tasks = TasksDummy()
+        val consumer = KafkaDagpengerBehovConsumer(
+            Environment(
+                username = "bogus",
+                password = "bogus"
+            ),
+            tasks,
+            MinsteinntektSubsumsjonerDummy(),
+            PeriodeSubsumsjonerDummy(),
+            grunnlagSubsumsjonerDummy,
+            SatsSubsumsjonerDummy()
+        )
+
+        val grunnlagResultat = GrunnlagResultat(
+            "123",
+            "grunnlagSubsumsjon",
+            "regel",
+            1000,
+            1500,
+            "Manuell under 6G")
+
+        val behov = SubsumsjonsBehov(
+            TasksDummy.grunnlagPendingBehovId,
+            "12345",
+            Random().nextInt(),
+            LocalDate.now(),
+            grunnlagResultat = grunnlagResultat
+        )
+        val behovJson = jsonAdapter.toJson(behov)
+
+        TopologyTestDriver(consumer.buildTopology(), config).use { topologyTestDriver ->
+            val inputRecord = factory.create(behovJson)
+            topologyTestDriver.pipeInput(inputRecord)
+        }
+
+        assertNotNull(grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon)
+        assertEquals("Manuell under 6G", grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon?.resultat?.beregningsregel)
+        assertEquals("MANUELT_GRUNNLAG", grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon?.faktum?.inntektsId)
+        assertEquals(
+            "grunnlagSubsumsjon",
+            grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon!!.subsumsjonsId)
     }
 
     @Test

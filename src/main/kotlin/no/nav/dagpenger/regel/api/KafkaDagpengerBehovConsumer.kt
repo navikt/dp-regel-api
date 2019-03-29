@@ -187,8 +187,8 @@ class KafkaDagpengerBehovConsumer(
 
     fun mapToGrunnlagSubsumsjon(behov: SubsumsjonsBehov): GrunnlagSubsumsjon {
         val grunnlagResultat = behov.grunnlagResultat!!
-        val inntektString = behov.inntektV1!!
-        val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
+        val inntektString = behov.inntektV1
+        val inntekt = inntektString?.let { string -> inntektAdapter.fromJson(string) } // TODO ADAPT TO PACKET
         val grunnlagInntektPerioderString = behov.grunnlagInntektsPerioder
         val inntektsperioder = getInntektsPerioder(grunnlagInntektPerioderString) // TODO ADAPT TO PACKET
         return GrunnlagSubsumsjon(
@@ -199,7 +199,7 @@ class KafkaDagpengerBehovConsumer(
                 behov.aktørId,
                 behov.vedtakId,
                 behov.beregningsDato,
-                inntekt?.inntektsId ?: "12345", // fixme
+                inntekt?.inntektsId ?: "MANUELT_GRUNNLAG", // fixme
                 behov.harAvtjentVerneplikt,
                 manueltGrunnlag = behov.manueltGrunnlag),
             GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet, grunnlagResultat.beregningsregel),
