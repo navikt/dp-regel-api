@@ -16,6 +16,7 @@ data class SubsumsjonsBehov(
     val bruktInntektsPeriode: BruktInntektsPeriode? = null,
 
     val minsteinntektInntektsPerioder: String? = null,
+    val grunnlagInntektsPerioder: String? = null,
     var minsteinntektResultat: MinsteinntektResultat? = null,
     var periodeResultat: PeriodeResultat? = null,
     var grunnlagResultat: GrunnlagResultat? = null,
