@@ -47,7 +47,7 @@ val konfigVersion = "1.6.10.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("no.nav.dagpenger:events:0.3.1-SNAPSHOT")
+    implementation("no.nav.dagpenger:events:0.3.6-SNAPSHOT")
     implementation("no.nav.dagpenger:streams:0.3.1-SNAPSHOT")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
@@ -65,9 +65,9 @@ dependencies {
     implementation("org.slf4j:slf4j-api:1.7.25")
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
     implementation("io.lettuce:lettuce-core:5.1.3.RELEASE")
-    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
-    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
-    implementation("io.confluent:kafka-streams-avro-serde:$confluentVersion")
+    compile("org.apache.kafka:kafka-clients:$kafkaVersion")
+    compile("org.apache.kafka:kafka-streams:$kafkaVersion")
+    compile("io.confluent:kafka-streams-avro-serde:$confluentVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.postgresql:postgresql:$postgresVersion")

@@ -150,8 +150,8 @@ class KafkaDagpengerBehovConsumer(
         val minsteinntektResultat = behov.minsteinntektResultat!!
         val inntektString = behov.inntektV1!!
         val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
-        val inntektsPerioderString = behov.minsteinntektInntektsPerioder!!
-        val inntektsperioder = inntektsPerioderAdapter.fromJson(inntektsPerioderString) // TODO ADAPT TO PACKET
+        val inntektsPerioderString = behov.minsteinntektInntektsPerioder
+        val inntektsperioder = getInntektsPerioder(inntektsPerioderString) // TODO ADAPT TO PACKET
         return MinsteinntektSubsumsjon(
             minsteinntektResultat.subsumsjonsId,
             LocalDateTime.now(),
@@ -189,6 +189,8 @@ class KafkaDagpengerBehovConsumer(
         val grunnlagResultat = behov.grunnlagResultat!!
         val inntektString = behov.inntektV1!!
         val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
+        val grunnlagInntektPerioderString = behov.grunnlagInntektsPerioder
+        val inntektsperioder = getInntektsPerioder(grunnlagInntektPerioderString) // TODO ADAPT TO PACKET
         return GrunnlagSubsumsjon(
             grunnlagResultat.subsumsjonsId,
             LocalDateTime.now(),
@@ -201,31 +203,36 @@ class KafkaDagpengerBehovConsumer(
                 behov.harAvtjentVerneplikt,
                 manueltGrunnlag = behov.manueltGrunnlag),
             GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet, grunnlagResultat.beregningsregel),
-            setOf(
-                InntektResponse(
-                    inntekt = BigDecimal.ZERO,
-                    periode = 1,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
-                    inneholderFangstOgFisk = false,
-                    andel = BigDecimal.ZERO
-                ),
-                InntektResponse(
-                    inntekt = BigDecimal.ZERO,
-                    periode = 2,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
-                    inneholderFangstOgFisk = false,
-                    andel = BigDecimal.ZERO
-                ),
-                InntektResponse(
-                    inntekt = BigDecimal.ZERO,
-                    periode = 3,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
-                    inneholderFangstOgFisk = false,
-                    andel = BigDecimal.ZERO
-                )
-            )
+            inntektsperioder
+
         )
     }
+
+    // TODO ADAPT TO PACKET
+    private fun getInntektsPerioder(grunnlagInntektPerioderString: String?) =
+        grunnlagInntektPerioderString?.let { string -> inntektsPerioderAdapter.fromJson(string) } ?: setOf(
+            InntektResponse(
+                inntekt = BigDecimal.ZERO,
+                periode = 1,
+                inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
+                inneholderFangstOgFisk = false,
+                andel = BigDecimal.ZERO
+            ),
+            InntektResponse(
+                inntekt = BigDecimal.ZERO,
+                periode = 2,
+                inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
+                inneholderFangstOgFisk = false,
+                andel = BigDecimal.ZERO
+            ),
+            InntektResponse(
+                inntekt = BigDecimal.ZERO,
+                periode = 3,
+                inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
+                inneholderFangstOgFisk = false,
+                andel = BigDecimal.ZERO
+            )
+        )
 
     val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)
 
