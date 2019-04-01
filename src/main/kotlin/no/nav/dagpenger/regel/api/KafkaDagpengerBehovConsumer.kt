@@ -245,7 +245,7 @@ class KafkaDagpengerBehovConsumer(
             satsResultat.subsumsjonsId,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, behov.antallBarn),
+            SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, behov.manueltGrunnlag, behov.antallBarn),
             SatsResultat(satsResultat.dagsats, satsResultat.ukesats, satsResultat.benyttet90ProsentRegel)
         )
     }

@@ -21,5 +21,6 @@ data class SatsFaktum(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
+    val manueltGrunnlag: Int? = null,
     val antallBarn: Int? = 0
 )

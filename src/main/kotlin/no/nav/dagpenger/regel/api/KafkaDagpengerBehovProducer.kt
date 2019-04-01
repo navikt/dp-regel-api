@@ -178,6 +178,7 @@ class KafkaDagpengerBehovProducer(env: Environment) : DagpengerBehovProducer {
             request.vedtakId,
             request.beregningsdato,
             senesteInntektsmåned = senesteInntektsmåned,
-            antallBarn = request.antallBarn
+            antallBarn = request.antallBarn,
+            manueltGrunnlag = request.manueltGrunnlag
     )
 }
