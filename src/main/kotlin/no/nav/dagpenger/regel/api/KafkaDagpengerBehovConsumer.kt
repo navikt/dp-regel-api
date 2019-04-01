@@ -3,6 +3,7 @@ package no.nav.dagpenger.regel.api
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types
 import mu.KotlinLogging
+import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.models.common.InntektResponse
 import no.nav.dagpenger.regel.api.models.common.InntektsPeriode
@@ -25,7 +26,9 @@ import no.nav.dagpenger.regel.api.sats.SatsSubsumsjoner
 import no.nav.dagpenger.regel.api.tasks.TaskStatus
 import no.nav.dagpenger.regel.api.tasks.Tasks
 import no.nav.dagpenger.streams.KafkaCredential
-import no.nav.dagpenger.streams.Topics
+import no.nav.dagpenger.streams.PacketDeserializer
+import no.nav.dagpenger.streams.PacketSerializer
+import no.nav.dagpenger.streams.Topics.DAGPENGER_BEHOV_PACKET_EVENT
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
@@ -68,13 +71,13 @@ class KafkaDagpengerBehovConsumer(
         val builder = StreamsBuilder()
 
         val stream = builder.stream(
-            Topics.DAGPENGER_BEHOV_EVENT.name,
-            Consumed.with(Serdes.StringSerde(), Serdes.serdeFrom(JsonSerializer(), JsonDeserializer()))
+            DAGPENGER_BEHOV_PACKET_EVENT.name,
+            Consumed.with(Serdes.StringSerde(), Serdes.serdeFrom(PacketSerializer(), PacketDeserializer()))
         )
 
         stream
-            .peek { key, value -> LOGGER.info("Consuming behov with id $value") }
-            .foreach { _, behov -> storeResult(behov) }
+            .peek { key, value -> LOGGER.info("Consuming packet with id $value") }
+            .foreach { _, packet -> storeResult(packet) }
 
         return builder.build()
     }
@@ -87,20 +90,20 @@ class KafkaDagpengerBehovConsumer(
         return props
     }
 
-    fun hasNeededMinsteinntektResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.minsteinntektResultat != null && hasPendingTask(Regel.MINSTEINNTEKT, behov.behovId)
+    fun hasNeededMinsteinntektResultat(packet: Packet): Boolean {
+        return packet.hasField("minsteinntektResultat") && hasPendingTask(Regel.MINSTEINNTEKT, packet.getStringValue("behovId"))
     }
 
-    fun hasNeededPeriodeResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.periodeResultat != null && hasPendingTask(Regel.PERIODE, behov.behovId)
+    fun hasNeededPeriodeResultat(packet: Packet): Boolean {
+        return packet.hasField("periodeResultat") && hasPendingTask(Regel.PERIODE, packet.getStringValue("behovId"))
     }
 
-    fun hasNeededGrunnlagResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.grunnlagResultat != null && hasPendingTask(Regel.GRUNNLAG, behov.behovId)
+    fun hasNeededGrunnlagResultat(packet: Packet): Boolean {
+        return packet.hasField("grunnlagResultat") && hasPendingTask(Regel.GRUNNLAG, packet.getStringValue("behovId"))
     }
 
-    fun hasNeededSatsResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.satsResultat != null && hasPendingTask(Regel.SATS, behov.behovId)
+    fun hasNeededSatsResultat(packet: Packet): Boolean {
+        return packet.hasField("satsResultat") && hasPendingTask(Regel.SATS, packet.getStringValue("behovId"))
     }
 
     fun hasPendingTask(regel: Regel, behovId: String): Boolean {
@@ -108,21 +111,21 @@ class KafkaDagpengerBehovConsumer(
         return task?.status == TaskStatus.PENDING
     }
 
-    fun storeResult(behov: SubsumsjonsBehov) {
+    fun storeResult(packet: Packet) {
         when {
-            hasNeededMinsteinntektResultat(behov) -> storeMinsteinntektSubsumsjon(behov)
-            hasNeededPeriodeResultat(behov) -> storePeriodeSubsumsjon(behov)
-            hasNeededGrunnlagResultat(behov) -> storeGrunnlagSubsumsjon(behov)
-            hasNeededSatsResultat(behov) -> storeSatsSubsumsjon(behov)
-            else -> LOGGER.info("Ignoring behov with id ${behov.behovId}")
+            hasNeededMinsteinntektResultat(packet) -> storeMinsteinntektSubsumsjon(packet)
+            hasNeededPeriodeResultat(packet) -> storePeriodeSubsumsjon(packet)
+            hasNeededGrunnlagResultat(packet) -> storeGrunnlagSubsumsjon(packet)
+            hasNeededSatsResultat(packet) -> storeSatsSubsumsjon(packet)
+            else -> LOGGER.info("Ignoring behov with id ${packet.getNullableStringValue("behovId")}")
         }
     }
 
-    fun storeMinsteinntektSubsumsjon(behov: SubsumsjonsBehov) {
-        val minsteinntektSubsumsjon = mapToMinsteinntektSubsumsjon(behov)
+    fun storeMinsteinntektSubsumsjon(packet: Packet) {
+        val minsteinntektSubsumsjon = mapToMinsteinntektSubsumsjon(packet)
 
         minsteinntektSubsumsjoner.insertMinsteinntektSubsumsjon(minsteinntektSubsumsjon)
-        tasks.updateTask(Regel.MINSTEINNTEKT, behov.behovId, minsteinntektSubsumsjon.subsumsjonsId)
+        tasks.updateTask(Regel.MINSTEINNTEKT, packet.behovId, minsteinntektSubsumsjon.subsumsjonsId)
     }
 
     fun storePeriodeSubsumsjon(behov: SubsumsjonsBehov) {
