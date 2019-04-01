@@ -31,8 +31,8 @@ fun Routing.sats(
             val parametere = call.receive<SatsRequestParametere>()
 
             // todo: what if this call or next fails? either way?
-            val behov = kafkaProducer.produceSatsEvent(parametere)
-            val task = tasks.createTask(Regel.SATS, behov.behovId)
+            val behovId = kafkaProducer.produceSatsEvent(parametere)
+            val task = tasks.createTask(Regel.SATS, behovId)
 
             call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
             call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
@@ -53,5 +53,5 @@ data class SatsRequestParametere(
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val manueltGrunnlag: Int? = null,
-    val antallBarn: Int? = 0
+    val antallBarn: Int = 0
 )

@@ -32,8 +32,8 @@ fun Routing.periode(
             val parametere = call.receive<PeriodeRequestParametere>()
 
             // todo: what if this call or next fails? either way?
-            val behov = kafkaProducer.producePeriodeEvent(parametere)
-            val task = tasks.createTask(Regel.PERIODE, behov.behovId)
+            val behovId = kafkaProducer.producePeriodeEvent(parametere)
+            val task = tasks.createTask(Regel.PERIODE, behovId)
 
             call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
             call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
@@ -53,6 +53,6 @@ data class PeriodeRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
-    val harAvtjentVerneplikt: Boolean? = false,
+    val harAvtjentVerneplikt: Boolean = false,
     val bruktInntektsPeriode: InntektsPeriode? = null
 )

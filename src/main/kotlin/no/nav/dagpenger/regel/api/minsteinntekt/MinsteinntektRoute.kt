@@ -32,8 +32,8 @@ fun Routing.minsteinntekt(
             val parametere = call.receive<MinsteinntektRequestParametere>()
 
             // todo: what if this call or next fails? either way?
-            val behov = kafkaProducer.produceMinsteInntektEvent(parametere)
-            val task = tasks.createTask(Regel.MINSTEINNTEKT, behov.behovId)
+            val packetId = kafkaProducer.produceMinsteInntektEvent(parametere)
+            val task = tasks.createTask(Regel.MINSTEINNTEKT, packetId)
 
             call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
             call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
@@ -53,7 +53,7 @@ data class MinsteinntektRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
-    val harAvtjentVerneplikt: Boolean? = false,
+    val harAvtjentVerneplikt: Boolean = false,
     val oppfyllerKravTilFangstOgFisk: Boolean? = false,
     val bruktInntektsPeriode: InntektsPeriode? = null
 )

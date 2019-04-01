@@ -26,8 +26,8 @@ fun Routing.grunnlag(grunnlagsubsumsjoner: GrunnlagSubsumsjoner, tasks: Tasks, k
             val parametere = call.receive<GrunnlagRequestParametere>()
 
             // todo: what if this call or next fails? either way?
-            val behov = kafkaProducer.produceGrunnlagEvent(parametere)
-            val task = tasks.createTask(Regel.GRUNNLAG, behov.behovId)
+            val behovId = kafkaProducer.produceGrunnlagEvent(parametere)
+            val task = tasks.createTask(Regel.GRUNNLAG, behovId)
 
             call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
             call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
@@ -47,7 +47,7 @@ data class GrunnlagRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
-    val harAvtjentVerneplikt: Boolean? = false,
+    val harAvtjentVerneplikt: Boolean = false,
     val oppfyllerKravTilFangstOgFisk: Boolean = false,
     val manueltGrunnlag: Int? = null
 )
