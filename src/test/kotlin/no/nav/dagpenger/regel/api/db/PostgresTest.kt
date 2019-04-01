@@ -1,9 +1,21 @@
 package no.nav.dagpenger.regel.api.db
 
 import com.zaxxer.hikari.HikariDataSource
+import io.kotlintest.shouldBe
+import io.kotlintest.shouldThrow
+import io.mockk.every
+import io.mockk.mockk
 import no.nav.dagpenger.regel.api.Configuration
+import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.Status
+import no.nav.dagpenger.regel.api.SubsumsjonsBehov
+import no.nav.dagpenger.regel.api.models.PeriodeFaktum
+import no.nav.dagpenger.regel.api.models.PeriodeResultat
+import no.nav.dagpenger.regel.api.models.PeriodeSubsumsjon
 import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
+import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.test.assertEquals
 
 private object PostgresContainer {
@@ -57,4 +69,72 @@ class PostgresTest {
     }
 }
 
-class PostgresSubsumsjonStoreTest
+class PostgresSubsumsjonStoreTest {
+
+    @Test
+    fun `Successful insert of behov`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                insertBehov(SubsumsjonsBehov("behovId", "aktorid", 1, LocalDate.now()))
+
+                behovStatus("behovId") shouldBe Status.Pending
+
+            }
+        }
+    }
+
+    @Test
+    fun `Exception if behov status is not found`() {
+        withMigratedDb {
+            shouldThrow<BehovNotFoundException> {
+                PostgresSubsumsjonStore(DataSource.instance).behovStatus("behovId") shouldBe Status.Pending
+
+            }
+        }
+    }
+
+    @Test
+    fun `Succesful insert of a subsumsjon is retrievable and updates behov to status done`() {
+
+        val behov = mockk<SubsumsjonsBehov>(relaxed = true).apply {
+            every { this@apply.behovId } returns "behovId"
+        }
+
+        val subsumsjon = PeriodeSubsumsjon("subsumsjonsId", "behovId", Regel.PERIODE, LocalDateTime.now(), LocalDateTime.now(),
+            PeriodeFaktum("aktorId", 1, LocalDate.now(), "inntektsId"),
+            PeriodeResultat(1))
+
+
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+
+                insertBehov(behov)
+                insertSubsumsjon(subsumsjon)
+
+                getSubsumsjon("subsumsjonsId") shouldBe subsumsjon
+                behovStatus("behovId") shouldBe Status.Done("subsumsjonsId")
+
+            }
+        }
+    }
+
+    @Test
+    fun `Exception on insert of subsumsjon if no correspond behov exists`() {
+        withMigratedDb {
+            shouldThrow<StoreException> {
+                PostgresSubsumsjonStore(DataSource.instance).insertSubsumsjon(mockk<PeriodeSubsumsjon>(relaxed = true))
+            }
+        }
+    }
+
+
+    @Test
+    fun `Exception if retrieving a non existant subsumsjon`() {
+        withMigratedDb {
+            shouldThrow<SubsumsjonNotFoundException> {
+                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon("notexist")
+            }
+        }
+    }
+}
+

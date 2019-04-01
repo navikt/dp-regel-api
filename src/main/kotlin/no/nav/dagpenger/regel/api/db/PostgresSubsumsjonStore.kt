@@ -56,7 +56,7 @@ class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : Subsum
 
     override fun getSubsumsjon(subsumsjonId: String): Subsumsjon {
         val (regel, json) = using(sessionOf(dataSource)) { session ->
-            session.run(queryOf(""" SELECT data FROM subsumsjon WHERE id = ? """, subsumsjonId)
+            session.run(queryOf(""" SELECT regel,data FROM subsumsjon WHERE id = ? """, subsumsjonId)
                 .map { row -> Pair(Regel.valueOf(row.string("regel")), row.string("data")) }
                 .asSingle)
         } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with id $subsumsjonId")
