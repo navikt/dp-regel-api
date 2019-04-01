@@ -1,4 +1,4 @@
-package no.nav.dagpenger.regel.api.grunnlag
+package no.nav.dagpenger.regel.api.sats
 
 import io.kotlintest.matchers.string.shouldNotEndWith
 import io.kotlintest.matchers.string.shouldStartWith
@@ -11,31 +11,32 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.mockk.mockk
+import io.mockk.verify
 import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.routes.MockApi
 import org.junit.jupiter.api.Test
 
-class GrunnlagRouteTest {
+class SatsRouteTest {
+
     @Test
-    fun `Valid json to grunnlag endpoint should be accepted, saved and produce an event to Kafka`() {
+    fun `Valid json to sats endpoint should be accepted, saved and produce an event to Kafka`() {
         val storeMock = mockk<SubsumsjonStore>(relaxed = true)
         val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true)
 
         withTestApplication(MockApi(
-            storeMock,
-            kafkaMock
+            subsumsjonStore = storeMock,
+            kafkaDagpengerBehovProducer = kafkaMock
         )) {
 
-            handleRequest(HttpMethod.Post, "/grunnlag") {
+            handleRequest(HttpMethod.Post, "/sats") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody("""
             {
                 "aktorId": "9000000028204",
                 "vedtakId": 1,
-                "beregningsdato": "2019-01-08",
-                "manueltGrunnlag": 54200
+                "beregningsdato": "2019-01-08"
             }
             """)
             }.apply {
@@ -43,8 +44,8 @@ class GrunnlagRouteTest {
                 withClue("Response should be handled") { requestHandled shouldBe true }
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
-                    location shouldStartWith "/grunnlag/status/"
-                    withClue("Behov id should be present") { location shouldNotEndWith "/grunnlag/status/" }
+                    location shouldStartWith "/sats/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "/sats/status/" }
                 }
             }
         }
@@ -62,12 +63,12 @@ class GrunnlagRouteTest {
         withTestApplication(MockApi(
             subsumsjonStore = storeMock
         )) {
-            handleRequest(HttpMethod.Get, "/grunnlag/1")
+            handleRequest(HttpMethod.Get, "/sats/1")
 
-            handleRequest(HttpMethod.Get, "/grunnlag/status/2")
+            handleRequest(HttpMethod.Get, "/sats/status/2") {}
         }
 
-        verifyAll {
+        verify {
             storeMock.getSubsumsjon("1")
             storeMock.behovStatus("2")
         }

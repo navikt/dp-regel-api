@@ -42,5 +42,3 @@ fun Route.getSubsumsjon(store: SubsumsjonStore) {
         }
     }
 }
-
-

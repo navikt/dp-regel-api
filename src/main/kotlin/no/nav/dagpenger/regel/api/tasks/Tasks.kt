@@ -22,4 +22,3 @@ data class Task(
     val expires: String, // todo: real date
     var subsumsjonsId: String? = null
 )
-

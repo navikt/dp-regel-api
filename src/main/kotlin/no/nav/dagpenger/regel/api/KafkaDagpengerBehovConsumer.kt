@@ -1,5 +1,7 @@
 package no.nav.dagpenger.regel.api
 
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Types
 import mu.KotlinLogging
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -65,13 +67,13 @@ class KafkaDagpengerBehovConsumer(
         return builder.build()
     }
 
-    fun getConfig() = streamConfig(
+    private fun getConfig() = streamConfig(
         appId = APPLICATION_NAME,
         bootStapServerUrl = config.kafka.brokers,
         credential = config.kafka.credential()
     )
 
-    fun hasNeededMinsteinntektResultat(behov: SubsumsjonsBehov): Boolean {
+    private fun hasNeededMinsteinntektResultat(behov: SubsumsjonsBehov): Boolean {
         return behov.minsteinntektResultat != null
     }
 
@@ -117,6 +119,8 @@ class KafkaDagpengerBehovConsumer(
         val minsteinntektResultat = behov.minsteinntektResultat!!
         val inntektString = behov.inntektV1!!
         val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
+        val inntektsPerioderString = behov.minsteinntektInntektsPerioder
+        val inntektsperioder = getInntektsPerioder(inntektsPerioderString) // TODO ADAPT TO PACKET
         return MinsteinntektSubsumsjon(
             minsteinntektResultat.subsumsjonsId,
             behov.behovId,
@@ -130,7 +134,7 @@ class KafkaDagpengerBehovConsumer(
                 inntekt?.inntektsId ?: "12345", // fixme
                 behov.harAvtjentVerneplikt),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
-            behov.minsteinntektInntektsPerioder!!
+            inntektsperioder // fixme
         )
     }
 
@@ -156,8 +160,10 @@ class KafkaDagpengerBehovConsumer(
 
     private fun mapToGrunnlagSubsumsjon(behov: SubsumsjonsBehov): GrunnlagSubsumsjon {
         val grunnlagResultat = behov.grunnlagResultat!!
-        val inntektString = behov.inntektV1!!
-        val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
+        val inntektString = behov.inntektV1
+        val inntekt = inntektString?.let { string -> inntektAdapter.fromJson(string) } // TODO ADAPT TO PACKET
+        val grunnlagInntektPerioderString = behov.grunnlagInntektsPerioder
+        val inntektsperioder = getInntektsPerioder(grunnlagInntektPerioderString) // TODO ADAPT TO PACKET
         return GrunnlagSubsumsjon(
             grunnlagResultat.subsumsjonsId,
             behov.behovId,
@@ -168,48 +174,56 @@ class KafkaDagpengerBehovConsumer(
                 behov.aktørId,
                 behov.vedtakId,
                 behov.beregningsDato,
-                inntekt?.inntektsId ?: "12345", // fixme
-                behov.harAvtjentVerneplikt),
-            GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet),
-            setOf(
-                InntektResponse(
-                    inntekt = BigDecimal.ZERO,
-                    periode = 1,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
-                    inneholderFangstOgFisk = false,
-                    andel = BigDecimal.ZERO
-                ),
-                InntektResponse(
-                    inntekt = BigDecimal.ZERO,
-                    periode = 2,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
-                    inneholderFangstOgFisk = false,
-                    andel = BigDecimal.ZERO
-                ),
-                InntektResponse(
-                    inntekt = BigDecimal.ZERO,
-                    periode = 3,
-                    inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
-                    inneholderFangstOgFisk = false,
-                    andel = BigDecimal.ZERO
-                )
-            )
+                inntekt?.inntektsId ?: "MANUELT_GRUNNLAG", // fixme
+                behov.harAvtjentVerneplikt,
+                manueltGrunnlag = behov.manueltGrunnlag),
+            GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet, grunnlagResultat.beregningsregel),
+            inntektsperioder
+
         )
     }
 
-    val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)!!
+    // TODO ADAPT TO PACKET
+    private fun getInntektsPerioder(grunnlagInntektPerioderString: String?) =
+        grunnlagInntektPerioderString?.let { string -> inntektsPerioderAdapter.fromJson(string) } ?: setOf(
+            InntektResponse(
+                inntekt = BigDecimal.ZERO,
+                periode = 1,
+                inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
+                inneholderFangstOgFisk = false,
+                andel = BigDecimal.ZERO
+            ),
+            InntektResponse(
+                inntekt = BigDecimal.ZERO,
+                periode = 2,
+                inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
+                inneholderFangstOgFisk = false,
+                andel = BigDecimal.ZERO
+            ),
+            InntektResponse(
+                inntekt = BigDecimal.ZERO,
+                periode = 3,
+                inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
+                inneholderFangstOgFisk = false,
+                andel = BigDecimal.ZERO
+            )
+        )
 
-    fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
+    private val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)!!
+
+    private val inntektsPerioderAdapter: JsonAdapter<Set<InntektResponse>> =
+            moshiInstance.adapter(Types.newParameterizedType(Set::class.java, InntektResponse::class.java))
+
+    private fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
         val satsResultat = behov.satsResultat!!
-        val grunnlag = behov.grunnlag!!
         return SatsSubsumsjon(
             satsResultat.subsumsjonsId,
             behov.behovId,
             Regel.SATS,
             LocalDateTime.now(),
             LocalDateTime.now(),
-            SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, grunnlag, behov.antallBarn),
-            SatsResultat(satsResultat.dagsats, satsResultat.ukesats)
+            SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, behov.antallBarn),
+            SatsResultat(satsResultat.dagsats, satsResultat.ukesats, satsResultat.benyttet90ProsentRegel)
         )
     }
 }

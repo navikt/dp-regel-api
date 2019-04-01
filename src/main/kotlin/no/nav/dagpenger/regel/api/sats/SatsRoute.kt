@@ -1,4 +1,4 @@
-package no.nav.dagpenger.regel.api.minsteinntekt
+package no.nav.dagpenger.regel.api.sats
 
 import io.ktor.application.call
 import io.ktor.http.HttpHeaders
@@ -9,12 +9,10 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.post
 import io.ktor.routing.route
-import no.nav.dagpenger.regel.api.BruktInntektsPeriode
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.SubsumsjonsBehov
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.routes.getStatus
 import no.nav.dagpenger.regel.api.routes.getSubsumsjon
 import no.nav.dagpenger.regel.api.senesteInntektsmåned
@@ -22,44 +20,40 @@ import no.nav.dagpenger.regel.api.tasks.taskPending
 import no.nav.dagpenger.regel.api.ulidGenerator
 import java.time.LocalDate
 
-fun Routing.minsteinntekt(
+fun Routing.sats(
     store: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer
 ) {
 
-    route("/minsteinntekt") {
+    route("/sats") {
         post {
             mapRequestToBehov(call.receive()).apply {
                 store.insertBehov(this)
                 kafkaProducer.produceEvent(this)
             }.also {
-                call.response.header(HttpHeaders.Location, "/minsteinntekt/status/${it.behovId}")
-                call.respond(HttpStatusCode.Accepted, taskPending(Regel.GRUNNLAG))
+                call.response.header(HttpHeaders.Location, "/sats/status/${it.behovId}")
+                call.respond(HttpStatusCode.Accepted, taskPending(Regel.PERIODE))
             }
         }
 
         getSubsumsjon(store)
 
-        getStatus(Regel.MINSTEINNTEKT, store)
+        getStatus(Regel.PERIODE, store)
     }
 }
 
-private fun mapRequestToBehov(request: MinsteinntektRequestParametere) =
-    SubsumsjonsBehov(
-        ulidGenerator.nextULID(),
-        request.aktorId,
-        request.vedtakId,
-        request.beregningsdato,
-        request.harAvtjentVerneplikt,
-        senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
-        bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) }
-    )
+fun mapRequestToBehov(request: SatsRequestParametere) = SubsumsjonsBehov(
+    ulidGenerator.nextULID(),
+    request.aktorId,
+    request.vedtakId,
+    request.beregningsdato,
+    senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
+    antallBarn = request.antallBarn
+)
 
-data class MinsteinntektRequestParametere(
+data class SatsRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
-    val harAvtjentVerneplikt: Boolean? = false,
-    val oppfyllerKravTilFangstOgFisk: Boolean? = false,
-    val bruktInntektsPeriode: InntektsPeriode? = null
+    val antallBarn: Int? = 0
 )

@@ -43,7 +43,8 @@ data class GrunnlagSubsumsjon(
 
 data class GrunnlagResultat(
     val avkortet: Int,
-    val uavkortet: Int
+    val uavkortet: Int,
+    val beregningsregel: String
 )
 
 data class GrunnlagFaktum(
@@ -54,7 +55,7 @@ data class GrunnlagFaktum(
     val harAvtjentVerneplikt: Boolean? = false,
     val oppfyllerKravTilFangstOgFisk: Boolean? = false,
     val antallBarn: Int? = 0,
-    val grunnlag: Int? = null
+    val manueltGrunnlag: Int? = null
 )
 
 data class MinsteinntektSubsumsjon(
@@ -65,7 +66,7 @@ data class MinsteinntektSubsumsjon(
     val utfort: LocalDateTime, // todo: ZonedDateTime?,
     val faktum: MinsteinntektFaktum,
     val resultat: MinsteinntektResultat,
-    val inntekt: List<InntektResponse>
+    val inntekt: Set<InntektResponse>
 ) : Subsumsjon()
 
 data class MinsteinntektResultat(
@@ -118,13 +119,13 @@ data class SatsSubsumsjon(
 
 data class SatsResultat(
     val dagsats: Int,
-    val ukesats: Int
+    val ukesats: Int,
+    val benyttet90ProsentRegel: Boolean
 )
 
 data class SatsFaktum(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
-    val grunnlag: Int,
     val antallBarn: Int? = 0
 )

@@ -48,7 +48,7 @@ val mockkVersion = "1.9"
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("no.nav.dagpenger:events:0.3.1-SNAPSHOT")
+    implementation("no.nav.dagpenger:events:0.3.6-SNAPSHOT")
     implementation("no.nav.dagpenger:streams:0.3.1-SNAPSHOT")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
@@ -77,6 +77,7 @@ dependencies {
         exclude(module = "slf4j-simple")
         exclude(module = "slf4j-api")
     }
+    implementation("no.bekk.bekkopen:nocommons:0.8.2")
     runtime("com.bettercloud:vault-java-driver:$vaultJavaDriverVersion")
 
     testImplementation(kotlin("test"))

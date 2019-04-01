@@ -9,18 +9,16 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.post
 import io.ktor.routing.route
-import no.nav.dagpenger.regel.api.BruktInntektsPeriode
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.SubsumsjonsBehov
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.routes.getStatus
 import no.nav.dagpenger.regel.api.routes.getSubsumsjon
+import no.nav.dagpenger.regel.api.senesteInntektsmåned
 import no.nav.dagpenger.regel.api.tasks.taskPending
 import no.nav.dagpenger.regel.api.ulidGenerator
 import java.time.LocalDate
-import java.time.YearMonth
 
 fun Routing.grunnlag(store: SubsumsjonStore, kafkaProducer: DagpengerBehovProducer) {
     route("/grunnlag") {
@@ -40,31 +38,21 @@ fun Routing.grunnlag(store: SubsumsjonStore, kafkaProducer: DagpengerBehovProduc
     }
 }
 
-private fun mapRequestToBehov(
-    request: GrunnlagRequestParametere
-): SubsumsjonsBehov {
-
-    val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
-    val bruktInntektsPeriode =
-        if (request.bruktInntektsPeriode != null)
-            BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
-        else null
-
-    return SubsumsjonsBehov(
-        ulidGenerator.nextULID(),
-        request.aktorId,
-        request.vedtakId,
-        request.beregningsdato,
-        request.harAvtjentVerneplikt,
-        senesteInntektsmåned = senesteInntektsmåned,
-        bruktInntektsPeriode = bruktInntektsPeriode
-    )
-}
+private fun mapRequestToBehov(request: GrunnlagRequestParametere): SubsumsjonsBehov = SubsumsjonsBehov(
+    ulidGenerator.nextULID(),
+    request.aktorId,
+    request.vedtakId,
+    request.beregningsdato,
+    request.harAvtjentVerneplikt,
+    senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
+    manueltGrunnlag = request.manueltGrunnlag
+)
 
 private data class GrunnlagRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val harAvtjentVerneplikt: Boolean? = false,
-    val bruktInntektsPeriode: InntektsPeriode? = null
+    val oppfyllerKravTilFangstOgFisk: Boolean = false,
+    val manueltGrunnlag: Int? = null
 )

@@ -27,6 +27,7 @@ import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.grunnlag.grunnlag
 import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
 import no.nav.dagpenger.regel.api.periode.periode
+import no.nav.dagpenger.regel.api.sats.sats
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 
@@ -107,6 +108,7 @@ fun Application.api(
         minsteinntekt(subsumsjonStore, kafkaProducer)
         periode(subsumsjonStore, kafkaProducer)
         grunnlag(subsumsjonStore, kafkaProducer)
+        sats(subsumsjonStore, kafkaProducer)
         naischecks()
     }
 }

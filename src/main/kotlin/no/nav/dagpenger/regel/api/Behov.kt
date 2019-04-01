@@ -1,9 +1,6 @@
 package no.nav.dagpenger.regel.api
 
 import de.huxhorn.sulky.ulid.ULID
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektRequestParametere
-import no.nav.dagpenger.regel.api.models.InntektResponse
-import no.nav.dagpenger.regel.api.periode.PeriodeRequestParametere
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -17,13 +14,12 @@ data class SubsumsjonsBehov(
     val harAvtjentVerneplikt: Boolean? = null,
     val antallBarn: Int? = null,
     val inntektV1: String? = null,
-    val grunnlag: Int? = null,
+    val manueltGrunnlag: Int? = null,
     val senesteInntektsmåned: YearMonth? = null,
     val bruktInntektsPeriode: BruktInntektsPeriode? = null,
 
-    val tasks: List<String>? = null,
-
-    val minsteinntektInntektsPerioder: List<InntektResponse>? = null,
+    val minsteinntektInntektsPerioder: String? = null,
+    val grunnlagInntektsPerioder: String? = null,
     var minsteinntektResultat: MinsteinntektResultat? = null,
     var periodeResultat: PeriodeResultat? = null,
     var grunnlagResultat: GrunnlagResultat? = null,
@@ -69,7 +65,8 @@ data class GrunnlagResultat(
     val subsumsjonsId: String,
     val regelIdentifikator: String,
     val avkortet: Int,
-    val uavkortet: Int
+    val uavkortet: Int,
+    val beregningsregel: String
 )
 
 data class SatsResultat(
@@ -78,48 +75,6 @@ data class SatsResultat(
     val subsumsjonsId: String,
     val regelIdentifikator: String,
     val dagsats: Int,
-    val ukesats: Int
+    val ukesats: Int,
+    val benyttet90ProsentRegel: Boolean
 )
-
-fun mapRequestToBehov(
-    request: MinsteinntektRequestParametere
-): SubsumsjonsBehov {
-
-    val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
-    val bruktInntektsPeriode =
-        if (request.bruktInntektsPeriode != null)
-            BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
-        else null
-
-    return SubsumsjonsBehov(
-        ulidGenerator.nextULID(),
-        request.aktorId,
-        request.vedtakId,
-        request.beregningsdato,
-        request.harAvtjentVerneplikt,
-        senesteInntektsmåned = senesteInntektsmåned,
-        bruktInntektsPeriode = bruktInntektsPeriode
-    )
-}
-
-fun mapRequestToBehov(
-    request: PeriodeRequestParametere
-): SubsumsjonsBehov {
-
-    val senesteInntektsmåned = YearMonth.of(request.beregningsdato.year, request.beregningsdato.month)
-
-    val bruktInntektsPeriode =
-        if (request.bruktInntektsPeriode != null)
-            BruktInntektsPeriode(request.bruktInntektsPeriode.foersteMaaned, request.bruktInntektsPeriode.sisteMaaned)
-        else null
-
-    return SubsumsjonsBehov(
-        ulidGenerator.nextULID(),
-        request.aktorId,
-        request.vedtakId,
-        request.beregningsdato,
-        request.harAvtjentVerneplikt,
-        senesteInntektsmåned = senesteInntektsmåned,
-        bruktInntektsPeriode = bruktInntektsPeriode
-    )
-}
