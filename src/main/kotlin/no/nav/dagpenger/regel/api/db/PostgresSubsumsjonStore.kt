@@ -16,6 +16,13 @@ import org.postgresql.util.PSQLException
 
 class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : SubsumsjonStore {
 
+    override fun hasPendingBehov(behovId: String, regel: Regel): Boolean {
+        return when (status(behovId, regel)) {
+            "Done" -> false
+            else -> true
+        }
+    }
+
     override fun insertBehov(subsumsjonsBehov: SubsumsjonsBehov, regel: Regel) {
         val adapter = moshiInstance.adapter<SubsumsjonsBehov>(SubsumsjonsBehov::class.java)
         try {

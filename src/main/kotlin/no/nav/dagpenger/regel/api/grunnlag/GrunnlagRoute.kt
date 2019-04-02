@@ -23,7 +23,6 @@ import java.time.LocalDate
 fun Routing.grunnlag(store: SubsumsjonStore, kafkaProducer: DagpengerBehovProducer) {
     val regel = Regel.GRUNNLAG
 
-
     route("/grunnlag") {
         post {
             mapRequestToBehov(call.receive()).apply {

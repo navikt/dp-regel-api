@@ -5,6 +5,9 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
+import kotliquery.queryOf
+import kotliquery.sessionOf
+import kotliquery.using
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.Status
@@ -81,6 +84,22 @@ class PostgresSubsumsjonStoreTest {
                 insertBehov(SubsumsjonsBehov("behovId", "aktorid", 1, LocalDate.now()), Regel.SATS)
 
                 behovStatus("behovId", Regel.SATS) shouldBe Status.Pending
+            }
+        }
+    }
+
+    @Test
+    fun `Status of behov`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                insertBehov(SubsumsjonsBehov("behovId", "aktorid", 1, LocalDate.now()), Regel.SATS)
+
+                hasPendingBehov("behovId", Regel.SATS) shouldBe true
+
+                using(sessionOf(DataSource.instance)) { session ->
+                    session.run(queryOf(""" UPDATE behov SET status = ? where id = ? AND regel = ?""", "behovId", Status.Done.toString(), Regel.SATS.name).asUpdate)
+                }
+                hasPendingBehov("behovId", Regel.SATS) shouldBe true
             }
         }
     }

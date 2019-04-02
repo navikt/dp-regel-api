@@ -1,7 +1,6 @@
 package no.nav.dagpenger.regel.api
 
 import mu.KotlinLogging
-import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.GrunnlagFaktum
 import no.nav.dagpenger.regel.api.models.GrunnlagResultat
@@ -72,19 +71,19 @@ class KafkaDagpengerBehovConsumer(
     )
 
     private fun hasNeededMinsteinntektResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.minsteinntektResultat != null
+        return behov.minsteinntektResultat != null && store.hasPendingBehov(behov.behovId, Regel.MINSTEINNTEKT)
     }
 
     private fun hasNeededPeriodeResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.periodeResultat != null
+        return behov.periodeResultat != null && store.hasPendingBehov(behov.behovId, Regel.PERIODE)
     }
 
     private fun hasNeededGrunnlagResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.grunnlagResultat != null
+        return behov.grunnlagResultat != null && store.hasPendingBehov(behov.behovId, Regel.GRUNNLAG)
     }
 
     private fun hasNeededSatsResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.satsResultat != null
+        return behov.satsResultat != null && store.hasPendingBehov(behov.behovId, Regel.SATS)
     }
 
     private fun storeResult(behov: SubsumsjonsBehov) {
@@ -178,30 +177,28 @@ class KafkaDagpengerBehovConsumer(
 
     // TODO ADAPT TO PACKET
     private fun getEmptyInntektsPerioder(): Set<InntektResponse> = setOf(
-            InntektResponse(
-                inntekt = BigDecimal.ZERO,
-                periode = 1,
-                inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
-                inneholderFangstOgFisk = false,
-                andel = BigDecimal.ZERO
-            ),
-            InntektResponse(
-                inntekt = BigDecimal.ZERO,
-                periode = 2,
-                inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
-                inneholderFangstOgFisk = false,
-                andel = BigDecimal.ZERO
-            ),
-            InntektResponse(
-                inntekt = BigDecimal.ZERO,
-                periode = 3,
-                inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
-                inneholderFangstOgFisk = false,
-                andel = BigDecimal.ZERO
-            )
+        InntektResponse(
+            inntekt = BigDecimal.ZERO,
+            periode = 1,
+            inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
+            inneholderFangstOgFisk = false,
+            andel = BigDecimal.ZERO
+        ),
+        InntektResponse(
+            inntekt = BigDecimal.ZERO,
+            periode = 2,
+            inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
+            inneholderFangstOgFisk = false,
+            andel = BigDecimal.ZERO
+        ),
+        InntektResponse(
+            inntekt = BigDecimal.ZERO,
+            periode = 3,
+            inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
+            inneholderFangstOgFisk = false,
+            andel = BigDecimal.ZERO
         )
-
-    private val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)!!
+    )
 
     private fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
         val satsResultat = behov.satsResultat!!

@@ -10,6 +10,8 @@ interface SubsumsjonStore {
 
     fun behovStatus(behovId: String, regel: Regel): Status
 
+    fun hasPendingBehov(behovId: String, regel: Regel): Boolean
+
     fun insertSubsumsjon(subsumsjon: Subsumsjon)
 
     fun getSubsumsjon(subsumsjonId: String, regel: Regel): Subsumsjon

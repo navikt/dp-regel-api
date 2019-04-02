@@ -55,9 +55,9 @@ class StatusRouteTest {
         }
 
         verifyAll {
-            storeMock.behovStatus("pending",Regel.GRUNNLAG)
-            storeMock.behovStatus("done",Regel.GRUNNLAG)
-            storeMock.behovStatus("notfound",Regel.GRUNNLAG)
+            storeMock.behovStatus("pending", Regel.GRUNNLAG)
+            storeMock.behovStatus("done", Regel.GRUNNLAG)
+            storeMock.behovStatus("notfound", Regel.GRUNNLAG)
         }
     }
 }
