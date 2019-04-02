@@ -1,81 +1,75 @@
 package no.nav.dagpenger.regel.api.grunnlag
 
-import com.squareup.moshi.JsonEncodingException
+import io.kotlintest.matchers.string.shouldNotEndWith
+import io.kotlintest.matchers.string.shouldStartWith
+import io.kotlintest.matchers.withClue
+import io.kotlintest.shouldBe
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
-import no.nav.dagpenger.regel.api.api
-import no.nav.dagpenger.regel.api.dummyApi
-import org.junit.jupiter.api.Assertions
+import io.mockk.mockk
+import io.mockk.verifyAll
+import no.nav.dagpenger.regel.api.DagpengerBehovProducer
+import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.routes.MockApi
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import kotlin.test.assertTrue
 
-val validJson = """
-{
-	"aktorId": "9000000028204",
-    "vedtakId": 1,
-    "beregningsdato": "2019-01-08"
-}
-""".trimIndent()
-
-val validJsonManueltGrunnlag = """
-{
-	"aktorId": "9000000028204",
-    "vedtakId": 1,
-    "beregningsdato": "2019-01-08",
-    "manueltGrunnlag": 54200
-}
-""".trimIndent()
-
-val jsonMissingFields = """
-{
-	"aktorId": "9000000028204",
-}
-""".trimIndent()
 class GrunnlagRouteTest {
-
     @Test
-    fun `post request with good json`() = testApp {
-        handleRequest(HttpMethod.Post, "/grunnlag") {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            setBody(validJson)
-        }.apply {
-            assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.Accepted, response.status())
-            assertTrue(response.headers.contains(HttpHeaders.Location))
-        }
-    }
+    fun `Valid json to grunnlag endpoint should be accepted, saved and produce an event to Kafka`() {
+        val storeMock = mockk<SubsumsjonStore>(relaxed = true)
+        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true)
 
-    @Test
-    fun `post request with good json containing optional field manueltGrunnlag`() = testApp {
-        handleRequest(HttpMethod.Post, "/grunnlag") {
-            addHeader(HttpHeaders.ContentType, "application/json")
-            setBody(validJsonManueltGrunnlag)
-        }.apply {
-            assertTrue(requestHandled)
-            Assertions.assertEquals(HttpStatusCode.Accepted, response.status())
-            assertTrue(response.headers.contains(HttpHeaders.Location))
-        }
-    }
+        withTestApplication(MockApi(
+            storeMock,
+            kafkaMock
+        )) {
 
-    @Test
-    fun `post request with bad json`() {
-        assertThrows<JsonEncodingException> {
-            testApp {
-                handleRequest(HttpMethod.Post, "/grunnlag") {
-                    addHeader(HttpHeaders.ContentType, "application/json")
-                    setBody(jsonMissingFields)
+            handleRequest(HttpMethod.Post, "/grunnlag") {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                setBody("""
+            {
+                "aktorId": "9000000028204",
+                "vedtakId": 1,
+                "beregningsdato": "2019-01-08",
+                "manueltGrunnlag": 54200
+            }
+            """)
+            }.apply {
+                response.status() shouldBe HttpStatusCode.Accepted
+                withClue("Response should be handled") { requestHandled shouldBe true }
+                response.headers.contains(HttpHeaders.Location) shouldBe true
+                response.headers[HttpHeaders.Location]?.let { location ->
+                    location shouldStartWith "/grunnlag/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "/grunnlag/status/" }
                 }
             }
         }
+
+        verifyAll {
+            storeMock.insertBehov(any())
+            kafkaMock.produceEvent(any())
+        }
     }
 
-    private fun testApp(callback: TestApplicationEngine.() -> Unit) {
-        withTestApplication({ dummyApi() }) { callback() }
+    @Test
+    fun `Subpaths subsumsjon and status are present`() {
+        val storeMock = mockk<SubsumsjonStore>(relaxed = true)
+
+        withTestApplication(MockApi(
+            subsumsjonStore = storeMock
+        )) {
+            handleRequest(HttpMethod.Get, "/grunnlag/1")
+
+            handleRequest(HttpMethod.Get, "/grunnlag/status/2")
+        }
+
+        verifyAll {
+            storeMock.getSubsumsjon("1")
+            storeMock.behovStatus("2")
+        }
     }
 }

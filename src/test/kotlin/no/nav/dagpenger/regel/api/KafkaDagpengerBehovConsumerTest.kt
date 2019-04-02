@@ -2,21 +2,26 @@ package no.nav.dagpenger.regel.api
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types
+import io.kotlintest.shouldBe
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verifyAll
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
-import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjonerDummy
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjonerDummy
-import no.nav.dagpenger.regel.api.models.common.InntektResponse
-import no.nav.dagpenger.regel.api.models.common.InntektsPeriode
-import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjonerDummy
-import no.nav.dagpenger.regel.api.sats.SatsSubsumsjonerDummy
-import no.nav.dagpenger.regel.api.tasks.TasksDummy
-import no.nav.dagpenger.streams.Topics
+import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.GrunnlagSubsumsjon
+import no.nav.dagpenger.regel.api.models.InntektResponse
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.MinsteinntektSubsumsjon
+import no.nav.dagpenger.regel.api.models.PeriodeSubsumsjon
+import no.nav.dagpenger.regel.api.models.SatsSubsumsjon
+import no.nav.dagpenger.streams.Topics.DAGPENGER_BEHOV_PACKET_EVENT
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.test.ConsumerRecordFactory
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -29,13 +34,13 @@ class KafkaDagpengerBehovConsumerTest {
     val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)
 
     val inntektsPerioderAdapter: JsonAdapter<Set<InntektResponse>> =
-            moshiInstance.adapter(Types.newParameterizedType(Set::class.java, InntektResponse::class.java))
+        moshiInstance.adapter(Types.newParameterizedType(Set::class.java, InntektResponse::class.java))
 
     companion object {
         val factory = ConsumerRecordFactory<String, String>(
-                Topics.DAGPENGER_BEHOV_EVENT.name,
-                Serdes.String().serializer(),
-                Serdes.String().serializer()
+            DAGPENGER_BEHOV_PACKET_EVENT.name,
+            Serdes.String().serializer(),
+            Serdes.String().serializer()
         )
 
         val config = Properties().apply {
@@ -46,249 +51,237 @@ class KafkaDagpengerBehovConsumerTest {
 
     @Test
     fun ` Should store received minsteinntektSubsumsjon `() {
-        val minsteinntektSubsumsjonerDummy = MinsteinntektSubsumsjonerDummy()
-        val tasks = TasksDummy()
-        val consumer = KafkaDagpengerBehovConsumer(
-                Environment(
-                        username = "bogus",
-                        password = "bogus"
-                ),
-                tasks,
-                minsteinntektSubsumsjonerDummy,
-                PeriodeSubsumsjonerDummy(),
-                GrunnlagSubsumsjonerDummy(),
-                SatsSubsumsjonerDummy()
-        )
 
-        val inntektsPerioder = setOf(
-                InntektResponse(
-                        inntekt = BigDecimal.ZERO,
-                        periode = 1,
-                        inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
-                        inneholderFangstOgFisk = false,
-                        andel = BigDecimal.ZERO
-                ),
-                InntektResponse(
-                        inntekt = BigDecimal.ZERO,
-                        periode = 2,
-                        inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
-                        inneholderFangstOgFisk = false,
-                        andel = BigDecimal.ZERO
-                ),
-                InntektResponse(
-                        inntekt = BigDecimal.ZERO,
-                        periode = 3,
-                        inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
-                        inneholderFangstOgFisk = false,
-                        andel = BigDecimal.ZERO
-                )
-        )
-
-        val minsteinntektResultat = MinsteinntektResultat(
+        val behovJson = jsonAdapter.toJson(SubsumsjonsBehov(
+            "minsteinntektSubsumsjon",
+            "12345",
+            Random().nextInt(),
+            LocalDate.now(),
+            inntektV1 = inntektAdapter.toJson(Inntekt("", emptyList())),
+            minsteinntektResultat = MinsteinntektResultat(
                 "123",
                 "minsteinntektSubsumsjon",
                 "regel",
-                true)
+                true),
+            minsteinntektInntektsPerioder = inntektsPerioderAdapter.toJson(setOf(
+                InntektResponse(
+                    inntekt = BigDecimal.ZERO,
+                    periode = 1,
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
+                    inneholderFangstOgFisk = false,
+                    andel = BigDecimal.ZERO
+                ),
+                InntektResponse(
+                    inntekt = BigDecimal.ZERO,
+                    periode = 2,
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
+                    inneholderFangstOgFisk = false,
+                    andel = BigDecimal.ZERO
+                ),
+                InntektResponse(
+                    inntekt = BigDecimal.ZERO,
+                    periode = 3,
+                    inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
+                    inneholderFangstOgFisk = false,
+                    andel = BigDecimal.ZERO
+                )
+            ))
+        ))
 
-        val behov = SubsumsjonsBehov(
-                TasksDummy.minsteinntektPendingBehovId,
-                "12345",
-                Random().nextInt(),
-                LocalDate.now(),
-                inntektV1 = inntektAdapter.toJson(Inntekt("", emptyList())),
-                minsteinntektResultat = minsteinntektResultat,
-                minsteinntektInntektsPerioder = inntektsPerioderAdapter.toJson(inntektsPerioder)
+        val slot = slot<MinsteinntektSubsumsjon>()
+        val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
+            every {
+                this@apply.insertSubsumsjon(
+                    subsumsjon = capture(slot)
+                )
+            } just Runs
+        }
+
+        val consumer = KafkaDagpengerBehovConsumer(
+            Configuration(),
+            subsumsjonStoreMock
         )
-        val behovJson = jsonAdapter.toJson(behov)
 
         TopologyTestDriver(consumer.buildTopology(), config).use { topologyTestDriver ->
             val inputRecord = factory.create(behovJson)
             topologyTestDriver.pipeInput(inputRecord)
         }
 
-        assertNotNull(minsteinntektSubsumsjonerDummy.storedMinsteinntektSubsumsjon)
-        assertEquals(
-                "minsteinntektSubsumsjon",
-                minsteinntektSubsumsjonerDummy.storedMinsteinntektSubsumsjon!!.subsumsjonsId)
-        assertEquals(3, minsteinntektSubsumsjonerDummy.storedMinsteinntektSubsumsjon!!.inntekt.size)
+        verifyAll { subsumsjonStoreMock.insertSubsumsjon(any()) }
+
+        with(slot.captured) {
+            subsumsjonsId shouldBe "minsteinntektSubsumsjon"
+            inntekt.size shouldBe 3
+        }
     }
 
     @Test
     fun ` Should store received grunnlagSubsumsjon `() {
-        val grunnlagSubsumsjonerDummy = GrunnlagSubsumsjonerDummy()
-        val tasks = TasksDummy()
-        val consumer = KafkaDagpengerBehovConsumer(
-                Environment(
-                        username = "bogus",
-                        password = "bogus"
-                ),
-                tasks,
-                MinsteinntektSubsumsjonerDummy(),
-                PeriodeSubsumsjonerDummy(),
-                grunnlagSubsumsjonerDummy,
-                SatsSubsumsjonerDummy()
-        )
 
-        val grunnlagResultat = GrunnlagResultat(
+        val behovJson = jsonAdapter.toJson(SubsumsjonsBehov(
+            "grunnlagSubsumsjon",
+            "12345",
+            Random().nextInt(),
+            LocalDate.now(),
+            inntektV1 = inntektAdapter.toJson(Inntekt("", emptyList())),
+            grunnlagResultat = GrunnlagResultat(
                 "123",
                 "grunnlagSubsumsjon",
                 "regel",
                 1000,
                 1500,
                 "ArbeidsinntektSiste12")
+        ))
 
-        val behov = SubsumsjonsBehov(
-                TasksDummy.grunnlagPendingBehovId,
-                "12345",
-                Random().nextInt(),
-                LocalDate.now(),
-                inntektV1 = inntektAdapter.toJson(Inntekt("", emptyList())),
-                grunnlagResultat = grunnlagResultat
+        val slot = slot<GrunnlagSubsumsjon>()
+        val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
+            every {
+                this@apply.insertSubsumsjon(
+                    subsumsjon = capture(slot)
+                )
+            } just Runs
+        }
+
+        val consumer = KafkaDagpengerBehovConsumer(
+            Configuration(),
+            subsumsjonStoreMock
         )
-        val behovJson = jsonAdapter.toJson(behov)
 
         TopologyTestDriver(consumer.buildTopology(), config).use { topologyTestDriver ->
             val inputRecord = factory.create(behovJson)
             topologyTestDriver.pipeInput(inputRecord)
         }
 
-        assertNotNull(grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon)
-        assertEquals("ArbeidsinntektSiste12", grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon?.resultat?.beregningsregel)
-        assertEquals(
-                "grunnlagSubsumsjon",
-                grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon!!.subsumsjonsId)
+        verifyAll { subsumsjonStoreMock.insertSubsumsjon(any()) }
+
+        with(slot.captured) {
+            subsumsjonsId shouldBe "grunnlagSubsumsjon"
+            resultat.beregningsregel shouldBe "ArbeidsinntektSiste12"
+        }
     }
 
     @Test
     fun ` Should store received grunnlagSubsumsjon without inntekt `() {
-        val grunnlagSubsumsjonerDummy = GrunnlagSubsumsjonerDummy()
-        val tasks = TasksDummy()
-        val consumer = KafkaDagpengerBehovConsumer(
-            Environment(
-                username = "bogus",
-                password = "bogus"
-            ),
-            tasks,
-            MinsteinntektSubsumsjonerDummy(),
-            PeriodeSubsumsjonerDummy(),
-            grunnlagSubsumsjonerDummy,
-            SatsSubsumsjonerDummy()
-        )
 
-        val grunnlagResultat = GrunnlagResultat(
-            "123",
+        val behovJson = jsonAdapter.toJson(SubsumsjonsBehov(
             "grunnlagSubsumsjon",
-            "regel",
-            1000,
-            1500,
-            "Manuell under 6G")
-
-        val behov = SubsumsjonsBehov(
-            TasksDummy.grunnlagPendingBehovId,
             "12345",
             Random().nextInt(),
             LocalDate.now(),
-            grunnlagResultat = grunnlagResultat
-        )
-        val behovJson = jsonAdapter.toJson(behov)
+            grunnlagResultat = GrunnlagResultat(
+                "123",
+                "grunnlagSubsumsjon",
+                "regel",
+                1000,
+                1500,
+                "Manuell under 6G")
+        ))
 
+        val slot = slot<GrunnlagSubsumsjon>()
+        val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
+            every {
+                this@apply.insertSubsumsjon(
+                    subsumsjon = capture(slot)
+                )
+            } just Runs
+        }
+
+        val consumer = KafkaDagpengerBehovConsumer(
+            Configuration(),
+            subsumsjonStoreMock
+        )
         TopologyTestDriver(consumer.buildTopology(), config).use { topologyTestDriver ->
             val inputRecord = factory.create(behovJson)
             topologyTestDriver.pipeInput(inputRecord)
         }
 
-        assertNotNull(grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon)
-        assertEquals("Manuell under 6G", grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon?.resultat?.beregningsregel)
-        assertEquals("MANUELT_GRUNNLAG", grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon?.faktum?.inntektsId)
-        assertEquals(
-            "grunnlagSubsumsjon",
-            grunnlagSubsumsjonerDummy.storedGrunnlagSubsumsjon!!.subsumsjonsId)
+        verifyAll { subsumsjonStoreMock.insertSubsumsjon(any()) }
+        with(slot.captured) {
+            subsumsjonsId shouldBe "grunnlagSubsumsjon"
+            resultat.beregningsregel shouldBe "Manuell under 6G"
+            faktum.inntektsId shouldBe "MANUELT_GRUNNLAG"
+        }
     }
 
     @Test
     fun ` Should store received periodeSubsumsjon `() {
-        val tasks = TasksDummy()
-        val periodeSubsumsjonerDummy = PeriodeSubsumsjonerDummy()
-        val consumer = KafkaDagpengerBehovConsumer(
-                Environment(
-                        username = "bogus",
-                        password = "bogus"
-                ),
-                tasks,
-                MinsteinntektSubsumsjonerDummy(),
-                periodeSubsumsjonerDummy,
-                GrunnlagSubsumsjonerDummy(),
-                SatsSubsumsjonerDummy()
-        )
 
-        val periodeResultat = PeriodeResultat(
+        val behovJson = jsonAdapter.toJson(SubsumsjonsBehov(
+            "",
+            "12345",
+            Random().nextInt(),
+            LocalDate.now(),
+            inntektV1 = inntektAdapter.toJson(Inntekt("", emptyList())),
+            periodeResultat = PeriodeResultat(
                 "123",
                 "periodeSubsumsjon",
                 "regel",
                 52)
+        ))
 
-        val behov = SubsumsjonsBehov(
-                TasksDummy.periodePendingBehovId,
-                "12345",
-                Random().nextInt(),
-                LocalDate.now(),
-                inntektV1 = inntektAdapter.toJson(Inntekt("", emptyList())),
-                periodeResultat = periodeResultat
+        val slot = slot<PeriodeSubsumsjon>()
+        val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
+            every {
+                this@apply.insertSubsumsjon(
+                    subsumsjon = capture(slot)
+                )
+            } just Runs
+        }
+
+        val consumer = KafkaDagpengerBehovConsumer(
+            Configuration(),
+            subsumsjonStoreMock
         )
-        val behovJson = jsonAdapter.toJson(behov)
-
         TopologyTestDriver(consumer.buildTopology(), config).use { topologyTestDriver ->
             val inputRecord = factory.create(behovJson)
             topologyTestDriver.pipeInput(inputRecord)
         }
 
-        assertNotNull(periodeSubsumsjonerDummy.storedPeriodeSubsumsjon)
-        assertEquals(
-                "periodeSubsumsjon",
-                periodeSubsumsjonerDummy.storedPeriodeSubsumsjon!!.subsumsjonsId)
+        verifyAll { subsumsjonStoreMock.insertSubsumsjon(any()) }
+        with(slot.captured) {
+            subsumsjonsId shouldBe "periodeSubsumsjon"
+        }
     }
 
     @Test
     fun ` Should store received satsSubsumsjon `() {
-        val tasks = TasksDummy()
-        val satsSubsumsjonerDummy = SatsSubsumsjonerDummy()
-        val consumer = KafkaDagpengerBehovConsumer(
-                Environment(
-                        username = "bogus",
-                        password = "bogus"
-                ),
-                tasks,
-                MinsteinntektSubsumsjonerDummy(),
-                PeriodeSubsumsjonerDummy(),
-                GrunnlagSubsumsjonerDummy(),
-                satsSubsumsjonerDummy
-        )
 
-        val satsResultat = SatsResultat(
+        val behovJson = jsonAdapter.toJson(SubsumsjonsBehov(
+            "",
+            "12345",
+            Random().nextInt(),
+            LocalDate.now(),
+            satsResultat = SatsResultat(
                 "123",
                 "satsSubsumsjon",
                 "regel",
                 0,
                 0,
                 false)
+        ))
 
-        val behov = SubsumsjonsBehov(
-                TasksDummy.satsPendingBehovId,
-                "12345",
-                Random().nextInt(),
-                LocalDate.now(),
-                satsResultat = satsResultat
+        val slot = slot<SatsSubsumsjon>()
+        val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
+            every {
+                this@apply.insertSubsumsjon(
+                    subsumsjon = capture(slot)
+                )
+            } just Runs
+        }
+
+        val consumer = KafkaDagpengerBehovConsumer(
+            Configuration(),
+            subsumsjonStoreMock
         )
-        val behovJson = jsonAdapter.toJson(behov)
 
         TopologyTestDriver(consumer.buildTopology(), config).use { topologyTestDriver ->
             val inputRecord = factory.create(behovJson)
             topologyTestDriver.pipeInput(inputRecord)
         }
 
-        assertNotNull(satsSubsumsjonerDummy.storedSatsSubsumsjon)
-        assertEquals(
-                "satsSubsumsjon",
-                satsSubsumsjonerDummy.storedSatsSubsumsjon!!.subsumsjonsId)
+        verifyAll { subsumsjonStoreMock.insertSubsumsjon(any()) }
+        with(slot.captured) {
+            subsumsjonsId shouldBe "satsSubsumsjon"
+        }
     }
 }

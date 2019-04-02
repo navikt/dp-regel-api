@@ -11,11 +11,11 @@ internal class JsonSerializerTest {
     fun `serialize dagpenger behov events given input`() {
         val serialized = JsonSerializer().serialize(
             "topic", SubsumsjonsBehov(
-                "behovId",
-                "aktørId",
-                0,
-                LocalDate.now()
-            )
+            "behovId",
+            "aktørId",
+            0,
+            LocalDate.now()
+        )
         )
         assertNotNull(serialized)
     }

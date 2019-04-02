@@ -44,6 +44,7 @@ val vaultJdbcVersion = "1.2.2"
 val kotliqueryVersion = "1.3.0"
 val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
+val mockkVersion = "1.9"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -64,10 +65,9 @@ dependencies {
     implementation("com.vlkan.log4j2:log4j2-logstash-layout-fatjar:0.15")
     implementation("org.slf4j:slf4j-api:1.7.25")
     implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.2.0")
-    implementation("io.lettuce:lettuce-core:5.1.3.RELEASE")
-    compile("org.apache.kafka:kafka-clients:$kafkaVersion")
-    compile("org.apache.kafka:kafka-streams:$kafkaVersion")
-    compile("io.confluent:kafka-streams-avro-serde:$confluentVersion")
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
+    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
+    implementation("io.confluent:kafka-streams-avro-serde:$confluentVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.postgresql:postgresql:$postgresVersion")
@@ -85,6 +85,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
     testImplementation("org.apache.kafka:kafka-streams-test-utils:$kafkaVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainers_version")
+    testImplementation("org.testcontainers:kafka:$testcontainers_version")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:$jupiterVersion")
 }

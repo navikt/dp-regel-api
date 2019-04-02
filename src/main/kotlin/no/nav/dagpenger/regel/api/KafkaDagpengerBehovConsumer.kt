@@ -4,28 +4,22 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types
 import mu.KotlinLogging
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
-import no.nav.dagpenger.regel.api.models.common.InntektResponse
-import no.nav.dagpenger.regel.api.models.common.InntektsPeriode
-import no.nav.dagpenger.regel.api.grunnlag.GrunnlagFaktum
-import no.nav.dagpenger.regel.api.grunnlag.GrunnlagResultat
-import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjon
-import no.nav.dagpenger.regel.api.grunnlag.GrunnlagSubsumsjoner
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektFaktum
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektResultat
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjon
-import no.nav.dagpenger.regel.api.minsteinntekt.MinsteinntektSubsumsjoner
-import no.nav.dagpenger.regel.api.periode.PeriodeFaktum
-import no.nav.dagpenger.regel.api.periode.PeriodeResultat
-import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjon
-import no.nav.dagpenger.regel.api.periode.PeriodeSubsumsjoner
-import no.nav.dagpenger.regel.api.sats.SatsFaktum
-import no.nav.dagpenger.regel.api.sats.SatsResultat
-import no.nav.dagpenger.regel.api.sats.SatsSubsumsjon
-import no.nav.dagpenger.regel.api.sats.SatsSubsumsjoner
-import no.nav.dagpenger.regel.api.tasks.TaskStatus
-import no.nav.dagpenger.regel.api.tasks.Tasks
-import no.nav.dagpenger.streams.KafkaCredential
-import no.nav.dagpenger.streams.Topics
+import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.GrunnlagFaktum
+import no.nav.dagpenger.regel.api.models.GrunnlagResultat
+import no.nav.dagpenger.regel.api.models.GrunnlagSubsumsjon
+import no.nav.dagpenger.regel.api.models.InntektResponse
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.MinsteinntektFaktum
+import no.nav.dagpenger.regel.api.models.MinsteinntektResultat
+import no.nav.dagpenger.regel.api.models.MinsteinntektSubsumsjon
+import no.nav.dagpenger.regel.api.models.PeriodeFaktum
+import no.nav.dagpenger.regel.api.models.PeriodeResultat
+import no.nav.dagpenger.regel.api.models.PeriodeSubsumsjon
+import no.nav.dagpenger.regel.api.models.SatsFaktum
+import no.nav.dagpenger.regel.api.models.SatsResultat
+import no.nav.dagpenger.regel.api.models.SatsSubsumsjon
+import no.nav.dagpenger.streams.Topics.DAGPENGER_BEHOV_PACKET_EVENT
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
@@ -35,31 +29,25 @@ import org.apache.kafka.streams.kstream.Consumed
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.YearMonth
-import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger {}
 
 class KafkaDagpengerBehovConsumer(
-    val env: Environment,
-    val tasks: Tasks,
-    val minsteinntektSubsumsjoner: MinsteinntektSubsumsjoner,
-    val periodeSubsumsjoner: PeriodeSubsumsjoner,
-    val grunnlagSubsumsjoner: GrunnlagSubsumsjoner,
-    val satsSubsumsjoner: SatsSubsumsjoner
+    private val config: Configuration,
+    private val store: SubsumsjonStore
 ) {
 
-    val SERVICE_APP_ID = "dp-regel-api"
     private lateinit var streams: KafkaStreams
     fun start() {
-        LOGGER.info { "Starting up $SERVICE_APP_ID kafca consumer" }
+        LOGGER.info { "Starting up $APPLICATION_NAME kafca consumer" }
         streams = KafkaStreams(buildTopology(), this.getConfig())
-        streams.setUncaughtExceptionHandler { t, e -> System.exit(0) }
+        streams.setUncaughtExceptionHandler { _, _ -> System.exit(0) }
         streams.start()
     }
 
     fun stop() {
-        LOGGER.info { "Shutting down $SERVICE_APP_ID kafka consumer" }
+        LOGGER.info { "Shutting down $APPLICATION_NAME kafka consumer" }
         streams.close(3, TimeUnit.SECONDS)
         streams.cleanUp()
     }
@@ -68,47 +56,40 @@ class KafkaDagpengerBehovConsumer(
         val builder = StreamsBuilder()
 
         val stream = builder.stream(
-            Topics.DAGPENGER_BEHOV_EVENT.name,
+            DAGPENGER_BEHOV_PACKET_EVENT.name,
             Consumed.with(Serdes.StringSerde(), Serdes.serdeFrom(JsonSerializer(), JsonDeserializer()))
         )
 
         stream
-            .peek { key, value -> LOGGER.info("Consuming behov with id $value") }
+            .peek { _, value -> LOGGER.info("Consuming behov with id $value") }
             .foreach { _, behov -> storeResult(behov) }
 
         return builder.build()
     }
 
-    fun getConfig(): Properties {
-        val props = streamConfig(
-            appId = SERVICE_APP_ID,
-            bootStapServerUrl = env.bootstrapServersUrl,
-            credential = KafkaCredential(env.username, env.password))
-        return props
+    private fun getConfig() = streamConfig(
+        appId = APPLICATION_NAME,
+        bootStapServerUrl = config.kafka.brokers,
+        credential = config.kafka.credential()
+    )
+
+    private fun hasNeededMinsteinntektResultat(behov: SubsumsjonsBehov): Boolean {
+        return behov.minsteinntektResultat != null
     }
 
-    fun hasNeededMinsteinntektResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.minsteinntektResultat != null && hasPendingTask(Regel.MINSTEINNTEKT, behov.behovId)
+    private fun hasNeededPeriodeResultat(behov: SubsumsjonsBehov): Boolean {
+        return behov.periodeResultat != null
     }
 
-    fun hasNeededPeriodeResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.periodeResultat != null && hasPendingTask(Regel.PERIODE, behov.behovId)
+    private fun hasNeededGrunnlagResultat(behov: SubsumsjonsBehov): Boolean {
+        return behov.grunnlagResultat != null
     }
 
-    fun hasNeededGrunnlagResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.grunnlagResultat != null && hasPendingTask(Regel.GRUNNLAG, behov.behovId)
+    private fun hasNeededSatsResultat(behov: SubsumsjonsBehov): Boolean {
+        return behov.satsResultat != null
     }
 
-    fun hasNeededSatsResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.satsResultat != null && hasPendingTask(Regel.SATS, behov.behovId)
-    }
-
-    fun hasPendingTask(regel: Regel, behovId: String): Boolean {
-        val task = tasks.getTask(regel, behovId)
-        return task?.status == TaskStatus.PENDING
-    }
-
-    fun storeResult(behov: SubsumsjonsBehov) {
+    private fun storeResult(behov: SubsumsjonsBehov) {
         when {
             hasNeededMinsteinntektResultat(behov) -> storeMinsteinntektSubsumsjon(behov)
             hasNeededPeriodeResultat(behov) -> storePeriodeSubsumsjon(behov)
@@ -118,35 +99,23 @@ class KafkaDagpengerBehovConsumer(
         }
     }
 
-    fun storeMinsteinntektSubsumsjon(behov: SubsumsjonsBehov) {
-        val minsteinntektSubsumsjon = mapToMinsteinntektSubsumsjon(behov)
-
-        minsteinntektSubsumsjoner.insertMinsteinntektSubsumsjon(minsteinntektSubsumsjon)
-        tasks.updateTask(Regel.MINSTEINNTEKT, behov.behovId, minsteinntektSubsumsjon.subsumsjonsId)
+    private fun storeMinsteinntektSubsumsjon(behov: SubsumsjonsBehov) = mapToMinsteinntektSubsumsjon(behov).also {
+        store.insertSubsumsjon(it)
     }
 
-    fun storePeriodeSubsumsjon(behov: SubsumsjonsBehov) {
-        val periodeSubsumsjon = mapToPeriodeSubsumsjon(behov)
-
-        periodeSubsumsjoner.insertPeriodeSubsumsjon(periodeSubsumsjon)
-        tasks.updateTask(Regel.PERIODE, behov.behovId, periodeSubsumsjon.subsumsjonsId)
+    private fun storePeriodeSubsumsjon(behov: SubsumsjonsBehov) = mapToPeriodeSubsumsjon(behov).also {
+        store.insertSubsumsjon(it)
     }
 
-    fun storeGrunnlagSubsumsjon(behov: SubsumsjonsBehov) {
-        val grunnlagSubsumsjon = mapToGrunnlagSubsumsjon(behov)
-
-        grunnlagSubsumsjoner.insertGrunnlagSubsumsjon(grunnlagSubsumsjon)
-        tasks.updateTask(Regel.GRUNNLAG, behov.behovId, grunnlagSubsumsjon.subsumsjonsId)
+    private fun storeGrunnlagSubsumsjon(behov: SubsumsjonsBehov) = mapToGrunnlagSubsumsjon(behov).also {
+        store.insertSubsumsjon(it)
     }
 
-    fun storeSatsSubsumsjon(behov: SubsumsjonsBehov) {
-        val satsSubsumsjon = mapToSatsSubsumsjon(behov)
-
-        satsSubsumsjoner.insertSatsSubsumsjon(satsSubsumsjon)
-        tasks.updateTask(Regel.SATS, behov.behovId, satsSubsumsjon.subsumsjonsId)
+    private fun storeSatsSubsumsjon(behov: SubsumsjonsBehov) = mapToSatsSubsumsjon(behov).also {
+        store.insertSubsumsjon(it)
     }
 
-    fun mapToMinsteinntektSubsumsjon(behov: SubsumsjonsBehov): MinsteinntektSubsumsjon {
+    private fun mapToMinsteinntektSubsumsjon(behov: SubsumsjonsBehov): MinsteinntektSubsumsjon {
         val minsteinntektResultat = behov.minsteinntektResultat!!
         val inntektString = behov.inntektV1!!
         val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
@@ -154,6 +123,8 @@ class KafkaDagpengerBehovConsumer(
         val inntektsperioder = getInntektsPerioder(inntektsPerioderString) // TODO ADAPT TO PACKET
         return MinsteinntektSubsumsjon(
             minsteinntektResultat.subsumsjonsId,
+            behov.behovId,
+            Regel.MINSTEINNTEKT,
             LocalDateTime.now(),
             LocalDateTime.now(),
             MinsteinntektFaktum(
@@ -163,16 +134,18 @@ class KafkaDagpengerBehovConsumer(
                 inntekt?.inntektsId ?: "12345", // fixme
                 behov.harAvtjentVerneplikt),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
-                inntektsperioder ?: emptySet() // fixme
+            inntektsperioder // fixme
         )
     }
 
-    fun mapToPeriodeSubsumsjon(behov: SubsumsjonsBehov): PeriodeSubsumsjon {
+    private fun mapToPeriodeSubsumsjon(behov: SubsumsjonsBehov): PeriodeSubsumsjon {
         val periodeResultat = behov.periodeResultat!!
         val inntektString = behov.inntektV1!!
         val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
         return PeriodeSubsumsjon(
             periodeResultat.subsumsjonsId,
+            behov.behovId,
+            Regel.PERIODE,
             LocalDateTime.now(),
             LocalDateTime.now(),
             PeriodeFaktum(
@@ -185,7 +158,7 @@ class KafkaDagpengerBehovConsumer(
         )
     }
 
-    fun mapToGrunnlagSubsumsjon(behov: SubsumsjonsBehov): GrunnlagSubsumsjon {
+    private fun mapToGrunnlagSubsumsjon(behov: SubsumsjonsBehov): GrunnlagSubsumsjon {
         val grunnlagResultat = behov.grunnlagResultat!!
         val inntektString = behov.inntektV1
         val inntekt = inntektString?.let { string -> inntektAdapter.fromJson(string) } // TODO ADAPT TO PACKET
@@ -193,6 +166,8 @@ class KafkaDagpengerBehovConsumer(
         val inntektsperioder = getInntektsPerioder(grunnlagInntektPerioderString) // TODO ADAPT TO PACKET
         return GrunnlagSubsumsjon(
             grunnlagResultat.subsumsjonsId,
+            behov.behovId,
+            Regel.GRUNNLAG,
             LocalDateTime.now(),
             LocalDateTime.now(),
             GrunnlagFaktum(
@@ -234,15 +209,17 @@ class KafkaDagpengerBehovConsumer(
             )
         )
 
-    val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)
+    private val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)!!
 
-    val inntektsPerioderAdapter: JsonAdapter<Set<InntektResponse>> =
+    private val inntektsPerioderAdapter: JsonAdapter<Set<InntektResponse>> =
             moshiInstance.adapter(Types.newParameterizedType(Set::class.java, InntektResponse::class.java))
 
-    fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
+    private fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
         val satsResultat = behov.satsResultat!!
         return SatsSubsumsjon(
             satsResultat.subsumsjonsId,
+            behov.behovId,
+            Regel.SATS,
             LocalDateTime.now(),
             LocalDateTime.now(),
             SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, behov.manueltGrunnlag, behov.antallBarn),

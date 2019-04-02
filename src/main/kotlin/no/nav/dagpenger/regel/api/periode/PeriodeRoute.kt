@@ -7,47 +7,52 @@ import io.ktor.request.receive
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Routing
-import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
-import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.BadRequestException
-import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.BruktInntektsPeriode
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
-import no.nav.dagpenger.regel.api.models.common.InntektsPeriode
-import no.nav.dagpenger.regel.api.tasks.Tasks
-import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
+import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.SubsumsjonsBehov
+import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.routes.getStatus
+import no.nav.dagpenger.regel.api.routes.getSubsumsjon
+import no.nav.dagpenger.regel.api.senesteInntektsmåned
+import no.nav.dagpenger.regel.api.tasks.taskPending
+import no.nav.dagpenger.regel.api.ulidGenerator
 import java.time.LocalDate
 
-private val LOGGER = KotlinLogging.logger {}
-
 fun Routing.periode(
-    periodeSubsumsjoner: PeriodeSubsumsjoner,
-    tasks: Tasks,
+    store: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer
 ) {
 
     route("/periode") {
         post {
-            val parametere = call.receive<PeriodeRequestParametere>()
-
-            // todo: what if this call or next fails? either way?
-            val behov = kafkaProducer.producePeriodeEvent(parametere)
-            val task = tasks.createTask(Regel.PERIODE, behov.behovId)
-
-            call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
-            call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
+            mapRequestToBehov(call.receive<PeriodeRequestParametere>()).apply {
+                store.insertBehov(this)
+                kafkaProducer.produceEvent(this)
+            }.also {
+                call.response.header(HttpHeaders.Location, "/periode/status/${it.behovId}")
+                call.respond(HttpStatusCode.Accepted, taskPending(Regel.PERIODE))
+            }
         }
 
-        get("/{subsumsjonsid}") {
-            val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
+        getSubsumsjon(store)
 
-            val periodeSubsumsjon = periodeSubsumsjoner.getPeriodeSubsumsjon(subsumsjonsId)
-
-            call.respond(HttpStatusCode.OK, periodeSubsumsjon)
-        }
+        getStatus(Regel.PERIODE, store)
     }
 }
+
+fun mapRequestToBehov(request: PeriodeRequestParametere) = SubsumsjonsBehov(
+    ulidGenerator.nextULID(),
+    request.aktorId,
+    request.vedtakId,
+    request.beregningsdato,
+    request.harAvtjentVerneplikt,
+    senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
+    bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) }
+)
 
 data class PeriodeRequestParametere(
     val aktorId: String,

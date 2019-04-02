@@ -7,47 +7,53 @@ import io.ktor.request.receive
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Routing
-import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
-import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.BadRequestException
-import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.BruktInntektsPeriode
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
-import no.nav.dagpenger.regel.api.models.common.InntektsPeriode
-import no.nav.dagpenger.regel.api.tasks.Tasks
-import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
+import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.SubsumsjonsBehov
+import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.routes.getStatus
+import no.nav.dagpenger.regel.api.routes.getSubsumsjon
+import no.nav.dagpenger.regel.api.senesteInntektsmåned
+import no.nav.dagpenger.regel.api.tasks.taskPending
+import no.nav.dagpenger.regel.api.ulidGenerator
 import java.time.LocalDate
 
-private val LOGGER = KotlinLogging.logger {}
-
 fun Routing.minsteinntekt(
-    minsteinntektSubsumsjoner: MinsteinntektSubsumsjoner,
-    tasks: Tasks,
+    store: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer
 ) {
 
     route("/minsteinntekt") {
         post {
-            val parametere = call.receive<MinsteinntektRequestParametere>()
-
-            // todo: what if this call or next fails? either way?
-            val behov = kafkaProducer.produceMinsteInntektEvent(parametere)
-            val task = tasks.createTask(Regel.MINSTEINNTEKT, behov.behovId)
-
-            call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
-            call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
+            mapRequestToBehov(call.receive()).apply {
+                store.insertBehov(this)
+                kafkaProducer.produceEvent(this)
+            }.also {
+                call.response.header(HttpHeaders.Location, "/minsteinntekt/status/${it.behovId}")
+                call.respond(HttpStatusCode.Accepted, taskPending(Regel.GRUNNLAG))
+            }
         }
 
-        get("/{subsumsjonsid}") {
-            val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
+        getSubsumsjon(store)
 
-            val minsteinntektSubsumsjon = minsteinntektSubsumsjoner.getMinsteinntektSubsumsjon(subsumsjonsId)
-
-            call.respond(HttpStatusCode.OK, minsteinntektSubsumsjon)
-        }
+        getStatus(Regel.MINSTEINNTEKT, store)
     }
 }
+
+private fun mapRequestToBehov(request: MinsteinntektRequestParametere) =
+    SubsumsjonsBehov(
+        ulidGenerator.nextULID(),
+        request.aktorId,
+        request.vedtakId,
+        request.beregningsdato,
+        request.harAvtjentVerneplikt,
+        senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
+        bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) }
+    )
 
 data class MinsteinntektRequestParametere(
     val aktorId: String,

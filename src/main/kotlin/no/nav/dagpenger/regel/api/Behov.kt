@@ -1,7 +1,10 @@
 package no.nav.dagpenger.regel.api
 
+import de.huxhorn.sulky.ulid.ULID
 import java.time.LocalDate
 import java.time.YearMonth
+
+internal val ulidGenerator = ULID()
 
 data class SubsumsjonsBehov(
     val behovId: String,
@@ -22,6 +25,18 @@ data class SubsumsjonsBehov(
     var grunnlagResultat: GrunnlagResultat? = null,
     var satsResultat: SatsResultat? = null
 )
+
+sealed class Status {
+    data class Done(val subsumsjonsId: String) : Status() {
+        companion object {
+            override fun toString() = "Done"
+        }
+    }
+
+    object Pending : Status() {
+        override fun toString() = "Pending"
+    }
+}
 
 data class BruktInntektsPeriode(
     val førsteMåned: YearMonth,

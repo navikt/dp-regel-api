@@ -7,43 +7,48 @@ import io.ktor.request.receive
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Routing
-import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
-import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.Regel
-import no.nav.dagpenger.regel.api.tasks.Tasks
-import no.nav.dagpenger.regel.api.tasks.taskResponseFromTask
+import no.nav.dagpenger.regel.api.SubsumsjonsBehov
+import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.routes.getStatus
+import no.nav.dagpenger.regel.api.routes.getSubsumsjon
+import no.nav.dagpenger.regel.api.senesteInntektsmåned
+import no.nav.dagpenger.regel.api.tasks.taskPending
+import no.nav.dagpenger.regel.api.ulidGenerator
 import java.time.LocalDate
 
-private val LOGGER = KotlinLogging.logger {}
-
-fun Routing.grunnlag(grunnlagsubsumsjoner: GrunnlagSubsumsjoner, tasks: Tasks, kafkaProducer: DagpengerBehovProducer) {
+fun Routing.grunnlag(store: SubsumsjonStore, kafkaProducer: DagpengerBehovProducer) {
     route("/grunnlag") {
         post {
-            val parametere = call.receive<GrunnlagRequestParametere>()
-
-            // todo: what if this call or next fails? either way?
-            val behov = kafkaProducer.produceGrunnlagEvent(parametere)
-            val task = tasks.createTask(Regel.GRUNNLAG, behov.behovId)
-
-            call.response.header(HttpHeaders.Location, "/task/${task.taskId}")
-            call.respond(HttpStatusCode.Accepted, taskResponseFromTask(task))
+            mapRequestToBehov(call.receive()).apply {
+                store.insertBehov(this)
+                kafkaProducer.produceEvent(this)
+            }.also {
+                call.response.header(HttpHeaders.Location, "/grunnlag/status/${it.behovId}")
+                call.respond(HttpStatusCode.Accepted, taskPending(Regel.GRUNNLAG))
+            }
         }
 
-        get("/{subsumsjonsid}") {
-            val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
+        getSubsumsjon(store)
 
-            val grunnlagSubsumsjon = grunnlagsubsumsjoner.getGrunnlagSubsumsjon(subsumsjonsId)
-
-            call.respond(HttpStatusCode.OK, grunnlagSubsumsjon)
-        }
+        getStatus(Regel.GRUNNLAG, store)
     }
 }
 
-data class GrunnlagRequestParametere(
+private fun mapRequestToBehov(request: GrunnlagRequestParametere): SubsumsjonsBehov = SubsumsjonsBehov(
+    ulidGenerator.nextULID(),
+    request.aktorId,
+    request.vedtakId,
+    request.beregningsdato,
+    request.harAvtjentVerneplikt,
+    senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
+    manueltGrunnlag = request.manueltGrunnlag
+)
+
+private data class GrunnlagRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
