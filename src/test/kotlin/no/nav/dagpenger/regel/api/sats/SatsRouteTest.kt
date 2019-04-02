@@ -14,6 +14,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
+import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.routes.MockApi
 import org.junit.jupiter.api.Test
@@ -69,7 +70,7 @@ class SatsRouteTest {
         }
 
         verify {
-            storeMock.getSubsumsjon("1")
+            storeMock.getSubsumsjon("1", Regel.SATS)
             storeMock.behovStatus("2")
         }
     }

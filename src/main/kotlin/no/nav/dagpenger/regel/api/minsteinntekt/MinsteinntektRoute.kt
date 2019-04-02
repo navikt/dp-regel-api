@@ -38,7 +38,7 @@ fun Routing.minsteinntekt(
             }
         }
 
-        getSubsumsjon(store)
+        getSubsumsjon(Regel.MINSTEINNTEKT, store)
 
         getStatus(Regel.MINSTEINNTEKT, store)
     }

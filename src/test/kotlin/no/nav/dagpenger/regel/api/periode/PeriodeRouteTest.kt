@@ -14,6 +14,7 @@ import io.mockk.Ordering
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
+import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.routes.MockApi
 import org.junit.jupiter.api.Test
@@ -68,7 +69,7 @@ class PeriodeRouteTest {
         }
 
         verify {
-            storeMock.getSubsumsjon("1")
+            storeMock.getSubsumsjon("1", Regel.PERIODE)
             storeMock.behovStatus("2")
         }
     }

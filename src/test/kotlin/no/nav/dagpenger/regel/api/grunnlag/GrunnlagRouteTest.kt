@@ -13,6 +13,7 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.mockk
 import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
+import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.routes.MockApi
 import org.junit.jupiter.api.Test
@@ -68,7 +69,7 @@ class GrunnlagRouteTest {
         }
 
         verifyAll {
-            storeMock.getSubsumsjon("1")
+            storeMock.getSubsumsjon("1", Regel.GRUNNLAG)
             storeMock.behovStatus("2")
         }
     }
