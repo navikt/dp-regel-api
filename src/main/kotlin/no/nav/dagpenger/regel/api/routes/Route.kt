@@ -33,11 +33,11 @@ fun Route.getStatus(regel: Regel, store: SubsumsjonStore) {
     }
 }
 
-fun Route.getSubsumsjon(store: SubsumsjonStore) {
+fun Route.getSubsumsjon(regel: Regel, store: SubsumsjonStore) {
     get("/{subsumsjonsid}") {
         val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
 
-        store.getSubsumsjon(subsumsjonsId).also {
+        store.getSubsumsjon(subsumsjonsId, regel).also {
             call.respond(HttpStatusCode.OK, it)
         }
     }

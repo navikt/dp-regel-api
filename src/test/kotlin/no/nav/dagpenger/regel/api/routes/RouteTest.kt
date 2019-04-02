@@ -12,6 +12,7 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
+import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.Status
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
@@ -67,7 +68,7 @@ class SubsumsjonTest {
         val storeMock = mockk<SubsumsjonStore>(relaxed = false)
         val subsumsjonMock = mockk<GrunnlagSubsumsjon>(relaxed = true)
 
-        every { storeMock.getSubsumsjon("found") } returns subsumsjonMock
+        every { storeMock.getSubsumsjon("found", Regel.GRUNNLAG) } returns subsumsjonMock
 
         withTestApplication(MockApi(
             subsumsjonStore = storeMock
@@ -81,7 +82,7 @@ class SubsumsjonTest {
         }
 
         verifyAll {
-            storeMock.getSubsumsjon("found")
+            storeMock.getSubsumsjon("found", Regel.GRUNNLAG)
         }
     }
 
@@ -89,7 +90,7 @@ class SubsumsjonTest {
     fun `Throws exception if not found`() {
         val storeMock = mockk<SubsumsjonStore>(relaxed = false)
 
-        every { storeMock.getSubsumsjon("notfound") } throws SubsumsjonNotFoundException("Not found")
+        every { storeMock.getSubsumsjon("notfound", Regel.GRUNNLAG) } throws SubsumsjonNotFoundException("Not found")
 
         withTestApplication(MockApi(
             subsumsjonStore = storeMock
@@ -100,7 +101,7 @@ class SubsumsjonTest {
         }
 
         verifyAll {
-            storeMock.getSubsumsjon("notfound")
+            storeMock.getSubsumsjon("notfound", Regel.GRUNNLAG)
         }
     }
 }

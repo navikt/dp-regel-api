@@ -32,7 +32,7 @@ fun Routing.grunnlag(store: SubsumsjonStore, kafkaProducer: DagpengerBehovProduc
             }
         }
 
-        getSubsumsjon(store)
+        getSubsumsjon(Regel.GRUNNLAG, store)
 
         getStatus(Regel.GRUNNLAG, store)
     }

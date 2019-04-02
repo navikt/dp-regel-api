@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.db
 
+import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.Status
 import no.nav.dagpenger.regel.api.SubsumsjonsBehov
 import no.nav.dagpenger.regel.api.models.Subsumsjon
@@ -11,7 +12,7 @@ interface SubsumsjonStore {
 
     fun insertSubsumsjon(subsumsjon: Subsumsjon)
 
-    fun getSubsumsjon(subsumsjonId: String): Subsumsjon
+    fun getSubsumsjon(subsumsjonId: String, regel: Regel): Subsumsjon
 }
 
 class SubsumsjonNotFoundException(override val message: String) : RuntimeException(message)

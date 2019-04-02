@@ -38,7 +38,7 @@ fun Routing.periode(
             }
         }
 
-        getSubsumsjon(store)
+        getSubsumsjon(Regel.PERIODE, store)
 
         getStatus(Regel.PERIODE, store)
     }

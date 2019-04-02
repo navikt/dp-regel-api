@@ -12,6 +12,9 @@ import no.nav.dagpenger.regel.api.SubsumsjonsBehov
 import no.nav.dagpenger.regel.api.models.PeriodeFaktum
 import no.nav.dagpenger.regel.api.models.PeriodeResultat
 import no.nav.dagpenger.regel.api.models.PeriodeSubsumsjon
+import no.nav.dagpenger.regel.api.models.SatsFaktum
+import no.nav.dagpenger.regel.api.models.SatsResultat
+import no.nav.dagpenger.regel.api.models.SatsSubsumsjon
 import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
@@ -108,7 +111,7 @@ class PostgresSubsumsjonStoreTest {
                 insertBehov(behov)
                 insertSubsumsjon(subsumsjon)
 
-                getSubsumsjon("subsumsjonsId") shouldBe subsumsjon
+                getSubsumsjon("subsumsjonsId", Regel.PERIODE) shouldBe subsumsjon
                 behovStatus("behovId") shouldBe Status.Done("subsumsjonsId")
             }
         }
@@ -132,8 +135,35 @@ class PostgresSubsumsjonStoreTest {
                 insertSubsumsjon(subsumsjon)
                 insertSubsumsjon(subsumsjon)
 
-                getSubsumsjon("subsumsjonsId") shouldBe subsumsjon
+                getSubsumsjon("subsumsjonsId", Regel.PERIODE) shouldBe subsumsjon
                 behovStatus("behovId") shouldBe Status.Done("subsumsjonsId")
+            }
+        }
+    }
+
+    @Test
+    fun `Retrieve subsumsjon on composite primary key`() {
+
+        val behov = mockk<SubsumsjonsBehov>(relaxed = true).apply {
+            every { this@apply.behovId } returns "behovId"
+        }
+
+        val periodeSubsumsjon = PeriodeSubsumsjon("id", "behovId", Regel.PERIODE, LocalDateTime.now(), LocalDateTime.now(),
+            PeriodeFaktum("aktorId", 1, LocalDate.now(), "inntektsId"),
+            PeriodeResultat(1))
+
+        val satsSubsumsjon = SatsSubsumsjon("id", "behovId", Regel.SATS, LocalDateTime.now(), LocalDateTime.now(), SatsFaktum("aktorId", 1, LocalDate.now()),
+            SatsResultat(10, 10, true))
+
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+
+                insertBehov(behov)
+                insertSubsumsjon(periodeSubsumsjon)
+                insertSubsumsjon(satsSubsumsjon)
+
+                getSubsumsjon("id", Regel.PERIODE) shouldBe periodeSubsumsjon
+                getSubsumsjon("id", Regel.SATS) shouldBe satsSubsumsjon
             }
         }
     }
@@ -141,6 +171,7 @@ class PostgresSubsumsjonStoreTest {
     @Test
     fun `Exception on insert of subsumsjon if no correspond behov exists`() {
         withMigratedDb {
+
             shouldThrow<StoreException> {
                 PostgresSubsumsjonStore(DataSource.instance).insertSubsumsjon(mockk<PeriodeSubsumsjon>(relaxed = true))
             }
@@ -150,8 +181,23 @@ class PostgresSubsumsjonStoreTest {
     @Test
     fun `Exception if retrieving a non existant subsumsjon`() {
         withMigratedDb {
+
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+
+                insertBehov(mockk<SubsumsjonsBehov>(relaxed = true).apply {
+                    every { behovId } returns "behovId"
+                })
+                insertSubsumsjon(PeriodeSubsumsjon("id", "behovId", Regel.PERIODE, LocalDateTime.now(), LocalDateTime.now(),
+                    PeriodeFaktum("aktorId", 1, LocalDate.now(), "inntektsId"),
+                    PeriodeResultat(1)))
+            }
+
             shouldThrow<SubsumsjonNotFoundException> {
-                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon("notexist")
+                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon("notfound", Regel.PERIODE)
+            }
+
+            shouldThrow<SubsumsjonNotFoundException> {
+                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon("id", Regel.SATS)
             }
         }
     }
