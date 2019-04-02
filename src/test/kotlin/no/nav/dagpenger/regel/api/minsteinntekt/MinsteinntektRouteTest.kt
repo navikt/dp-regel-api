@@ -50,7 +50,7 @@ class MinsteinntektRouteTest {
         }
 
         verifyAll {
-            storeMock.insertBehov(any())
+            storeMock.insertBehov(any(), Regel.MINSTEINNTEKT)
             kafkaMock.produceEvent(any())
         }
     }
@@ -69,7 +69,7 @@ class MinsteinntektRouteTest {
 
         verifyAll {
             storeMock.getSubsumsjon("1", Regel.MINSTEINNTEKT)
-            storeMock.behovStatus("2")
+            storeMock.behovStatus("2", Regel.MINSTEINNTEKT)
         }
     }
 }

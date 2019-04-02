@@ -24,21 +24,22 @@ fun Routing.sats(
     store: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer
 ) {
+    val regel = Regel.SATS
 
     route("/sats") {
         post {
             mapRequestToBehov(call.receive()).apply {
-                store.insertBehov(this)
+                store.insertBehov(this, regel)
                 kafkaProducer.produceEvent(this)
             }.also {
                 call.response.header(HttpHeaders.Location, "/sats/status/${it.behovId}")
-                call.respond(HttpStatusCode.Accepted, taskPending(Regel.PERIODE))
+                call.respond(HttpStatusCode.Accepted, taskPending(regel))
             }
         }
 
-        getSubsumsjon(Regel.SATS, store)
+        getSubsumsjon(regel, store)
 
-        getStatus(Regel.SATS, store)
+        getStatus(regel, store)
     }
 }
 

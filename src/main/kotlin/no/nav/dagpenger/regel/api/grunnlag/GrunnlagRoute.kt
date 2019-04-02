@@ -21,20 +21,23 @@ import no.nav.dagpenger.regel.api.ulidGenerator
 import java.time.LocalDate
 
 fun Routing.grunnlag(store: SubsumsjonStore, kafkaProducer: DagpengerBehovProducer) {
+    val regel = Regel.GRUNNLAG
+
+
     route("/grunnlag") {
         post {
             mapRequestToBehov(call.receive()).apply {
-                store.insertBehov(this)
+                store.insertBehov(this, regel)
                 kafkaProducer.produceEvent(this)
             }.also {
                 call.response.header(HttpHeaders.Location, "/grunnlag/status/${it.behovId}")
-                call.respond(HttpStatusCode.Accepted, taskPending(Regel.GRUNNLAG))
+                call.respond(HttpStatusCode.Accepted, taskPending(regel))
             }
         }
 
-        getSubsumsjon(Regel.GRUNNLAG, store)
+        getSubsumsjon(regel, store)
 
-        getStatus(Regel.GRUNNLAG, store)
+        getStatus(regel, store)
     }
 }
 

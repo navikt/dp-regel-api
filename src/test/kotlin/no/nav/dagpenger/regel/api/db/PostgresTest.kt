@@ -78,9 +78,9 @@ class PostgresSubsumsjonStoreTest {
     fun `Successful insert of behov`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insertBehov(SubsumsjonsBehov("behovId", "aktorid", 1, LocalDate.now()))
+                insertBehov(SubsumsjonsBehov("behovId", "aktorid", 1, LocalDate.now()), Regel.SATS)
 
-                behovStatus("behovId") shouldBe Status.Pending
+                behovStatus("behovId", Regel.SATS) shouldBe Status.Pending
             }
         }
     }
@@ -88,8 +88,16 @@ class PostgresSubsumsjonStoreTest {
     @Test
     fun `Exception if behov status is not found`() {
         withMigratedDb {
-            shouldThrow<BehovNotFoundException> {
-                PostgresSubsumsjonStore(DataSource.instance).behovStatus("behovId") shouldBe Status.Pending
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                insertBehov(SubsumsjonsBehov("behovId", "aktorid", 1, LocalDate.now()), Regel.SATS)
+
+                shouldThrow<BehovNotFoundException> {
+                    behovStatus("behovId", Regel.GRUNNLAG)
+                }
+
+                shouldThrow<BehovNotFoundException> {
+                    behovStatus("notFound", Regel.SATS)
+                }
             }
         }
     }
@@ -108,11 +116,11 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
-                insertBehov(behov)
+                insertBehov(behov, Regel.PERIODE)
                 insertSubsumsjon(subsumsjon)
 
                 getSubsumsjon("subsumsjonsId", Regel.PERIODE) shouldBe subsumsjon
-                behovStatus("behovId") shouldBe Status.Done("subsumsjonsId")
+                behovStatus("behovId", Regel.PERIODE) shouldBe Status.Done("subsumsjonsId")
             }
         }
     }
@@ -131,12 +139,12 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
-                insertBehov(behov)
+                insertBehov(behov, Regel.PERIODE)
                 insertSubsumsjon(subsumsjon)
                 insertSubsumsjon(subsumsjon)
 
                 getSubsumsjon("subsumsjonsId", Regel.PERIODE) shouldBe subsumsjon
-                behovStatus("behovId") shouldBe Status.Done("subsumsjonsId")
+                behovStatus("behovId", Regel.PERIODE) shouldBe Status.Done("subsumsjonsId")
             }
         }
     }
@@ -158,7 +166,8 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
-                insertBehov(behov)
+                insertBehov(behov, Regel.PERIODE)
+                insertBehov(behov, Regel.SATS)
                 insertSubsumsjon(periodeSubsumsjon)
                 insertSubsumsjon(satsSubsumsjon)
 
@@ -186,7 +195,7 @@ class PostgresSubsumsjonStoreTest {
 
                 insertBehov(mockk<SubsumsjonsBehov>(relaxed = true).apply {
                     every { behovId } returns "behovId"
-                })
+                }, Regel.PERIODE)
                 insertSubsumsjon(PeriodeSubsumsjon("id", "behovId", Regel.PERIODE, LocalDateTime.now(), LocalDateTime.now(),
                     PeriodeFaktum("aktorId", 1, LocalDate.now(), "inntektsId"),
                     PeriodeResultat(1)))

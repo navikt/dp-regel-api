@@ -27,20 +27,22 @@ fun Routing.minsteinntekt(
     kafkaProducer: DagpengerBehovProducer
 ) {
 
+    val regel = Regel.MINSTEINNTEKT
+
     route("/minsteinntekt") {
         post {
             mapRequestToBehov(call.receive()).apply {
-                store.insertBehov(this)
+                store.insertBehov(this, regel)
                 kafkaProducer.produceEvent(this)
             }.also {
                 call.response.header(HttpHeaders.Location, "/minsteinntekt/status/${it.behovId}")
-                call.respond(HttpStatusCode.Accepted, taskPending(Regel.GRUNNLAG))
+                call.respond(HttpStatusCode.Accepted, taskPending(regel))
             }
         }
 
-        getSubsumsjon(Regel.MINSTEINNTEKT, store)
+        getSubsumsjon(regel, store)
 
-        getStatus(Regel.MINSTEINNTEKT, store)
+        getStatus(regel, store)
     }
 }
 

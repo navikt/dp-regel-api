@@ -51,7 +51,7 @@ class PeriodeRouteTest {
         }
 
         verify(ordering = Ordering.ORDERED) {
-            storeMock.insertBehov(any())
+            storeMock.insertBehov(any(), Regel.PERIODE)
             kafkaMock.produceEvent(any())
         }
     }
@@ -70,7 +70,7 @@ class PeriodeRouteTest {
 
         verify {
             storeMock.getSubsumsjon("1", Regel.PERIODE)
-            storeMock.behovStatus("2")
+            storeMock.behovStatus("2", Regel.PERIODE)
         }
     }
 }

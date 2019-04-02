@@ -26,21 +26,22 @@ fun Routing.periode(
     store: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer
 ) {
+    val regel = Regel.PERIODE
 
     route("/periode") {
         post {
-            mapRequestToBehov(call.receive<PeriodeRequestParametere>()).apply {
-                store.insertBehov(this)
+            mapRequestToBehov(call.receive()).apply {
+                store.insertBehov(this, regel)
                 kafkaProducer.produceEvent(this)
             }.also {
                 call.response.header(HttpHeaders.Location, "/periode/status/${it.behovId}")
-                call.respond(HttpStatusCode.Accepted, taskPending(Regel.PERIODE))
+                call.respond(HttpStatusCode.Accepted, taskPending(regel))
             }
         }
 
-        getSubsumsjon(Regel.PERIODE, store)
+        getSubsumsjon(regel, store)
 
-        getStatus(Regel.PERIODE, store)
+        getStatus(regel, store)
     }
 }
 

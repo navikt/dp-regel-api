@@ -52,7 +52,7 @@ class SatsRouteTest {
         }
 
         verifyAll {
-            storeMock.insertBehov(any())
+            storeMock.insertBehov(any(), Regel.SATS)
             kafkaMock.produceEvent(any())
         }
     }
@@ -71,7 +71,7 @@ class SatsRouteTest {
 
         verify {
             storeMock.getSubsumsjon("1", Regel.SATS)
-            storeMock.behovStatus("2")
+            storeMock.behovStatus("2", Regel.SATS)
         }
     }
 }

@@ -19,7 +19,7 @@ fun Route.getStatus(regel: Regel, store: SubsumsjonStore) {
         get("/{behovid}") {
             val behovId = call.parameters["behovid"] ?: throw BadRequestException()
 
-            val status = store.behovStatus(behovId)
+            val status = store.behovStatus(behovId, regel)
             when (status) {
                 is Status.Done -> {
                     call.response.header(HttpHeaders.Location, "/${regel.name.toLowerCase()}/${status.subsumsjonsId}")

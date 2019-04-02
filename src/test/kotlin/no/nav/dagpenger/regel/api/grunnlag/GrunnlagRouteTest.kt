@@ -51,7 +51,7 @@ class GrunnlagRouteTest {
         }
 
         verifyAll {
-            storeMock.insertBehov(any())
+            storeMock.insertBehov(any(), Regel.GRUNNLAG)
             kafkaMock.produceEvent(any())
         }
     }
@@ -70,7 +70,7 @@ class GrunnlagRouteTest {
 
         verifyAll {
             storeMock.getSubsumsjon("1", Regel.GRUNNLAG)
-            storeMock.behovStatus("2")
+            storeMock.behovStatus("2", Regel.GRUNNLAG)
         }
     }
 }
