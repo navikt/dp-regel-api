@@ -45,7 +45,7 @@ class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : Subsum
         try {
             using(sessionOf(dataSource)) { session ->
                 session.transaction { tx ->
-                    tx.run(queryOf(""" INSERT INTO subsumsjon VALUES (? , ?, ?, (to_json(?::json))) """, subsumsjon.subsumsjonsId, subsumsjon.regel.name, subsumsjon.behovId, json).asUpdate)
+                    tx.run(queryOf(""" INSERT INTO subsumsjon VALUES (? , ?, ?, (to_json(?::json))) ON CONFLICT ON CONSTRAINT subsumsjon_pkey DO NOTHING """, subsumsjon.subsumsjonsId, subsumsjon.regel.name, subsumsjon.behovId, json).asUpdate)
                     tx.run(queryOf(""" UPDATE behov SET status = ? where id = ?""", Status.Done.toString(), subsumsjon.behovId).asUpdate)
                 }
             }

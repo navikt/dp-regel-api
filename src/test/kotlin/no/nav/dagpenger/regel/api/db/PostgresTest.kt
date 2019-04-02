@@ -115,6 +115,30 @@ class PostgresSubsumsjonStoreTest {
     }
 
     @Test
+    fun `Do nothing if a subsumsjon allready exist`() {
+
+        val behov = mockk<SubsumsjonsBehov>(relaxed = true).apply {
+            every { this@apply.behovId } returns "behovId"
+        }
+
+        val subsumsjon = PeriodeSubsumsjon("subsumsjonsId", "behovId", Regel.PERIODE, LocalDateTime.now(), LocalDateTime.now(),
+            PeriodeFaktum("aktorId", 1, LocalDate.now(), "inntektsId"),
+            PeriodeResultat(1))
+
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+
+                insertBehov(behov)
+                insertSubsumsjon(subsumsjon)
+                insertSubsumsjon(subsumsjon)
+
+                getSubsumsjon("subsumsjonsId") shouldBe subsumsjon
+                behovStatus("behovId") shouldBe Status.Done("subsumsjonsId")
+            }
+        }
+    }
+
+    @Test
     fun `Exception on insert of subsumsjon if no correspond behov exists`() {
         withMigratedDb {
             shouldThrow<StoreException> {
