@@ -97,7 +97,7 @@ class KafkaDagpengerBehovConsumer(
             }
         } catch (e: RuntimeException) {
             //todo I am ashamed of myself
-            LOGGER.error { "Error for behov: $behov" }
+            LOGGER.error { "Error for behov: ${behov.behovId}. Error: $e" }
         }
     }
 
