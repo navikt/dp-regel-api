@@ -87,12 +87,17 @@ class KafkaDagpengerBehovConsumer(
     }
 
     private fun storeResult(behov: SubsumsjonsBehov) {
-        when {
-            hasNeededMinsteinntektResultat(behov) -> storeMinsteinntektSubsumsjon(behov)
-            hasNeededPeriodeResultat(behov) -> storePeriodeSubsumsjon(behov)
-            hasNeededGrunnlagResultat(behov) -> storeGrunnlagSubsumsjon(behov)
-            hasNeededSatsResultat(behov) -> storeSatsSubsumsjon(behov)
-            else -> LOGGER.info("Ignoring behov with id ${behov.behovId}")
+        try {
+            when {
+                hasNeededMinsteinntektResultat(behov) -> storeMinsteinntektSubsumsjon(behov)
+                hasNeededPeriodeResultat(behov) -> storePeriodeSubsumsjon(behov)
+                hasNeededGrunnlagResultat(behov) -> storeGrunnlagSubsumsjon(behov)
+                hasNeededSatsResultat(behov) -> storeSatsSubsumsjon(behov)
+                else -> LOGGER.info("Ignoring behov with id ${behov.behovId}")
+            }
+        } catch (e: RuntimeException) {
+            //todo I am ashamed of myself
+            LOGGER.error { "Error for behov: $behov" }
         }
     }
 
