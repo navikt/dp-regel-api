@@ -48,12 +48,14 @@ fun mapRequestToBehov(request: SatsRequestParametere) = SubsumsjonsBehov(
     request.vedtakId,
     request.beregningsdato,
     senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
-    antallBarn = request.antallBarn
+    antallBarn = request.antallBarn,
+    manueltGrunnlag = request.manueltGrunnlag
 )
 
 data class SatsRequestParametere(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
+    val manueltGrunnlag: Int? = null,
     val antallBarn: Int? = 0
 )
