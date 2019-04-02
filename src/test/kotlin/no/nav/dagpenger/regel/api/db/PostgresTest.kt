@@ -78,7 +78,6 @@ class PostgresSubsumsjonStoreTest {
                 insertBehov(SubsumsjonsBehov("behovId", "aktorid", 1, LocalDate.now()))
 
                 behovStatus("behovId") shouldBe Status.Pending
-
             }
         }
     }
@@ -88,7 +87,6 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             shouldThrow<BehovNotFoundException> {
                 PostgresSubsumsjonStore(DataSource.instance).behovStatus("behovId") shouldBe Status.Pending
-
             }
         }
     }
@@ -104,7 +102,6 @@ class PostgresSubsumsjonStoreTest {
             PeriodeFaktum("aktorId", 1, LocalDate.now(), "inntektsId"),
             PeriodeResultat(1))
 
-
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
@@ -113,7 +110,6 @@ class PostgresSubsumsjonStoreTest {
 
                 getSubsumsjon("subsumsjonsId") shouldBe subsumsjon
                 behovStatus("behovId") shouldBe Status.Done("subsumsjonsId")
-
             }
         }
     }
@@ -127,7 +123,6 @@ class PostgresSubsumsjonStoreTest {
         }
     }
 
-
     @Test
     fun `Exception if retrieving a non existant subsumsjon`() {
         withMigratedDb {
@@ -137,4 +132,3 @@ class PostgresSubsumsjonStoreTest {
         }
     }
 }
-
