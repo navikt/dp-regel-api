@@ -57,13 +57,13 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
-            inntektV1 = inntektAdapter.toJson(Inntekt("", emptyList())),
+            inntektV1 = Inntekt("", emptyList()),
             minsteinntektResultat = MinsteinntektResultat(
                 "123",
                 "minsteinntektSubsumsjon",
                 "regel",
                 true),
-            minsteinntektInntektsPerioder = inntektsPerioderAdapter.toJson(setOf(
+            minsteinntektInntektsPerioder = setOf(
                 InntektResponse(
                     inntekt = BigDecimal.ZERO,
                     periode = 1,
@@ -85,7 +85,7 @@ class KafkaDagpengerBehovConsumerTest {
                     inneholderFangstOgFisk = false,
                     andel = BigDecimal.ZERO
                 )
-            ))
+            )
         ))
 
         val slot = slot<MinsteinntektSubsumsjon>()
@@ -123,7 +123,7 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
-            inntektV1 = inntektAdapter.toJson(Inntekt("", emptyList())),
+            inntektV1 = Inntekt("", emptyList()),
             grunnlagResultat = GrunnlagResultat(
                 "123",
                 "grunnlagSubsumsjon",
@@ -211,7 +211,7 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
-            inntektV1 = inntektAdapter.toJson(Inntekt("", emptyList())),
+            inntektV1 = Inntekt("", emptyList()),
             periodeResultat = PeriodeResultat(
                 "123",
                 "periodeSubsumsjon",

@@ -48,8 +48,8 @@ val mockkVersion = "1.9"
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("no.nav.dagpenger:events:0.3.6-SNAPSHOT")
-    implementation("no.nav.dagpenger:streams:0.3.1-SNAPSHOT")
+    implementation("no.nav.dagpenger:events:0.3.8-SNAPSHOT")
+    implementation("no.nav.dagpenger:streams:0.3.3-SNAPSHOT")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")

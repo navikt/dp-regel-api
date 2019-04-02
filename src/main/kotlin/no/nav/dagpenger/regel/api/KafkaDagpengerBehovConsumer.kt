@@ -1,7 +1,5 @@
 package no.nav.dagpenger.regel.api
 
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Types
 import mu.KotlinLogging
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -117,10 +115,8 @@ class KafkaDagpengerBehovConsumer(
 
     private fun mapToMinsteinntektSubsumsjon(behov: SubsumsjonsBehov): MinsteinntektSubsumsjon {
         val minsteinntektResultat = behov.minsteinntektResultat!!
-        val inntektString = behov.inntektV1!!
-        val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
-        val inntektsPerioderString = behov.minsteinntektInntektsPerioder
-        val inntektsperioder = getInntektsPerioder(inntektsPerioderString) // TODO ADAPT TO PACKET
+        val inntekt = behov.inntektV1
+        val inntektsperioder = behov.grunnlagInntektsPerioder ?: getEmptyInntektsPerioder()
         return MinsteinntektSubsumsjon(
             minsteinntektResultat.subsumsjonsId,
             behov.behovId,
@@ -140,8 +136,7 @@ class KafkaDagpengerBehovConsumer(
 
     private fun mapToPeriodeSubsumsjon(behov: SubsumsjonsBehov): PeriodeSubsumsjon {
         val periodeResultat = behov.periodeResultat!!
-        val inntektString = behov.inntektV1!!
-        val inntekt = inntektAdapter.fromJson(inntektString) // TODO ADAPT TO PACKET
+        val inntekt = behov.inntektV1
         return PeriodeSubsumsjon(
             periodeResultat.subsumsjonsId,
             behov.behovId,
@@ -160,10 +155,8 @@ class KafkaDagpengerBehovConsumer(
 
     private fun mapToGrunnlagSubsumsjon(behov: SubsumsjonsBehov): GrunnlagSubsumsjon {
         val grunnlagResultat = behov.grunnlagResultat!!
-        val inntektString = behov.inntektV1
-        val inntekt = inntektString?.let { string -> inntektAdapter.fromJson(string) } // TODO ADAPT TO PACKET
-        val grunnlagInntektPerioderString = behov.grunnlagInntektsPerioder
-        val inntektsperioder = getInntektsPerioder(grunnlagInntektPerioderString) // TODO ADAPT TO PACKET
+        val inntekt = behov.inntektV1
+        val inntektsperioder = behov.grunnlagInntektsPerioder ?: getEmptyInntektsPerioder()
         return GrunnlagSubsumsjon(
             grunnlagResultat.subsumsjonsId,
             behov.behovId,
@@ -184,8 +177,7 @@ class KafkaDagpengerBehovConsumer(
     }
 
     // TODO ADAPT TO PACKET
-    private fun getInntektsPerioder(grunnlagInntektPerioderString: String?) =
-        grunnlagInntektPerioderString?.let { string -> inntektsPerioderAdapter.fromJson(string) } ?: setOf(
+    private fun getEmptyInntektsPerioder(): Set<InntektResponse> = setOf(
             InntektResponse(
                 inntekt = BigDecimal.ZERO,
                 periode = 1,
@@ -210,9 +202,6 @@ class KafkaDagpengerBehovConsumer(
         )
 
     private val inntektAdapter = moshiInstance.adapter<Inntekt>(Inntekt::class.java)!!
-
-    private val inntektsPerioderAdapter: JsonAdapter<Set<InntektResponse>> =
-            moshiInstance.adapter(Types.newParameterizedType(Set::class.java, InntektResponse::class.java))
 
     private fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
         val satsResultat = behov.satsResultat!!
