@@ -1,9 +1,7 @@
 package no.nav.dagpenger.regel.api
 
 import io.kotlintest.shouldBe
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verifyAll
@@ -85,8 +83,8 @@ class KafkaDagpengerBehovConsumerTest {
         val slot = slot<MinsteinntektSubsumsjon>()
         val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
 
-            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } just Runs
-            every { this@apply.hasPendingBehov("minsteinntektSubsumsjon", Regel.MINSTEINNTEKT) } answers { true }
+            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } returns 1
+            every { this@apply.behovStatus("minsteinntektSubsumsjon", Regel.MINSTEINNTEKT) } returns Status.Pending
         }
 
         val consumer = KafkaDagpengerBehovConsumer(
@@ -101,7 +99,7 @@ class KafkaDagpengerBehovConsumerTest {
 
         verifyAll {
             subsumsjonStoreMock.insertSubsumsjon(any())
-            subsumsjonStoreMock.hasPendingBehov("minsteinntektSubsumsjon", Regel.MINSTEINNTEKT)
+            subsumsjonStoreMock.behovStatus("minsteinntektSubsumsjon", Regel.MINSTEINNTEKT)
         }
 
         with(slot.captured) {
@@ -131,8 +129,8 @@ class KafkaDagpengerBehovConsumerTest {
         val slot = slot<GrunnlagSubsumsjon>()
         val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
 
-            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } just Runs
-            every { this@apply.hasPendingBehov("grunnlagSubsumsjon", Regel.GRUNNLAG) } returns true
+            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } returns 1
+            every { this@apply.behovStatus("grunnlagSubsumsjon", Regel.GRUNNLAG) } returns Status.Pending
         }
 
         val consumer = KafkaDagpengerBehovConsumer(
@@ -147,7 +145,7 @@ class KafkaDagpengerBehovConsumerTest {
 
         verifyAll {
             subsumsjonStoreMock.insertSubsumsjon(any())
-            subsumsjonStoreMock.hasPendingBehov("grunnlagSubsumsjon", Regel.GRUNNLAG)
+            subsumsjonStoreMock.behovStatus("grunnlagSubsumsjon", Regel.GRUNNLAG)
         }
 
         with(slot.captured) {
@@ -176,8 +174,8 @@ class KafkaDagpengerBehovConsumerTest {
         val slot = slot<GrunnlagSubsumsjon>()
         val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
 
-            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } just Runs
-            every { this@apply.hasPendingBehov("grunnlagSubsumsjon", Regel.GRUNNLAG) } returns true
+            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } returns 1
+            every { this@apply.behovStatus("grunnlagSubsumsjon", Regel.GRUNNLAG) } returns Status.Pending
         }
 
         val consumer = KafkaDagpengerBehovConsumer(
@@ -191,7 +189,7 @@ class KafkaDagpengerBehovConsumerTest {
 
         verifyAll {
             subsumsjonStoreMock.insertSubsumsjon(any())
-            subsumsjonStoreMock.hasPendingBehov("grunnlagSubsumsjon", Regel.GRUNNLAG)
+            subsumsjonStoreMock.behovStatus("grunnlagSubsumsjon", Regel.GRUNNLAG)
         }
 
         with(slot.captured) {
@@ -220,8 +218,8 @@ class KafkaDagpengerBehovConsumerTest {
         val slot = slot<PeriodeSubsumsjon>()
         val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
 
-            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } just Runs
-            every { this@apply.hasPendingBehov("periodeSubsumsjon", Regel.PERIODE) } returns true
+            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } returns 1
+            every { this@apply.behovStatus("periodeSubsumsjon", Regel.PERIODE) } returns Status.Pending
         }
 
         val consumer = KafkaDagpengerBehovConsumer(
@@ -235,7 +233,7 @@ class KafkaDagpengerBehovConsumerTest {
 
         verifyAll {
             subsumsjonStoreMock.insertSubsumsjon(any())
-            subsumsjonStoreMock.hasPendingBehov("periodeSubsumsjon", Regel.PERIODE)
+            subsumsjonStoreMock.behovStatus("periodeSubsumsjon", Regel.PERIODE)
         }
 
         with(slot.captured) {
@@ -263,8 +261,8 @@ class KafkaDagpengerBehovConsumerTest {
         val slot = slot<SatsSubsumsjon>()
         val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
 
-            every { this@apply.hasPendingBehov("satsSubsumsjon", Regel.SATS) } returns true
-            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } just Runs
+            every { this@apply.behovStatus("satsSubsumsjon", Regel.SATS) } returns Status.Pending
+            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } returns 1
         }
 
         val consumer = KafkaDagpengerBehovConsumer(
@@ -278,7 +276,7 @@ class KafkaDagpengerBehovConsumerTest {
         }
 
         verifyAll {
-            subsumsjonStoreMock.hasPendingBehov("satsSubsumsjon", Regel.SATS)
+            subsumsjonStoreMock.behovStatus("satsSubsumsjon", Regel.SATS)
             subsumsjonStoreMock.insertSubsumsjon(any())
         }
 
@@ -305,7 +303,7 @@ class KafkaDagpengerBehovConsumerTest {
 
         val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
 
-            every { this@apply.hasPendingBehov("satsSubsumsjon", Regel.SATS) } returns false
+            every { this@apply.behovStatus("satsSubsumsjon", Regel.SATS) } returns Status.Done("1")
         }
 
         val consumer = KafkaDagpengerBehovConsumer(
@@ -319,7 +317,7 @@ class KafkaDagpengerBehovConsumerTest {
         }
 
         verifyAll {
-            subsumsjonStoreMock.hasPendingBehov("satsSubsumsjon", Regel.SATS)
+            subsumsjonStoreMock.behovStatus("satsSubsumsjon", Regel.SATS)
         }
     }
 }

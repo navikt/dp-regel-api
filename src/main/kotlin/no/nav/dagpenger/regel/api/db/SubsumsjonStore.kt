@@ -6,13 +6,11 @@ import no.nav.dagpenger.regel.api.SubsumsjonsBehov
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 
 interface SubsumsjonStore {
-    fun insertBehov(subsumsjonsBehov: SubsumsjonsBehov, regel: Regel)
+    fun insertBehov(subsumsjonsBehov: SubsumsjonsBehov, regel: Regel): Int
 
     fun behovStatus(behovId: String, regel: Regel): Status
 
-    fun hasPendingBehov(behovId: String, regel: Regel): Boolean
-
-    fun insertSubsumsjon(subsumsjon: Subsumsjon)
+    fun insertSubsumsjon(subsumsjon: Subsumsjon): Int
 
     fun getSubsumsjon(subsumsjonId: String, regel: Regel): Subsumsjon
 }
