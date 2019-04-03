@@ -71,19 +71,19 @@ class KafkaDagpengerBehovConsumer(
     )
 
     private fun hasNeededMinsteinntektResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.minsteinntektResultat != null && store.hasPendingBehov(behov.behovId, Regel.MINSTEINNTEKT)
+        return behov.minsteinntektResultat != null && store.behovStatus(behov.behovId, Regel.MINSTEINNTEKT) == Status.Pending
     }
 
     private fun hasNeededPeriodeResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.periodeResultat != null && store.hasPendingBehov(behov.behovId, Regel.PERIODE)
+        return behov.periodeResultat != null && store.behovStatus(behov.behovId, Regel.PERIODE) == Status.Pending
     }
 
     private fun hasNeededGrunnlagResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.grunnlagResultat != null && store.hasPendingBehov(behov.behovId, Regel.GRUNNLAG)
+        return behov.grunnlagResultat != null && store.behovStatus(behov.behovId, Regel.GRUNNLAG) == Status.Pending
     }
 
     private fun hasNeededSatsResultat(behov: SubsumsjonsBehov): Boolean {
-        return behov.satsResultat != null && store.hasPendingBehov(behov.behovId, Regel.SATS)
+        return behov.satsResultat != null && store.behovStatus(behov.behovId, Regel.SATS) == Status.Pending
     }
 
     private fun storeResult(behov: SubsumsjonsBehov) {
