@@ -120,7 +120,7 @@ class KafkaDagpengerBehovConsumer(
     private fun mapToMinsteinntektSubsumsjon(behov: SubsumsjonsBehov): MinsteinntektSubsumsjon {
         val minsteinntektResultat = behov.minsteinntektResultat!!
         val inntekt = behov.inntektV1
-        val inntektsperioder = behov.grunnlagInntektsPerioder ?: getEmptyInntektsPerioder()
+        val inntektsperioder = behov.minsteinntektInntektsPerioder ?: getEmptyInntektsPerioder()
         return MinsteinntektSubsumsjon(
             minsteinntektResultat.subsumsjonsId,
             behov.behovId,
