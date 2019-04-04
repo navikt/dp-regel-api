@@ -29,6 +29,5 @@ spec:
       memory: 256Mi
   vault:
     enabled: true
-  env:
   ingresses:
     - "https://dp-regel-api.nais.preprod.local"
