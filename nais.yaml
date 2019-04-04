@@ -39,7 +39,7 @@ kind: "Alert"
 metadata:
   name: dp-regel-api-alerts
   labels:
-    team: team-dagpenger-alert
+    team: teamdagpenger
 spec:
   receivers:
     slack:
