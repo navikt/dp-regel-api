@@ -69,7 +69,8 @@ data class GrunnlagResultat(
     val regelIdentifikator: String,
     val avkortet: Int,
     val uavkortet: Int,
-    val beregningsregel: String
+    val beregningsregel: String,
+    val harAvkortet: Boolean
 )
 
 data class SatsResultat(

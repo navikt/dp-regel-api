@@ -123,7 +123,8 @@ class KafkaDagpengerBehovConsumerTest {
                 "regel",
                 1000,
                 1500,
-                "ArbeidsinntektSiste12")
+                "ArbeidsinntektSiste12",
+                    false)
         ))
 
         val slot = slot<GrunnlagSubsumsjon>()
@@ -168,7 +169,8 @@ class KafkaDagpengerBehovConsumerTest {
                 "regel",
                 1000,
                 1500,
-                "Manuell under 6G")
+                "Manuell under 6G",
+                    false)
         ))
 
         val slot = slot<GrunnlagSubsumsjon>()

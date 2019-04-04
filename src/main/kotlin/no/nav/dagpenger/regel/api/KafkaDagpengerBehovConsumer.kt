@@ -175,7 +175,7 @@ class KafkaDagpengerBehovConsumer(
                 inntekt?.inntektsId,
                 behov.harAvtjentVerneplikt,
                 manueltGrunnlag = behov.manueltGrunnlag),
-            GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet, grunnlagResultat.beregningsregel),
+            GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet, grunnlagResultat.beregningsregel, grunnlagResultat.harAvkortet),
             inntektsperioder
         )
     }
