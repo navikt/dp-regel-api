@@ -161,7 +161,7 @@ class KafkaDagpengerBehovConsumer(
     private fun mapToGrunnlagSubsumsjon(behov: SubsumsjonsBehov): GrunnlagSubsumsjon {
         val grunnlagResultat = behov.grunnlagResultat!!
         val inntekt = behov.inntektV1
-        val inntektsperioder = behov.grunnlagInntektsPerioder ?: getEmptyInntektsPerioderGrunnlag()
+        val inntektsperioder = behov.grunnlagInntektsPerioder
         return GrunnlagSubsumsjon(
             grunnlagResultat.subsumsjonsId,
             behov.behovId,
@@ -172,7 +172,7 @@ class KafkaDagpengerBehovConsumer(
                 behov.aktørId,
                 behov.vedtakId,
                 behov.beregningsDato,
-                inntekt?.inntektsId ?: "MANUELT_GRUNNLAG", // fixme
+                inntekt?.inntektsId,
                 behov.harAvtjentVerneplikt,
                 manueltGrunnlag = behov.manueltGrunnlag),
             GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet, grunnlagResultat.beregningsregel),

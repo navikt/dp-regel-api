@@ -38,7 +38,7 @@ data class GrunnlagSubsumsjon(
     val utfort: LocalDateTime, // todo: ZonedDateTime?,
     val faktum: GrunnlagFaktum,
     val resultat: GrunnlagResultat,
-    val inntekt: Set<InntektResponseGrunnlag>
+    val inntekt: Set<InntektResponseGrunnlag>? = null
 ) : Subsumsjon()
 
 data class GrunnlagResultat(
@@ -51,7 +51,7 @@ data class GrunnlagFaktum(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
-    val inntektsId: String,
+    val inntektsId: String? = null,
     val harAvtjentVerneplikt: Boolean? = false,
     val oppfyllerKravTilFangstOgFisk: Boolean? = false,
     val antallBarn: Int? = 0,
