@@ -152,6 +152,7 @@ class KafkaDagpengerBehovConsumerTest {
         with(slot.captured) {
             subsumsjonsId shouldBe "grunnlagSubsumsjon"
             resultat.beregningsregel shouldBe "ArbeidsinntektSiste12"
+            resultat.harAvkortet shouldBe false
         }
     }
 
