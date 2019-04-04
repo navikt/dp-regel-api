@@ -1,3 +1,4 @@
+---
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
@@ -32,3 +33,30 @@ spec:
   env:
   ingresses:
     - "https://dp-regel-api.nais.preprod.local"
+
+---
+apiVersion: "nais.io/v1alpha1"
+kind: "Alert"
+metadata:
+  name: dp-regel-api-alerts
+  labels:
+    team: team-dagpenger-alert
+spec:
+  receivers:
+    slack:
+      channel: '#team-dagpenger-alert'
+      prependText: '<!here> | '
+  alerts:
+    - alert: applikasjon nede
+      expr: up{app="dp-regel-api", job="kubernetes-pods"} == 0
+      for: 2m
+      description: "{{ $labels.app }} er nede i {{ $labels.kubernetes_namespace }}"
+      action: "`kubectl describe pod {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for events, og `kubectl logs {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for logger"
+    - alert: høy feilrate i logger
+      expr: (100 * sum by (log_app, log_namespace) (rate(logd_messages_total{log_app="dp-regel-api",log_level="Info"}[3m])) / sum by (log_app, log_namespace) (rate(logd_messages_total{log_app="dp-regel-api"}[3m]))) > 90
+      for: 3m
+      action: "Sjekk loggene til {{ $labels.log_app }} i {{ $labels.log_namespace }}, for å se hvorfor det er så mye feil"
+    - alert: feil i selftest
+      expr: selftests_aggregate_result_status{app="dp-regel-api"} > 0
+      for: 1m
+      action: "Sjekk {{ $labels.app }} i {{ $labels.kubernetes_namespace }} sine selftest for å se hva som er galt"
