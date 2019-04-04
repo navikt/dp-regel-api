@@ -158,7 +158,7 @@ pipeline {
       steps {
         sh label: 'Deploy with kubectl', script: """
           kubectl config use-context prod-${env.ZONE}
-          kubectl apply -n ${env.NAMESPACE} -f nais-deployed-.yaml --wait
+          kubectl apply -n ${env.NAMESPACE} -f nais-deployed.yaml --wait
           kubectl rollout status -w deployment/${APPLICATION_NAME}
         """
       }
