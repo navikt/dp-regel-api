@@ -3,6 +3,7 @@ package no.nav.dagpenger.regel.api
 import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.models.InntektResponse
+import no.nav.dagpenger.regel.api.models.InntektResponseGrunnlag
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -21,7 +22,7 @@ data class SubsumsjonsBehov(
     val bruktInntektsPeriode: BruktInntektsPeriode? = null,
 
     val minsteinntektInntektsPerioder: Set<InntektResponse>? = null,
-    val grunnlagInntektsPerioder: Set<InntektResponse>? = null,
+    val grunnlagInntektsPerioder: Set<InntektResponseGrunnlag>? = null,
     var minsteinntektResultat: MinsteinntektResultat? = null,
     var periodeResultat: PeriodeResultat? = null,
     var grunnlagResultat: GrunnlagResultat? = null,

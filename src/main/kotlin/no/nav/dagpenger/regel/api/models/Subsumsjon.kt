@@ -38,7 +38,7 @@ data class GrunnlagSubsumsjon(
     val utfort: LocalDateTime, // todo: ZonedDateTime?,
     val faktum: GrunnlagFaktum,
     val resultat: GrunnlagResultat,
-    val inntekt: Set<InntektResponse>
+    val inntekt: Set<InntektResponseGrunnlag>
 ) : Subsumsjon()
 
 data class GrunnlagResultat(

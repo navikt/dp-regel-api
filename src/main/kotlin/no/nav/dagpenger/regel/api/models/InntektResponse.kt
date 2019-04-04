@@ -16,3 +16,17 @@ data class InntektResponse(
         }
     }
 }
+
+data class InntektResponseGrunnlag(
+    val inntekt: BigDecimal,
+    val periode: Int, // todo: enum?
+    val inntektsPeriode: InntektsPeriode,
+    val inneholderFangstOgFisk: Boolean
+) {
+    init {
+        val gyldigePerioder = setOf(1, 2, 3)
+        if (!gyldigePerioder.contains(periode)) {
+            throw IllegalArgumentException("Ugyldig periode for inntektgrunnlag, gyldige verdier er ${gyldigePerioder.joinToString { "$it" }}")
+        }
+    }
+}
