@@ -195,7 +195,7 @@ class KafkaDagpengerBehovConsumerTest {
         with(slot.captured) {
             subsumsjonsId shouldBe "grunnlagSubsumsjon"
             resultat.beregningsregel shouldBe "Manuell under 6G"
-            faktum.inntektsId shouldBe "MANUELT_GRUNNLAG"
+            faktum.inntektsId shouldBe null
         }
     }
 

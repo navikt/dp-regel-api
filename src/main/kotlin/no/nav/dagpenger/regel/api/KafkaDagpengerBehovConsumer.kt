@@ -6,6 +6,7 @@ import no.nav.dagpenger.regel.api.models.GrunnlagFaktum
 import no.nav.dagpenger.regel.api.models.GrunnlagResultat
 import no.nav.dagpenger.regel.api.models.GrunnlagSubsumsjon
 import no.nav.dagpenger.regel.api.models.InntektResponse
+import no.nav.dagpenger.regel.api.models.InntektResponseGrunnlag
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.MinsteinntektFaktum
 import no.nav.dagpenger.regel.api.models.MinsteinntektResultat
@@ -160,7 +161,7 @@ class KafkaDagpengerBehovConsumer(
     private fun mapToGrunnlagSubsumsjon(behov: SubsumsjonsBehov): GrunnlagSubsumsjon {
         val grunnlagResultat = behov.grunnlagResultat!!
         val inntekt = behov.inntektV1
-        val inntektsperioder = behov.grunnlagInntektsPerioder ?: getEmptyInntektsPerioder()
+        val inntektsperioder = behov.grunnlagInntektsPerioder
         return GrunnlagSubsumsjon(
             grunnlagResultat.subsumsjonsId,
             behov.behovId,
@@ -171,12 +172,11 @@ class KafkaDagpengerBehovConsumer(
                 behov.aktørId,
                 behov.vedtakId,
                 behov.beregningsDato,
-                inntekt?.inntektsId ?: "MANUELT_GRUNNLAG", // fixme
+                inntekt?.inntektsId,
                 behov.harAvtjentVerneplikt,
                 manueltGrunnlag = behov.manueltGrunnlag),
             GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet, grunnlagResultat.beregningsregel),
             inntektsperioder
-
         )
     }
 
@@ -202,6 +202,28 @@ class KafkaDagpengerBehovConsumer(
             inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
             inneholderFangstOgFisk = false,
             andel = BigDecimal.ZERO
+        )
+    )
+
+    // TODO ADAPT TO PACKET
+    private fun getEmptyInntektsPerioderGrunnlag(): Set<InntektResponseGrunnlag> = setOf(
+        InntektResponseGrunnlag(
+            inntekt = BigDecimal.ZERO,
+            periode = 1,
+            inntektsPeriode = InntektsPeriode(YearMonth.of(2018, 2), YearMonth.of(2019, 1)),
+            inneholderFangstOgFisk = false
+        ),
+        InntektResponseGrunnlag(
+            inntekt = BigDecimal.ZERO,
+            periode = 2,
+            inntektsPeriode = InntektsPeriode(YearMonth.of(2017, 2), YearMonth.of(2018, 1)),
+            inneholderFangstOgFisk = false
+        ),
+        InntektResponseGrunnlag(
+            inntekt = BigDecimal.ZERO,
+            periode = 3,
+            inntektsPeriode = InntektsPeriode(YearMonth.of(2016, 2), YearMonth.of(2017, 1)),
+            inneholderFangstOgFisk = false
         )
     )
 
