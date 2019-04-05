@@ -28,13 +28,8 @@ class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : Subsum
         }
     }
 
-    override fun behovStatus(behovId: String, regel: Regel): Status {
-        val subsumsjonId = getSubsumsjonIdBy(behovId, regel)
-        return when (subsumsjonId) {
-            null -> Status.Pending
-            else -> Status.Done(subsumsjonId)
-        }
-    }
+    override fun behovStatus(behovId: String, regel: Regel): Status =
+        getSubsumsjonIdBy(behovId, regel)?.let { Status.Done(it) } ?: Status.Pending
 
     override fun insertSubsumsjon(subsumsjon: Subsumsjon): Int {
         val json = toJson(subsumsjon)
