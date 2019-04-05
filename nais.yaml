@@ -37,9 +37,10 @@ spec:
 apiVersion: "nais.io/v1alpha1"
 kind: "Alert"
 metadata:
-  name: dp-regel-api-alerts
+  name: dp-regel-api
   labels:
     team: teamdagpenger
+    app: dp-regel-api
 spec:
   receivers:
     slack:
