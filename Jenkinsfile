@@ -1,10 +1,9 @@
 pipeline {
   agent any
   environment {
-    DEPLOYMENT = readYaml(file: './nais.yaml')
-    APPLICATION_NAME = "${DEPLOYMENT.metadata.name}"
-    ZONE = "${DEPLOYMENT.metadata.annotations.zone}"
-    NAMESPACE = "${DEPLOYMENT.metadata.namespace}"
+    DEPLOYMENT = readYaml(file: './nais/base/kustomization.yaml')
+    APPLICATION_NAME = "${DEPLOYMENT.commonLabels.app}"
+    ZONE = "${DEPLOYMENT.commonAnnotations.zone}"
     VERSION = sh(label: 'Get git sha1 as version', script: 'git rev-parse --short HEAD', returnStdout: true).trim()
   }
 
@@ -41,8 +40,14 @@ pipeline {
           """
         }
 
-        sh label: 'Prepare service contract', script: """
-          sed 's/latest/${VERSION}/' nais.yaml | tee nais-deployed.yaml
+        sh label: 'Set image version on base overlay', script: """
+          sed 's/latest/${VERSION}/' ./nais/base/nais.yaml 
+        """
+        sh label: 'Prepare dev service contract', script: """
+           kustomize build ./nais/dev -o ./nais/nais-dev-deploy.yaml | tee ./nais/nais-dev-deploy.yaml
+        """
+        sh label: 'Prepare prod service contract', script: """
+           kustomize build ./nais/prod -o ./nais/nais-prod-deploy.yaml | tee ./nais/nais-prod-deploy.yaml
         """
       }
 
@@ -59,10 +64,6 @@ pipeline {
 
           junit 'build/test-results/test/*.xml'
         }
-
-        success {
-          archiveArtifacts artifacts: 'nais*.yaml', fingerprint: true
-        }
       }
     }
 
@@ -71,10 +72,12 @@ pipeline {
         stage('Deploy to pre-production') {
           when { branch 'master' }
           steps {
+
+
             sh label: 'Deploy with kubectl', script: """
               kubectl config use-context dev-${env.ZONE}
-              kubectl apply -n ${env.NAMESPACE} -f nais-deployed.yaml --wait
-              kubectl rollout status -w deployment/${APPLICATION_NAME}
+              kubectl apply -f ./nais/nais-dev-deploy.yaml --wait
+              kubectl rollout status -w -f ./nais/nais-dev-deploy.yaml
             """
           }
         }
@@ -158,8 +161,8 @@ pipeline {
       steps {
         sh label: 'Deploy with kubectl', script: """
           kubectl config use-context prod-${env.ZONE}
-          kubectl apply -n ${env.NAMESPACE} -f nais-deployed.yaml --wait
-          kubectl rollout status -w deployment/${APPLICATION_NAME}
+          kubectl apply  -f ./nais/nais-prod-deploy.yaml --wait
+          kubectl rollout status -w -f ./nais/nais-prod-deploy.yaml 
         """
       }
     }
