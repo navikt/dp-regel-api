@@ -3,7 +3,7 @@ kind: "Application"
 metadata:
   name: dp-regel-api
 spec:
-  image: dp-regel-api:latest
+  image: repo.adeo.no:5443/dp-regel-api:latest
   port: 8092
   liveness:
     path: /isAlive
