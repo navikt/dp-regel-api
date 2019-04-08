@@ -80,10 +80,7 @@ pipeline {
               kubectl rollout status -w deployment/${APPLICATION_NAME}
             """
 
-            success {
-              archiveArtifacts artifacts: './nais/nais-dev-deploy.yaml', fingerprint: true
-            }
-
+            archiveArtifacts artifacts: './nais/nais-dev-deploy.yaml', fingerprint: true
           }
         }
 
@@ -169,9 +166,8 @@ pipeline {
           kubectl apply  -f ./nais/nais-prod-deploy.yaml --wait
           kubectl rollout status -w deployment/${APPLICATION_NAME}
         """
-        success {
-          archiveArtifacts artifacts: './nais/nais-prod-deploy.yaml', fingerprint: true
-        }
+
+        archiveArtifacts artifacts: './nais/nais-prod-deploy.yaml', fingerprint: true
 
       }
     }
