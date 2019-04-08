@@ -9,10 +9,10 @@ spec:
       prependText: '<!here> | '
   alerts:
     - alert: applikasjon nede
-      expr: up{app="dp-regel-api", job="kubernetes-pods"} == 0
-      for: 5m
-      description: "{{ $labels.app }} er nede i {{ $labels.kubernetes_namespace }}"
-      action: "`kubectl describe pod {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for events, og `kubectl logs {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for logger"
+      expr: kube_deployment_status_replicas_unavailable{deployment="dp-regel-api",job="kubernetes-service-endpoints"} > 0 
+      for: 2m
+      description: "{{ $labels.deployment }} har {{ values }} utilgjengelige podder i {{ $labels.namespace }}"
+      action: "`kubectl describe pod -l app={{ $labels.deployment }} -n {{ $labels.namespace }}` for events og `kubectl get  pods -l app={{ $labels.deployment }} -n {{ $labels.namespace }}` for å se feilende podder"
     - alert: høy feilrate i logger
       expr: (100 * sum by (log_app, log_namespace) (rate(logd_messages_total{log_app="dp-regel-api",log_level="Error"}[3m])) / sum by (log_app, log_namespace) (rate(logd_messages_total{log_app="dp-regel-api"}[3m]))) > 90
       for: 3m
