@@ -44,10 +44,10 @@ pipeline {
           sed 's/latest/${VERSION}/' ./nais/base/nais.yaml 
         """
         sh label: 'Prepare dev service contract', script: """
-           kustomize build ./nais/dev -o ./nais/nais-dev-deploy.yaml | tee ./nais/nais-dev-deploy.yaml
+           kustomize build ./nais/dev -o ./nais/nais-dev-deploy.yaml &&  cat ./nais/nais-dev-deploy.yaml
         """
         sh label: 'Prepare prod service contract', script: """
-           kustomize build ./nais/prod -o ./nais/nais-prod-deploy.yaml | tee ./nais/nais-prod-deploy.yaml
+           kustomize build ./nais/prod -o ./nais/nais-prod-deploy.yaml &&  cat ./nais/nais-prod-deploy.yaml
         """
       }
 
