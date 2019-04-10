@@ -45,6 +45,7 @@ val kotliqueryVersion = "1.3.0"
 val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
 val mockkVersion = "1.9"
+val prometheusVersion = "0.6.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -78,6 +79,9 @@ dependencies {
         exclude(module = "slf4j-api")
     }
     implementation("no.bekk.bekkopen:nocommons:0.8.2")
+    implementation("io.prometheus:simpleclient_common:$prometheusVersion")
+    implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
+
     runtime("com.bettercloud:vault-java-driver:$vaultJavaDriverVersion")
 
     testImplementation(kotlin("test"))
