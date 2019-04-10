@@ -26,6 +26,8 @@ import no.nav.dagpenger.regel.api.db.dataSourceFrom
 import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.grunnlag.grunnlag
 import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
+import no.nav.dagpenger.regel.api.monitoring.HealthCheck
+import no.nav.dagpenger.regel.api.monitoring.naischecks
 import no.nav.dagpenger.regel.api.periode.periode
 import no.nav.dagpenger.regel.api.sats.sats
 import org.slf4j.event.Level
@@ -51,14 +53,16 @@ fun main() {
         it.start()
     }
 
+    val kafkaProducer = KafkaDagpengerBehovProducer(producerConfig(
+        APPLICATION_NAME,
+        config.kafka.brokers,
+        config.kafka.credential()))
+
     val app = embeddedServer(Netty, port = config.application.httpPort) {
         api(
             subsumsjonStore,
-            KafkaDagpengerBehovProducer(producerConfig(
-                APPLICATION_NAME,
-                config.kafka.brokers,
-                config.kafka.credential()
-            ))
+            kafkaProducer,
+            listOf(subsumsjonStore as HealthCheck, kafkaConsumer as HealthCheck, kafkaProducer as HealthCheck)
         )
     }.also {
         it.start(wait = false)
@@ -72,7 +76,8 @@ fun main() {
 
 fun Application.api(
     subsumsjonStore: SubsumsjonStore,
-    kafkaProducer: DagpengerBehovProducer
+    kafkaProducer: DagpengerBehovProducer,
+    healthChecks: List<HealthCheck>
 ) {
     install(DefaultHeaders)
     install(CallLogging) {
@@ -84,6 +89,7 @@ fun Application.api(
                 !call.request.path().startsWith("/metrics")
         }
     }
+
     install(ContentNegotiation) {
         moshi(moshiInstance)
     }
@@ -109,7 +115,7 @@ fun Application.api(
         periode(subsumsjonStore, kafkaProducer)
         grunnlag(subsumsjonStore, kafkaProducer)
         sats(subsumsjonStore, kafkaProducer)
-        naischecks()
+        naischecks(healthChecks)
     }
 }
 
