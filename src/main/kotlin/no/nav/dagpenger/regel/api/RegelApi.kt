@@ -27,6 +27,7 @@ import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.grunnlag.grunnlag
 import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
+import no.nav.dagpenger.regel.api.monitoring.metrics
 import no.nav.dagpenger.regel.api.monitoring.naischecks
 import no.nav.dagpenger.regel.api.periode.periode
 import no.nav.dagpenger.regel.api.sats.sats
@@ -116,6 +117,7 @@ fun Application.api(
         grunnlag(subsumsjonStore, kafkaProducer)
         sats(subsumsjonStore, kafkaProducer)
         naischecks(healthChecks)
+        metrics()
     }
 }
 

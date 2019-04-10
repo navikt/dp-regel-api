@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.routes
 
+import io.kotlintest.matchers.string.shouldContain
 import io.kotlintest.matchers.withClue
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
@@ -21,7 +22,6 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.GrunnlagSubsumsjon
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class StatusRouteTest {
@@ -163,11 +163,11 @@ class ActuatorTest {
     }
 
     @Test
-    @Disabled("Not implemented")
     fun `The application produces metrics`() {
         withTestApplication(MockApi()) {
             handleRequest(HttpMethod.Get, "/metrics").run {
                 response.status() shouldBe HttpStatusCode.OK
+                response.content shouldContain "jvm_"
             }
         }
     }
