@@ -1,12 +1,15 @@
 package no.nav.dagpenger.regel.api
 
 import mu.KotlinLogging
+import no.nav.dagpenger.regel.api.monitoring.HealthCheck
+import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.Topics.DAGPENGER_BEHOV_PACKET_EVENT
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.KafkaException
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.StringSerializer
@@ -61,7 +64,7 @@ fun producerConfig(
     }
 }
 
-class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProducer {
+class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProducer, HealthCheck {
 
     private val jsonAdapter = moshiInstance.adapter(SubsumsjonsBehov::class.java)
     private val kafkaProducer = KafkaProducer<String, String>(kafkaProps)
@@ -73,6 +76,16 @@ class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProduc
             kafkaProducer.close()
             LOGGER.info("done! ")
         })
+    }
+
+    override fun status(): HealthStatus {
+        try {
+            kafkaProducer.partitionsFor(DAGPENGER_BEHOV_PACKET_EVENT.name)
+        } catch (e: KafkaException) {
+            LOGGER.error(e) { "Failed Kafka health check getting partion info for ${DAGPENGER_BEHOV_PACKET_EVENT.name}" }
+            return HealthStatus.DOWN
+        }
+        return HealthStatus.UP
     }
 
     override fun produceEvent(behov: SubsumsjonsBehov) {

@@ -14,6 +14,7 @@ import no.nav.dagpenger.regel.api.models.PeriodeSubsumsjon
 import no.nav.dagpenger.regel.api.models.SatsFaktum
 import no.nav.dagpenger.regel.api.models.SatsResultat
 import no.nav.dagpenger.regel.api.models.SatsSubsumsjon
+import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.junit.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
@@ -79,6 +80,27 @@ class PostgresSubsumsjonStoreTest {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 insertBehov(SubsumsjonsBehov("behovId", "aktorid", 1, LocalDate.now()), Regel.SATS) shouldBe 1
             }
+        }
+    }
+
+    @Test
+    fun `Store health check UP`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                status() shouldBe HealthStatus.UP
+            }
+        }
+    }
+
+    @Test
+    fun `Store health check DOWN`() {
+        with(PostgresSubsumsjonStore(HikariDataSource().apply {
+            username = PostgresContainer.instance.username
+            password = "BAD PASSWORD"
+            jdbcUrl = PostgresContainer.instance.jdbcUrl
+            connectionTimeout = 1000L
+        })) {
+            status() shouldBe HealthStatus.DOWN
         }
     }
 

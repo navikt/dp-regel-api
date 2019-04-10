@@ -17,6 +17,8 @@ import no.nav.dagpenger.regel.api.models.PeriodeSubsumsjon
 import no.nav.dagpenger.regel.api.models.SatsFaktum
 import no.nav.dagpenger.regel.api.models.SatsResultat
 import no.nav.dagpenger.regel.api.models.SatsSubsumsjon
+import no.nav.dagpenger.regel.api.monitoring.HealthCheck
+import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.Topics.DAGPENGER_BEHOV_PACKET_EVENT
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.common.serialization.Serdes
@@ -34,7 +36,7 @@ private val LOGGER = KotlinLogging.logger {}
 class KafkaDagpengerBehovConsumer(
     private val config: Configuration,
     private val store: SubsumsjonStore
-) {
+) : HealthCheck {
 
     private lateinit var streams: KafkaStreams
     fun start() {
@@ -48,6 +50,14 @@ class KafkaDagpengerBehovConsumer(
         LOGGER.info { "Shutting down $APPLICATION_NAME kafka consumer" }
         streams.close(3, TimeUnit.SECONDS)
         streams.cleanUp()
+    }
+
+    override fun status(): HealthStatus {
+        return when (streams.state()) {
+            KafkaStreams.State.ERROR -> HealthStatus.DOWN
+            KafkaStreams.State.PENDING_SHUTDOWN -> HealthStatus.DOWN
+            else -> HealthStatus.UP
+        }
     }
 
     internal fun buildTopology(): Topology {

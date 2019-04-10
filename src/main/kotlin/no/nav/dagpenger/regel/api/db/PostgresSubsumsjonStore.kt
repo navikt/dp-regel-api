@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariDataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
+import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Regel
 import no.nav.dagpenger.regel.api.Status
 import no.nav.dagpenger.regel.api.SubsumsjonsBehov
@@ -11,10 +12,23 @@ import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
 import no.nav.dagpenger.regel.api.models.fromJson
 import no.nav.dagpenger.regel.api.models.toJson
+import no.nav.dagpenger.regel.api.monitoring.HealthCheck
+import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.moshiInstance
 import org.postgresql.util.PSQLException
 
-class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : SubsumsjonStore {
+private val LOGGER = KotlinLogging.logger {}
+
+class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : SubsumsjonStore, HealthCheck {
+
+    override fun status(): HealthStatus {
+        return try {
+            using(sessionOf(dataSource)) { session -> session.run(queryOf(""" SELECT 1""").asExecute) }.let { HealthStatus.UP }
+        } catch (p: PSQLException) {
+            LOGGER.error("Failed health check", p)
+            return HealthStatus.DOWN
+        }
+    }
 
     override fun insertBehov(subsumsjonsBehov: SubsumsjonsBehov, regel: Regel): Int {
         val adapter = moshiInstance.adapter<SubsumsjonsBehov>(SubsumsjonsBehov::class.java)
