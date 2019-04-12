@@ -17,6 +17,7 @@ repositories {
     jcenter()
     maven("http://packages.confluent.io/maven/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://jitpack.io")
 }
 
 application {
@@ -48,7 +49,7 @@ val mockkVersion = "1.9"
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("no.nav.dagpenger:events:0.3.8-SNAPSHOT")
+    implementation("com.github.navikt:dagpenger-events:jitpack-SNAPSHOT")
     implementation("no.nav.dagpenger:streams:0.3.3-SNAPSHOT")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
