@@ -46,6 +46,7 @@ private fun mapRequestToBehov(request: GrunnlagRequestParametere): SubsumsjonsBe
     request.vedtakId,
     request.beregningsdato,
     request.harAvtjentVerneplikt,
+    request.oppfyllerKravTilFangstOgFisk,
     senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
     manueltGrunnlag = request.manueltGrunnlag
 )
