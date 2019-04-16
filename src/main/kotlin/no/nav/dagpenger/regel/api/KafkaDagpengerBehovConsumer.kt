@@ -143,7 +143,8 @@ class KafkaDagpengerBehovConsumer(
                 behov.vedtakId,
                 behov.beregningsDato,
                 inntekt?.inntektsId ?: "12345", // fixme
-                behov.harAvtjentVerneplikt),
+                behov.harAvtjentVerneplikt,
+                behov.oppfyllerKravTilFangstOgFisk),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
             inntektsperioder // fixme
         )
@@ -163,7 +164,8 @@ class KafkaDagpengerBehovConsumer(
                 behov.vedtakId,
                 behov.beregningsDato,
                 inntekt?.inntektsId ?: "12345", // fixme
-                behov.harAvtjentVerneplikt),
+                behov.harAvtjentVerneplikt,
+                behov.oppfyllerKravTilFangstOgFisk),
             PeriodeResultat(periodeResultat.periodeAntallUker)
         )
     }
@@ -184,7 +186,8 @@ class KafkaDagpengerBehovConsumer(
                 behov.beregningsDato,
                 inntekt?.inntektsId,
                 behov.harAvtjentVerneplikt,
-                manueltGrunnlag = behov.manueltGrunnlag),
+                manueltGrunnlag = behov.manueltGrunnlag,
+                oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk),
             GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet, grunnlagResultat.beregningsregel, grunnlagResultat.harAvkortet),
             inntektsperioder
         )
