@@ -15,6 +15,7 @@ data class SubsumsjonsBehov(
     val vedtakId: Int,
     val beregningsDato: LocalDate,
     val harAvtjentVerneplikt: Boolean? = null,
+    val oppfyllerKravTilFangstogFisk: Boolean? = false,
     val antallBarn: Int? = null,
     val inntektV1: Inntekt? = null,
     val manueltGrunnlag: Int? = null,
