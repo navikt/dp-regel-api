@@ -51,6 +51,7 @@ fun mapRequestToBehov(request: PeriodeRequestParametere) = SubsumsjonsBehov(
     request.vedtakId,
     request.beregningsdato,
     request.harAvtjentVerneplikt,
+    request.oppfyllerKravTilFangstOgFisk,
     senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
     bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) }
 )
@@ -60,5 +61,6 @@ data class PeriodeRequestParametere(
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val harAvtjentVerneplikt: Boolean? = false,
+    val oppfyllerKravTilFangstOgFisk: Boolean? = false,
     val bruktInntektsPeriode: InntektsPeriode? = null
 )

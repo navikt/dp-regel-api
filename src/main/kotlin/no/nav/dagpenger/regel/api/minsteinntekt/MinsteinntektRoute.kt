@@ -53,6 +53,7 @@ private fun mapRequestToBehov(request: MinsteinntektRequestParametere) =
         request.vedtakId,
         request.beregningsdato,
         request.harAvtjentVerneplikt,
+        request.oppfyllerKravTilFangstOgFisk,
         senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
         bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) }
     )
