@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api
 
 import io.kotlintest.shouldBe
+import io.kotlintest.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -252,12 +253,13 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
+            antallBarn = 1,
             satsResultat = SatsResultat(
                 "123",
                 "satsSubsumsjon",
                 "regel",
-                0,
-                0,
+                111,
+                1111,
                 false)
         ))
 
@@ -285,6 +287,15 @@ class KafkaDagpengerBehovConsumerTest {
 
         with(slot.captured) {
             subsumsjonsId shouldBe "satsSubsumsjon"
+            regel shouldBe Regel.SATS
+            faktum.aktorId shouldBe "12345"
+            faktum.antallBarn shouldBe 1
+            faktum.vedtakId shouldNotBe null
+            faktum.beregningsdato shouldNotBe null
+            resultat.benyttet90ProsentRegel shouldBe false
+            resultat.dagsats shouldBe 111
+            resultat.ukesats shouldBe 1111
+
         }
     }
 
