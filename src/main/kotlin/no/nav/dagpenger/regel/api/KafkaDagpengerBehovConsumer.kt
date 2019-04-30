@@ -193,6 +193,25 @@ class KafkaDagpengerBehovConsumer(
         )
     }
 
+    private fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
+        val satsResultat = behov.satsResultat!!
+        return SatsSubsumsjon(
+            satsResultat.subsumsjonsId,
+            behov.behovId,
+            Regel.SATS,
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            SatsFaktum(
+                aktorId = behov.aktørId,
+                vedtakId = behov.vedtakId,
+                beregningsdato = behov.beregningsDato,
+                manueltGrunnlag = behov.manueltGrunnlag,
+                antallBarn = behov.antallBarn
+            ),
+            SatsResultat(satsResultat.dagsats, satsResultat.ukesats, satsResultat.benyttet90ProsentRegel)
+        )
+    }
+
     // TODO ADAPT TO PACKET
     private fun getEmptyInntektsPerioder(): Set<InntektResponse> = setOf(
         InntektResponse(
@@ -239,17 +258,4 @@ class KafkaDagpengerBehovConsumer(
             inneholderFangstOgFisk = false
         )
     )
-
-    private fun mapToSatsSubsumsjon(behov: SubsumsjonsBehov): SatsSubsumsjon {
-        val satsResultat = behov.satsResultat!!
-        return SatsSubsumsjon(
-            satsResultat.subsumsjonsId,
-            behov.behovId,
-            Regel.SATS,
-            LocalDateTime.now(),
-            LocalDateTime.now(),
-            SatsFaktum(behov.aktørId, behov.vedtakId, behov.beregningsDato, behov.manueltGrunnlag, behov.antallBarn),
-            SatsResultat(satsResultat.dagsats, satsResultat.ukesats, satsResultat.benyttet90ProsentRegel)
-        )
-    }
 }
