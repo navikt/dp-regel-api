@@ -295,7 +295,6 @@ class KafkaDagpengerBehovConsumerTest {
             resultat.benyttet90ProsentRegel shouldBe false
             resultat.dagsats shouldBe 111
             resultat.ukesats shouldBe 1111
-
         }
     }
 
