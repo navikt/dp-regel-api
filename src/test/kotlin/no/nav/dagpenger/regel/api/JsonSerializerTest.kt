@@ -11,7 +11,7 @@ internal class JsonSerializerTest {
     fun `serialize dagpenger behov events given input`() {
         val serialized = JsonSerializer().serialize(
             "topic", SubsumsjonsBehov(
-            "behovId",
+            "BEHOV_ID",
             "aktørId",
             0,
             LocalDate.now()
@@ -40,7 +40,7 @@ internal class JsonSerializerTest {
 
     private val json = """
         {
-            "behovId": "123",
+            "BEHOV_ID": "123",
             "aktørId": "123",
             "vedtakId": 0,
             "beregningsDato" : "2019-01-01"

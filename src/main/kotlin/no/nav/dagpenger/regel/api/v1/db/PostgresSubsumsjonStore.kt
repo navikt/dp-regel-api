@@ -17,7 +17,7 @@ import org.postgresql.util.PSQLException
 
 private val LOGGER = KotlinLogging.logger {}
 
-class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : SubsumsjonStore, HealthCheck {
+internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : SubsumsjonStore, HealthCheck {
 
     override fun insertBehov(behov: Behov): Int {
         return try {
@@ -84,7 +84,7 @@ class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : Subsum
     private fun getSubsumsjonIdBy(behovId: String): String? {
         try {
             return using(sessionOf(dataSource)) { session ->
-                session.run(queryOf(""" SELECT id FROM v1_subsumsjon WHERE behovId = ? """, behovId).map { row -> row.stringOrNull("id") }.asSingle)
+                session.run(queryOf(""" SELECT id FROM v1_subsumsjon WHERE BEHOV_ID = ? """, behovId).map { row -> row.stringOrNull("id") }.asSingle)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)

@@ -4,9 +4,9 @@ import com.squareup.moshi.JsonAdapter
 import no.nav.dagpenger.regel.api.moshiInstance
 import java.time.LocalDate
 
-val behovJsonAdapter: JsonAdapter<Behov> = moshiInstance.adapter<Behov>(Behov::class.java)
+internal val behovJsonAdapter: JsonAdapter<Behov> = moshiInstance.adapter<Behov>(Behov::class.java)
 
-data class Behov(
+internal data class Behov(
     val id: String,
     val aktørId: String,
     val vedtakId: Int,
@@ -16,7 +16,7 @@ data class Behov(
     val manueltGrunnlag: Int? = null
 )
 
-sealed class Status {
+internal sealed class Status {
     data class Done(val subsumsjonsId: String) : Status() {
         companion object {
             override fun toString() = "Done"

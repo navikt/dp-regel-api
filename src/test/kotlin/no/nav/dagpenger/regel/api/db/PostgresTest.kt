@@ -78,7 +78,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Successful insert of behov`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insertBehov(SubsumsjonsBehov("behovId", "aktorid", 1, LocalDate.now()), Regel.SATS) shouldBe 1
+                insertBehov(SubsumsjonsBehov("BEHOV_ID", "aktorid", 1, LocalDate.now()), Regel.SATS) shouldBe 1
             }
         }
     }
@@ -150,16 +150,16 @@ class PostgresSubsumsjonStoreTest {
     @Test
     fun `Retrieve subsumsjon on composite primary key`() {
 
-        val periodeSubsumsjon = PeriodeSubsumsjon("id", "behovId", Regel.PERIODE, LocalDateTime.now(), LocalDateTime.now(),
+        val periodeSubsumsjon = PeriodeSubsumsjon("id", "BEHOV_ID", Regel.PERIODE, LocalDateTime.now(), LocalDateTime.now(),
             PeriodeFaktum("aktorId", 1, LocalDate.now(), "inntektsId"),
             PeriodeResultat(1))
 
-        val satsSubsumsjon = SatsSubsumsjon("id", "behovId", Regel.SATS, LocalDateTime.now(), LocalDateTime.now(), SatsFaktum("aktorId", 1, LocalDate.now()),
+        val satsSubsumsjon = SatsSubsumsjon("id", "BEHOV_ID", Regel.SATS, LocalDateTime.now(), LocalDateTime.now(), SatsFaktum("aktorId", 1, LocalDate.now()),
             SatsResultat(10, 10, true))
 
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insertBehov(SubsumsjonsBehov("behovId", "aktorid", 1, LocalDate.now()), Regel.SATS)
+                insertBehov(SubsumsjonsBehov("BEHOV_ID", "aktorid", 1, LocalDate.now()), Regel.SATS)
 
                 insertSubsumsjon(periodeSubsumsjon)
                 insertSubsumsjon(satsSubsumsjon)
@@ -201,7 +201,7 @@ class PostgresSubsumsjonStoreTest {
     }
 
     private fun periodeSubsumsjon(): PeriodeSubsumsjon {
-        val subsumsjon = PeriodeSubsumsjon("subsumsjonsId", "behovId", Regel.PERIODE, LocalDateTime.now(), LocalDateTime.now(),
+        val subsumsjon = PeriodeSubsumsjon("subsumsjonsId", "BEHOV_ID", Regel.PERIODE, LocalDateTime.now(), LocalDateTime.now(),
             PeriodeFaktum("aktorId", 1, LocalDate.now(), "inntektsId"),
             PeriodeResultat(1))
         return subsumsjon

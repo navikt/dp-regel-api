@@ -74,7 +74,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Successful insert of behov`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insertBehov(Behov("behovId", "aktorid", 1, LocalDate.now())) shouldBe 1
+                insertBehov(Behov("BEHOV_ID", "aktorid", 1, LocalDate.now())) shouldBe 1
             }
         }
     }
@@ -173,7 +173,7 @@ class PostgresSubsumsjonStoreTest {
         }
     }
 
-    private val subsumsjon = Subsumsjon("id", "behovId")
+    private val subsumsjon = Subsumsjon("id", "BEHOV_ID")
 
 
 }

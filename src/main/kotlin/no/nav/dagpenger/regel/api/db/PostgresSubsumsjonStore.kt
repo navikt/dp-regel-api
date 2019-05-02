@@ -72,7 +72,7 @@ class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : Subsum
     private fun getSubsumsjonIdBy(behovId: String, regel: Regel): String? {
         try {
             return using(sessionOf(dataSource)) { session ->
-                session.run(queryOf(""" SELECT id FROM subsumsjon WHERE behovId = ? AND regel = ?""", behovId, regel.name).map { row -> row.stringOrNull("id") }.asSingle)
+                session.run(queryOf(""" SELECT id FROM subsumsjon WHERE BEHOV_ID = ? AND regel = ?""", behovId, regel.name).map { row -> row.stringOrNull("id") }.asSingle)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
