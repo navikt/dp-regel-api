@@ -49,8 +49,9 @@ val prometheusVersion = "0.6.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
+<<<<<<< HEAD
     implementation("no.nav.dagpenger:events:0.3.11-SNAPSHOT")
-    implementation("no.nav.dagpenger:streams:0.3.3-SNAPSHOT")
+    implementation("no.nav.dagpenger:streams:0.3.4-SNAPSHOT")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")
