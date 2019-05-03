@@ -11,8 +11,6 @@ import no.nav.dagpenger.regel.api.v1.models.Behov
 import no.nav.dagpenger.regel.api.v1.models.Status
 import no.nav.dagpenger.regel.api.v1.models.Subsumsjon
 import no.nav.dagpenger.regel.api.v1.models.SubsumsjonSerDerException
-import no.nav.dagpenger.regel.api.v1.models.behovJsonAdapter
-import no.nav.dagpenger.regel.api.v1.models.subsumsjonJsonAdapter
 import org.postgresql.util.PSQLException
 
 private val LOGGER = KotlinLogging.logger {}
@@ -23,7 +21,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
         return try {
             using(sessionOf(dataSource)) { session ->
                 session.run(queryOf(""" INSERT INTO v1_behov VALUES (?, (to_json(?::json))) """,
-                    behov.id, behovJsonAdapter.toJson(behov)).asUpdate)
+                    behov.behovId, Behov.toJson(behov)).asUpdate)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
@@ -42,7 +40,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
         return try {
             using(sessionOf(dataSource)) { session ->
                 session.run(queryOf(""" INSERT INTO v1_subsumsjon VALUES (?,?, (to_json(?::json))) ON CONFLICT ON CONSTRAINT v1_subsumsjon_pkey DO NOTHING """,
-                    subsumsjon.id, subsumsjon.behovId, subsumsjonJsonAdapter.toJson(subsumsjon)).asUpdate)
+                    subsumsjon.id, subsumsjon.behovId, Subsumsjon.toJson(subsumsjon)).asUpdate)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
@@ -56,7 +54,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
                 .asSingle)
         } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with id $id")
 
-        return subsumsjonJsonAdapter.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")
+        return Subsumsjon.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")
 
     }
 
@@ -84,7 +82,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
     private fun getSubsumsjonIdBy(behovId: String): String? {
         try {
             return using(sessionOf(dataSource)) { session ->
-                session.run(queryOf(""" SELECT id FROM v1_subsumsjon WHERE BEHOV_ID = ? """, behovId).map { row -> row.stringOrNull("id") }.asSingle)
+                session.run(queryOf(""" SELECT id FROM v1_subsumsjon WHERE behov_id = ? """, behovId).map { row -> row.stringOrNull("id") }.asSingle)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)

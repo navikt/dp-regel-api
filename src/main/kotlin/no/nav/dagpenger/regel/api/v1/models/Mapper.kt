@@ -1,24 +1,15 @@
 package no.nav.dagpenger.regel.api.v1.models
 
+import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.moshiInstance
 
-internal object PacketKeys {
-    const val BEHOV_ID = "BEHOV_ID"
-    const val FAKTUM = "faktum"
-    const val GRUNNLAG_RESULTAT = "grunnlagResultat"
-    const val GRUNNLAG_INNTEKTSPERIODER = "grunnlagInntektsPerioder"
-    const val INNTEKT = "inntektV1"
-    const val MINSTEINNTEKT_RESULTAT = "minsteinntektResultat"
-    const val MINSTEINNTEKT_INNTEKTSPERIODER = "minsteinntektInntektsPerioder"
-    const val PERIODE_RESULTAT = "periodeResultat"
-    const val SATS_RESULTAT = "satsResultat"
-
-}
+private val ulidGenerator = ULID()
 
 internal fun subsumsjonFrom(packet: Packet): Subsumsjon =
     Subsumsjon(
+        ulidGenerator.nextULID(),
         behovId = packet.getStringValue(PacketKeys.BEHOV_ID),
         faktum = faktumFrom(packet),
         minsteinntektResultat = minsteinntektResultatFrom(packet),

@@ -10,9 +10,10 @@ import no.nav.dagpenger.regel.api.db.hikariConfigFrom
 import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.v1.models.Behov
+import no.nav.dagpenger.regel.api.v1.models.Faktum
 import no.nav.dagpenger.regel.api.v1.models.Status
 import no.nav.dagpenger.regel.api.v1.models.Subsumsjon
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -134,11 +135,12 @@ class PostgresSubsumsjonStoreTest {
     }
 
     @Test
-    fun `Succesful insert of a subsumsjon`() {
+    fun `Succesful insert and extraction of a subsumsjon`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 insertBehov(Behov(subsumsjon.behovId, "aktorid", 1, LocalDate.now()))
                 insertSubsumsjon(subsumsjon) shouldBe 1
+                getSubsumsjon(subsumsjon.id) shouldBe subsumsjon
             }
         }
     }
@@ -173,7 +175,7 @@ class PostgresSubsumsjonStoreTest {
         }
     }
 
-    private val subsumsjon = Subsumsjon("id", "BEHOV_ID")
+    private val subsumsjon = Subsumsjon("subsumsjonId", "behovId", Faktum("aktorId", 1, LocalDate.now()), mapOf(), mapOf(), mapOf(), mapOf())
 
 
 }

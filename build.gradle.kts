@@ -46,7 +46,7 @@ val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
 val mockkVersion = "1.9"
 val prometheusVersion = "0.6.0"
-
+val kafkaembeddedenv_version = "2.1.0"
 dependencies {
     implementation(kotlin("stdlib"))
 <<<<<<< HEAD
@@ -91,7 +91,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$jupiterVersion")
     testImplementation("org.apache.kafka:kafka-streams-test-utils:$kafkaVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainers_version")
-    testImplementation("org.testcontainers:kafka:$testcontainers_version")
+    //testImplementation("no.nav:kafka-embedded-env:$kafkaembeddedenv_version")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jupiterVersion")

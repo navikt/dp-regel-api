@@ -1,9 +1,11 @@
 package no.nav.dagpenger.regel.api.v1.models
 
+import no.nav.dagpenger.regel.api.moshiInstance
 import java.time.LocalDate
 
 
 internal data class Subsumsjon(
+    val id: String,
     val behovId: String,
     val faktum: Faktum,
     val grunnlagResultat: Map<String, Any>?,
@@ -11,7 +13,13 @@ internal data class Subsumsjon(
     val periodeResultat: Map<String, Any>?,
     val satsResultat: Map<String, Any>?
 
-)
+) {
+    companion object Adapter {
+        private val adapter = moshiInstance.adapter<Subsumsjon>(Subsumsjon::class.java)
+        fun toJson(subsumsjon: Subsumsjon): String = adapter.toJson(subsumsjon)
+        fun fromJson(json: String): Subsumsjon? = adapter.fromJson(json)
+    }
+}
 
 internal data class Faktum(
     val aktorId: String,
