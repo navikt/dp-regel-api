@@ -13,15 +13,17 @@ import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.KafkaException
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import java.io.File
-import java.util.*
+import java.util.Properties
+import java.util.concurrent.Future
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun producerConfig(
+internal fun producerConfig(
     appId: String,
     bootStapServerUrl: String,
     credential: KafkaCredential? = null
@@ -65,11 +67,11 @@ fun producerConfig(
     }
 }
 
-interface DagpengerBehovProducer {
-    fun produceEvent(behov: Behov)
+internal interface DagpengerBehovProducer {
+    fun produceEvent(behov: Behov): Future<RecordMetadata>
 }
 
-class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProducer, HealthCheck {
+internal class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProducer, HealthCheck {
 
     private val kafkaProducer = KafkaProducer<String, Packet>(kafkaProps, Topics.DAGPENGER_BEHOV_PACKET_EVENT.keySerde.serializer(), Topics.DAGPENGER_BEHOV_PACKET_EVENT.valueSerde.serializer())
 
@@ -92,8 +94,8 @@ class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProduc
         return HealthStatus.UP
     }
 
-    override fun produceEvent(behov: Behov) {
-        kafkaProducer.send(
+    override fun produceEvent(behov: Behov): Future<RecordMetadata> {
+        return kafkaProducer.send(
             ProducerRecord(DAGPENGER_BEHOV_PACKET_EVENT.name, behov.behovId, Behov.toPacket(behov))
         ) { metadata, exception ->
             exception?.let { LOGGER.error { "Failed to produce dagpenger behov" } }
