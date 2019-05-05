@@ -22,6 +22,7 @@ internal class BehovTest {
         packet.getBoolean(PacketKeys.HAR_AVTJENT_VERNE_PLIKT) shouldBe behov.harAvtjentVerneplikt
         packet.getIntValue(PacketKeys.ANTALL_BARN) shouldBe behov.antallBarn
         packet.getIntValue(PacketKeys.MANUELT_GRUNNLAG) shouldBe behov.manueltGrunnlag
+        packet.getYearMonth(PacketKeys.SENESTE_INNTEKTSMÅNED) shouldBe behov.senesteInntektsmåned()
     }
 
     @Test
