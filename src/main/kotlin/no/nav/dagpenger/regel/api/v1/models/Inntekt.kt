@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.v1.models
 
+import no.nav.dagpenger.regel.api.moshiInstance
 import java.math.BigDecimal
 import java.time.YearMonth
 
@@ -18,5 +19,9 @@ internal data class InntektResponse(
 internal data class InntektsPeriode(
     val førsteMåned: YearMonth, // todo: rename and create test that verifies the name
     val sisteMåned: YearMonth // todo: rename and create test that verifies the name
-)
+) {
+    companion object Mapper {
+        val adapter = moshiInstance.adapter<InntektsPeriode>(InntektsPeriode::class.java)
+    }
+}
 

@@ -31,6 +31,7 @@ import no.nav.dagpenger.regel.api.monitoring.metrics
 import no.nav.dagpenger.regel.api.monitoring.naischecks
 import no.nav.dagpenger.regel.api.periode.periode
 import no.nav.dagpenger.regel.api.sats.sats
+import no.nav.dagpenger.regel.api.v1.routing.behov
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 
@@ -116,6 +117,49 @@ fun Application.api(
         periode(subsumsjonStore, kafkaProducer)
         grunnlag(subsumsjonStore, kafkaProducer)
         sats(subsumsjonStore, kafkaProducer)
+        naischecks(healthChecks)
+        metrics()
+    }
+}
+
+internal fun Application.apiv1(
+    subsumsjonStore: no.nav.dagpenger.regel.api.v1.db.SubsumsjonStore,
+    kafkaProducer: no.nav.dagpenger.regel.api.v1.streams.DagpengerBehovProducer,
+    healthChecks: List<HealthCheck>
+) {
+    install(DefaultHeaders)
+    install(CallLogging) {
+        level = Level.INFO
+
+        filter { call ->
+            !call.request.path().startsWith("/isAlive") &&
+                !call.request.path().startsWith("/isReady") &&
+                !call.request.path().startsWith("/metrics")
+        }
+    }
+
+    install(ContentNegotiation) {
+        moshi(moshiInstance)
+    }
+    install(Locations)
+
+    install(StatusPages) {
+        exception<BadRequestException> { cause ->
+            badRequest(cause)
+        }
+        exception<JsonDataException> { cause ->
+            badRequest(cause)
+        }
+        exception<BehovNotFoundException> { cause ->
+            notFound(cause)
+        }
+        exception<SubsumsjonNotFoundException> { cause ->
+            notFound(cause)
+        }
+    }
+
+    routing {
+        behov(subsumsjonStore, kafkaProducer)
         naischecks(healthChecks)
         metrics()
     }

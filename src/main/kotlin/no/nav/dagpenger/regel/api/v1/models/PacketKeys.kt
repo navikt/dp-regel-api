@@ -17,4 +17,6 @@ internal object PacketKeys {
     const val PERIODE_RESULTAT = "periodeResultat"
     const val SATS_RESULTAT = "satsResultat"
     const val SENESTE_INNTEKTSMÅNED = "senesteInntektsmåned"
+    const val OPPFYLLER_KRAV_TIL_FANGST_OG_FISK = "oppfyllerKravTilFangstOgFisk"
+    const val BRUKT_INNTEKTSPERIODE = "bruktInntektsPeriode"
 }

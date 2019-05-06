@@ -7,12 +7,14 @@ import no.nav.dagpenger.regel.api.senesteInntektsmåned
 import java.time.LocalDate
 import java.time.YearMonth
 
-data class Behov(
+internal data class Behov(
     val behovId: String = ulidGenerator.nextULID(),
     val aktørId: String,
     val vedtakId: Int,
     val beregningsDato: LocalDate,
     val harAvtjentVerneplikt: Boolean? = null,
+    val oppfyllerKravTilFangstOgFisk: Boolean? = null,
+    val bruktInntektsPeriode: InntektsPeriode? = null,
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null
 ) {
@@ -32,6 +34,8 @@ data class Behov(
             this.putValue(PacketKeys.BEREGNINGS_DATO, behov.beregningsDato)
             this.putValue(PacketKeys.SENESTE_INNTEKTSMÅNED, behov.senesteInntektsmåned())
             behov.harAvtjentVerneplikt?.let { this.putValue(PacketKeys.HAR_AVTJENT_VERNE_PLIKT, it) }
+            behov.oppfyllerKravTilFangstOgFisk?.let { this.putValue(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK, it) }
+            behov.bruktInntektsPeriode?.let { this.putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, InntektsPeriode.adapter.toJsonValue(it)!!) }
             behov.antallBarn?.let { this.putValue(PacketKeys.ANTALL_BARN, it) }
             behov.manueltGrunnlag?.let { this.putValue(PacketKeys.MANUELT_GRUNNLAG, it) }
         }
