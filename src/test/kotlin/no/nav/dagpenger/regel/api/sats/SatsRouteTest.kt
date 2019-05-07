@@ -10,20 +10,27 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.SubsumsjonsBehov
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.routes.MockApi
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 class SatsRouteTest {
 
     @Test
     fun `Valid json to sats endpoint should be accepted, saved and produce an event to Kafka`() {
-        val storeMock = mockk<SubsumsjonStore>(relaxed = true)
+        val slot = slot<SubsumsjonsBehov>()
+        val storeMock = mockk<SubsumsjonStore>(relaxed = true).apply {
+            every { insertBehov(subsumsjonsBehov = capture(slot), regel = Regel.SATS) }
+        }
         val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true)
 
         withTestApplication(MockApi(
@@ -37,7 +44,11 @@ class SatsRouteTest {
             {
                 "aktorId": "9000000028204",
                 "vedtakId": 1,
-                "beregningsdato": "2019-01-08"
+                "beregningsdato": "2019-01-08",
+                "manueltGrunnlag": 100,
+                "antallBarn" : 1,
+                "harAvtjentVerneplikt": true
+
             }
             """)
             }.apply {
@@ -52,8 +63,17 @@ class SatsRouteTest {
         }
 
         verifyAll {
-            storeMock.insertBehov(any(), Regel.SATS)
+            storeMock.insertBehov(subsumsjonsBehov = capture(slot), regel = Regel.SATS)
             kafkaMock.produceEvent(any())
+        }
+
+        with(slot.captured) {
+            aktørId shouldBe "9000000028204"
+            vedtakId shouldBe 1
+            beregningsDato shouldBe LocalDate.parse("2019-01-08")
+            manueltGrunnlag shouldBe 100
+            antallBarn shouldBe 1
+            harAvtjentVerneplikt shouldBe true
         }
     }
 
