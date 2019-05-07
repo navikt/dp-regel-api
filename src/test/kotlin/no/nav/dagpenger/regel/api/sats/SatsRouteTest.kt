@@ -29,7 +29,7 @@ class SatsRouteTest {
     fun `Valid json to sats endpoint should be accepted, saved and produce an event to Kafka`() {
         val slot = slot<SubsumsjonsBehov>()
         val storeMock = mockk<SubsumsjonStore>(relaxed = true).apply {
-            every { insertBehov(subsumsjonsBehov = capture(slot), regel = Regel.SATS) }
+            every { insertBehov(any(), regel = Regel.SATS) } returns 1
         }
         val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true)
 
