@@ -18,9 +18,7 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.pipeline.PipelineContext
-import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
-import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.db.dataSourceFrom
 import no.nav.dagpenger.regel.api.db.migrate
@@ -31,7 +29,10 @@ import no.nav.dagpenger.regel.api.monitoring.metrics
 import no.nav.dagpenger.regel.api.monitoring.naischecks
 import no.nav.dagpenger.regel.api.periode.periode
 import no.nav.dagpenger.regel.api.sats.sats
+import no.nav.dagpenger.regel.api.v1.db.BehovNotFoundException
+import no.nav.dagpenger.regel.api.v1.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.v1.routing.behov
+import no.nav.dagpenger.regel.api.v1.routing.subsumsjon
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 
@@ -160,6 +161,7 @@ internal fun Application.apiv1(
 
     routing {
         behov(subsumsjonStore, kafkaProducer)
+        subsumsjon(subsumsjonStore)
         naischecks(healthChecks)
         metrics()
     }

@@ -40,7 +40,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
         return try {
             using(sessionOf(dataSource)) { session ->
                 session.run(queryOf(""" INSERT INTO v1_subsumsjon VALUES (?,?, (to_json(?::json))) ON CONFLICT ON CONSTRAINT v1_subsumsjon_pkey DO NOTHING """,
-                    subsumsjon.id, subsumsjon.behovId, Subsumsjon.toJson(subsumsjon)).asUpdate)
+                    subsumsjon.id, subsumsjon.behovId, subsumsjon.toJson()).asUpdate)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)

@@ -95,7 +95,7 @@ class BehovRouteTest {
                 "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
                 "antallBarn": 1
             }
-            """)
+            """.trimIndent())
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
                 withClue("Response should be handled") { requestHandled shouldBe true }

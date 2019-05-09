@@ -14,11 +14,13 @@ internal data class Subsumsjon(
     val satsResultat: Map<String, Any>?
 
 ) {
-    companion object Adapter {
+    companion object Mapper {
         private val adapter = moshiInstance.adapter<Subsumsjon>(Subsumsjon::class.java)
         fun toJson(subsumsjon: Subsumsjon): String = adapter.toJson(subsumsjon)
         fun fromJson(json: String): Subsumsjon? = adapter.fromJson(json)
     }
+
+    fun toJson(): String = toJson(this)
 }
 
 internal data class Faktum(
@@ -32,30 +34,5 @@ internal data class Faktum(
     val manueltGrunnlag: Int? = null,
     val bruktInntektsPeriode: InntektsPeriode? = null
 )
-
-internal data class GrunnlagResultat(
-    val avkortet: Int,
-    val uavkortet: Int,
-    val beregningsregel: String,
-    val harAvkortet: Boolean,
-    val inntektsPerioder: Set<InntektResponse>
-
-)
-
-internal data class MinsteinntektResultat(
-    val oppfyllerKravTilMinsteArbeidsinntekt: Boolean,
-    val inntektsPerioder: Set<InntektResponse>
-)
-
-internal data class PeriodeResultat(
-    val antallUker: Int
-)
-
-internal data class SatsResultat(
-    val dagsats: Int,
-    val ukesats: Int,
-    val benyttet90ProsentRegel: Boolean
-)
-
 
 internal class SubsumsjonSerDerException(message: String) : RuntimeException(message)
