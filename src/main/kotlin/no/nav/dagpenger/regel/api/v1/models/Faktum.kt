@@ -38,6 +38,6 @@ private fun bruktInntekstPeriodeFrom(packet: Packet): InntektsPeriode? =
     }
 
 private fun inntektsIdFrom(packet: Packet): String? = packet.getNullableObjectValue(PacketKeys.INNTEKT) { json ->
-    moshiInstance.adapter<Inntekt>(Inntekt::class.java).fromJsonValue(json)?.inntektsId
+    moshiInstance.adapter<Inntekt>(Inntekt::class.java).fromJson(json as String)?.inntektsId
 }
 

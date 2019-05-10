@@ -8,7 +8,7 @@ import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.v1.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.v1.models.PacketKeys
-import no.nav.dagpenger.regel.api.v1.models.subsumsjonFrom
+import no.nav.dagpenger.regel.api.v1.models.Subsumsjon.Mapper.subsumsjonFrom
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.KafkaStreams
