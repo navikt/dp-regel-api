@@ -47,5 +47,4 @@ internal class SubsumsjonTest {
             bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2019, 5), YearMonth.of(2019, 5))
         }
     }
-
 }
