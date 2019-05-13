@@ -4,13 +4,13 @@ import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.APPLICATION_NAME
 import no.nav.dagpenger.regel.api.Configuration
-import no.nav.dagpenger.regel.api.monitoring.HealthCheck
-import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon.Mapper.subsumsjonFrom
 import no.nav.dagpenger.regel.api.models.getBehovId
+import no.nav.dagpenger.regel.api.monitoring.HealthCheck
+import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.KafkaStreams
@@ -24,12 +24,14 @@ internal class KafkaSubsumsjonConsumer(
     private val subsumsjonStore: SubsumsjonStore
 ) : HealthCheck {
 
-    private lateinit var streams: KafkaStreams
+    private val streams: KafkaStreams by lazy {
+        KafkaStreams(SumsumsjonPond(subsumsjonStore, APPLICATION_NAME).buildTopology(), this.getConfig()).apply {
+            setUncaughtExceptionHandler { _, _ -> System.exit(0) }
+        }
+    }
 
     fun start() {
         LOGGER.info { "Starting up $APPLICATION_NAME kafca consumer" }
-        streams = KafkaStreams(SumsumsjonPond(subsumsjonStore, APPLICATION_NAME).buildTopology(), this.getConfig())
-        streams.setUncaughtExceptionHandler { _, _ -> System.exit(0) }
         streams.start()
     }
 
@@ -40,7 +42,11 @@ internal class KafkaSubsumsjonConsumer(
     }
 
     override fun status(): HealthStatus {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when (streams.state()) {
+            KafkaStreams.State.ERROR -> HealthStatus.DOWN
+            KafkaStreams.State.PENDING_SHUTDOWN -> HealthStatus.DOWN
+            else -> HealthStatus.UP
+        }
     }
 
     private fun getConfig() = streamConfig(
