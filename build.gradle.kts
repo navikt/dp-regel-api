@@ -81,6 +81,7 @@ dependencies {
     implementation("no.bekk.bekkopen:nocommons:0.8.2")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
+    implementation("io.prometheus:simpleclient_log4j2:$prometheusVersion")
 
     runtime("com.bettercloud:vault-java-driver:$vaultJavaDriverVersion")
 
