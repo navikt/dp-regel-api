@@ -22,28 +22,21 @@ import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.db.dataSourceFrom
 import no.nav.dagpenger.regel.api.db.migrate
-import no.nav.dagpenger.regel.api.grunnlag.grunnlag
-import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
-import no.nav.dagpenger.regel.api.monitoring.metrics
-import no.nav.dagpenger.regel.api.monitoring.naischecks
-import no.nav.dagpenger.regel.api.periode.periode
-import no.nav.dagpenger.regel.api.sats.sats
-import no.nav.dagpenger.regel.api.v1.db.BehovNotFoundException
-import no.nav.dagpenger.regel.api.v1.db.SubsumsjonNotFoundException
-import no.nav.dagpenger.regel.api.v1.routing.behov
-import no.nav.dagpenger.regel.api.v1.routing.subsumsjon
+import no.nav.dagpenger.regel.api.routing.metrics
+import no.nav.dagpenger.regel.api.routing.naischecks
+import no.nav.dagpenger.regel.api.db.BehovNotFoundException
+import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
+import no.nav.dagpenger.regel.api.routing.behov
+import no.nav.dagpenger.regel.api.routing.subsumsjon
+import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
+import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
+import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonConsumer
+import no.nav.dagpenger.regel.api.streams.producerConfig
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 
 val APPLICATION_NAME = "dp-regel-api"
-
-enum class Regel {
-    MINSTEINNTEKT,
-    PERIODE,
-    GRUNNLAG,
-    SATS;
-}
 
 fun main() {
     val config = Configuration()
@@ -52,7 +45,7 @@ fun main() {
 
     val subsumsjonStore = PostgresSubsumsjonStore(dataSourceFrom(config))
 
-    val kafkaConsumer = KafkaDagpengerBehovConsumer(config, subsumsjonStore).also {
+    val kafkaConsumer = KafkaSubsumsjonConsumer(config, subsumsjonStore).also {
         it.start()
     }
 
@@ -77,55 +70,9 @@ fun main() {
     })
 }
 
-fun Application.api(
+internal fun Application.api(
     subsumsjonStore: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer,
-    healthChecks: List<HealthCheck>
-) {
-    install(DefaultHeaders)
-    install(CallLogging) {
-        level = Level.INFO
-
-        filter { call ->
-            !call.request.path().startsWith("/isAlive") &&
-                !call.request.path().startsWith("/isReady") &&
-                !call.request.path().startsWith("/metrics")
-        }
-    }
-
-    install(ContentNegotiation) {
-        moshi(moshiInstance)
-    }
-    install(Locations)
-
-    install(StatusPages) {
-        exception<BadRequestException> { cause ->
-            badRequest(cause)
-        }
-        exception<JsonDataException> { cause ->
-            badRequest(cause)
-        }
-        exception<BehovNotFoundException> { cause ->
-            notFound(cause)
-        }
-        exception<SubsumsjonNotFoundException> { cause ->
-            notFound(cause)
-        }
-    }
-
-    routing {
-        minsteinntekt(subsumsjonStore, kafkaProducer)
-        periode(subsumsjonStore, kafkaProducer)
-        grunnlag(subsumsjonStore, kafkaProducer)
-        sats(subsumsjonStore, kafkaProducer)
-        naischecks(healthChecks)
-        metrics()
-    }
-}
-
-internal fun Application.apiv1(
-    subsumsjonStore: no.nav.dagpenger.regel.api.v1.db.SubsumsjonStore,
-    kafkaProducer: no.nav.dagpenger.regel.api.v1.streams.DagpengerBehovProducer,
     healthChecks: List<HealthCheck>
 ) {
     install(DefaultHeaders)

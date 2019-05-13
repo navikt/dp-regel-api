@@ -1,139 +1,55 @@
 package no.nav.dagpenger.regel.api.models
 
-import no.nav.dagpenger.regel.api.Regel
+import de.huxhorn.sulky.ulid.ULID
+import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.moshiInstance
-import java.time.LocalDate
-import java.time.LocalDateTime
+import no.nav.dagpenger.regel.api.models.Faktum.Mapper.faktumFrom
 
-fun fromJson(json: String, regel: Regel): Subsumsjon? {
-    return when (regel) {
-        Regel.MINSTEINNTEKT -> moshiInstance.adapter<MinsteinntektSubsumsjon>(MinsteinntektSubsumsjon::class.java).fromJson(json)
-        Regel.PERIODE -> moshiInstance.adapter<PeriodeSubsumsjon>(PeriodeSubsumsjon::class.java).fromJson(json)
-        Regel.GRUNNLAG -> moshiInstance.adapter<GrunnlagSubsumsjon>(GrunnlagSubsumsjon::class.java).fromJson(json)
-        Regel.SATS -> moshiInstance.adapter<SatsSubsumsjon>(SatsSubsumsjon::class.java).fromJson(json)
+internal data class Subsumsjon(
+    val id: String,
+    val behovId: String,
+    val faktum: Faktum,
+    val grunnlagResultat: Map<String, Any>?,
+    val minsteinntektResultat: Map<String, Any>?,
+    val periodeResultat: Map<String, Any>?,
+    val satsResultat: Map<String, Any>?
+
+) {
+    companion object Mapper {
+        private val ulidGenerator = ULID()
+
+        private val adapter = moshiInstance.adapter<Subsumsjon>(Subsumsjon::class.java)
+        fun toJson(subsumsjon: Subsumsjon): String = adapter.toJson(subsumsjon)
+        fun fromJson(json: String): Subsumsjon? = adapter.fromJson(json)
+
+        fun subsumsjonFrom(packet: Packet): Subsumsjon =
+            Subsumsjon(
+                ulidGenerator.nextULID(),
+                behovId = packet.getStringValue(PacketKeys.BEHOV_ID),
+                faktum = faktumFrom(packet),
+                minsteinntektResultat = minsteinntektResultatFrom(packet),
+                grunnlagResultat = grunnlagResultatFrom(packet),
+                periodeResultat = mapFrom(PacketKeys.PERIODE_RESULTAT, packet),
+                satsResultat = mapFrom(PacketKeys.SATS_RESULTAT, packet)
+            )
     }
+
+    fun toJson(): String = toJson(this)
 }
 
-fun toJson(subsumsjon: Subsumsjon): String? =
-    when (subsumsjon) {
-        is GrunnlagSubsumsjon -> moshiInstance.adapter<GrunnlagSubsumsjon>(GrunnlagSubsumsjon::class.java).toJson(subsumsjon)
-        is MinsteinntektSubsumsjon -> moshiInstance.adapter<MinsteinntektSubsumsjon>(MinsteinntektSubsumsjon::class.java).toJson(subsumsjon)
-        is PeriodeSubsumsjon -> moshiInstance.adapter<PeriodeSubsumsjon>(PeriodeSubsumsjon::class.java).toJson(subsumsjon)
-        is SatsSubsumsjon -> moshiInstance.adapter<SatsSubsumsjon>(SatsSubsumsjon::class.java).toJson(subsumsjon)
-    }
+//todo Remove once "minsteinntektInntektsPerioder" is part of the result and return the map
+internal fun minsteinntektResultatFrom(packet: Packet): Map<String, Any>? =
+    mapFrom(PacketKeys.MINSTEINNTEKT_RESULTAT, packet)?.toMutableMap()?.apply {
+        put(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER, packet.getMapValue(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER))
+    }?.toMap()
 
-class SubsumsjonSerDerException(message: String) : RuntimeException(message)
+//todo Remove once "grunnlagInntektsPerioder" is part of the result and return the map
+internal fun grunnlagResultatFrom(packet: Packet): Map<String, Any>? =
+    mapFrom(PacketKeys.GRUNNLAG_RESULTAT, packet)?.toMutableMap()?.apply {
+        put(PacketKeys.GRUNNLAG_INNTEKTSPERIODER, packet.getMapValue(PacketKeys.GRUNNLAG_INNTEKTSPERIODER))
+    }?.toMap()
 
-sealed class Subsumsjon {
-    abstract val subsumsjonsId: String
-    abstract val behovId: String
-    abstract val regel: Regel
-}
+internal fun mapFrom(packetKey: String, packet: Packet): Map<String, Any>? =
+    packet.hasField(packetKey).takeIf { it }?.let { packet.getMapValue(packetKey) }
 
-data class GrunnlagSubsumsjon(
-    override val subsumsjonsId: String,
-    override val behovId: String,
-    override val regel: Regel,
-    val opprettet: LocalDateTime, // todo: ZonedDateTime?
-    val utfort: LocalDateTime, // todo: ZonedDateTime?,
-    val faktum: GrunnlagFaktum,
-    val resultat: GrunnlagResultat,
-    val inntekt: Set<InntektResponseGrunnlag>? = null
-) : Subsumsjon()
-
-data class GrunnlagResultat(
-    val avkortet: Int,
-    val uavkortet: Int,
-    val beregningsregel: String,
-    val harAvkortet: Boolean
-)
-
-data class GrunnlagFaktum(
-    val aktorId: String,
-    val vedtakId: Int,
-    val beregningsdato: LocalDate,
-    val inntektsId: String? = null,
-    val inntektManueltRedigert: Boolean? = null,
-    val inntektAvvik: Boolean? = null,
-    val harAvtjentVerneplikt: Boolean? = false,
-    val oppfyllerKravTilFangstOgFisk: Boolean? = false,
-    val antallBarn: Int? = 0,
-    val manueltGrunnlag: Int? = null
-)
-
-data class MinsteinntektSubsumsjon(
-    override val subsumsjonsId: String,
-    override val behovId: String,
-    override val regel: Regel,
-    val opprettet: LocalDateTime, // todo: ZonedDateTime?
-    val utfort: LocalDateTime, // todo: ZonedDateTime?,
-    val faktum: MinsteinntektFaktum,
-    val resultat: MinsteinntektResultat,
-    val inntekt: Set<InntektResponse>
-) : Subsumsjon()
-
-data class MinsteinntektResultat(
-    val oppfyllerKravTilMinsteArbeidsinntekt: Boolean
-)
-
-data class MinsteinntektFaktum(
-    val aktorId: String,
-    val vedtakId: Int,
-    val beregningsdato: LocalDate,
-    val inntektsId: String,
-    val inntektManueltRedigert: Boolean? = null,
-    val inntektAvvik: Boolean? = null,
-    val harAvtjentVerneplikt: Boolean? = false,
-    val oppfyllerKravTilFangstOgFisk: Boolean? = false,
-    val bruktInntektsPeriode: InntektsPeriode? = null
-)
-
-data class PeriodeSubsumsjon(
-    override val subsumsjonsId: String,
-    override val behovId: String,
-    override val regel: Regel,
-    val opprettet: LocalDateTime, // todo: ZonedDateTime?
-    val utfort: LocalDateTime, // todo: ZonedDateTime?,
-    val faktum: PeriodeFaktum,
-    val resultat: PeriodeResultat
-) : Subsumsjon()
-
-data class PeriodeResultat(
-    val antallUker: Int
-)
-
-data class PeriodeFaktum(
-    val aktorId: String,
-    val vedtakId: Int,
-    val beregningsdato: LocalDate,
-    val inntektsId: String,
-    val inntektManueltRedigert: Boolean? = null,
-    val inntektAvvik: Boolean? = null,
-    val harAvtjentVerneplikt: Boolean? = false,
-    val oppfyllerKravTilFangstOgFisk: Boolean? = false,
-    val bruktInntektsPeriode: InntektsPeriode? = null
-)
-
-data class SatsSubsumsjon(
-    override val subsumsjonsId: String,
-    override val behovId: String,
-    override val regel: Regel,
-    val opprettet: LocalDateTime, // todo: ZonedDateTime?
-    val utfort: LocalDateTime, // todo: ZonedDateTime?,
-    val faktum: SatsFaktum,
-    val resultat: SatsResultat
-) : Subsumsjon()
-
-data class SatsResultat(
-    val dagsats: Int,
-    val ukesats: Int,
-    val benyttet90ProsentRegel: Boolean
-)
-
-data class SatsFaktum(
-    val aktorId: String,
-    val vedtakId: Int,
-    val beregningsdato: LocalDate,
-    val antallBarn: Int? = 0,
-    val manueltGrunnlag: Int? = null
-)
+internal class SubsumsjonSerDerException(message: String) : RuntimeException(message)

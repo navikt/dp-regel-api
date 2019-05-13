@@ -47,7 +47,6 @@ val konfigVersion = "1.6.10.0"
 val mockkVersion = "1.9"
 val prometheusVersion = "0.6.0"
 
-
 dependencies {
     implementation(kotlin("stdlib"))
 <<<<<<< HEAD
