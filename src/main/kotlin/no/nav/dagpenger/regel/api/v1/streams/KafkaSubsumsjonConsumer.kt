@@ -8,7 +8,9 @@ import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.v1.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.v1.models.PacketKeys
+import no.nav.dagpenger.regel.api.v1.models.Status
 import no.nav.dagpenger.regel.api.v1.models.Subsumsjon.Mapper.subsumsjonFrom
+import no.nav.dagpenger.regel.api.v1.models.getBehovId
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.KafkaStreams
@@ -46,29 +48,33 @@ internal class KafkaSubsumsjonConsumer(
         bootStapServerUrl = config.kafka.brokers,
         credential = config.kafka.credential()
     )
-
 }
-
 
 internal class SumsumsjonPond(private val subsumsjonStore: SubsumsjonStore, override val SERVICE_APP_ID: String) : Pond() {
 
-    companion object {
-        val isManuellGrunnlag = { packet: Packet -> packet.hasField(PacketKeys.MANUELT_GRUNNLAG) && hasGrunnlagAndSatsResult(packet) }
+    val isManuellGrunnlag = { packet: Packet -> packet.hasField(PacketKeys.MANUELT_GRUNNLAG) && hasGrunnlagAndSatsResult(packet) }
 
-        val hasGrunnlagAndSatsResult = { packet: Packet -> packet.hasField(PacketKeys.GRUNNLAG_RESULTAT) && packet.hasField(PacketKeys.SATS_RESULTAT) }
+    val hasGrunnlagAndSatsResult = { packet: Packet -> packet.hasField(PacketKeys.GRUNNLAG_RESULTAT) && packet.hasField(PacketKeys.SATS_RESULTAT) }
 
-        val hasCompleteResult = { packet: Packet -> hasGrunnlagAndSatsResult(packet) && packet.hasField(PacketKeys.MINSTEINNTEKT_RESULTAT) && packet.hasField(PacketKeys.PERIODE_RESULTAT) }
+    val hasCompleteResult = { packet: Packet -> hasGrunnlagAndSatsResult(packet) && packet.hasField(PacketKeys.MINSTEINNTEKT_RESULTAT) && packet.hasField(PacketKeys.PERIODE_RESULTAT) }
 
-    }
 
     override fun filterPredicates(): List<Predicate<String, Packet>> {
-        return listOf(Predicate { _: String, packet: Packet ->
+        return listOf(Predicate { _, packet: Packet ->
             isManuellGrunnlag(packet) || hasCompleteResult(packet)
         })
     }
 
     override fun onPacket(packet: Packet) {
-        subsumsjonStore.insertSubsumsjon(subsumsjonFrom(packet))
+        runCatching {
+            when (subsumsjonStore.behovStatus(packet.getBehovId())) {
+                Status.Pending -> subsumsjonStore.insertSubsumsjon(subsumsjonFrom(packet))
+                else -> LOGGER.info { "Ignoring done subsumsjon. Packet: $packet" }
+            }
+        }.onFailure { t ->
+            //todo add prometheus counter?
+            LOGGER.error(t) { "Failure handling packet: $packet" }
+        }
     }
 }
 

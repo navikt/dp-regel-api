@@ -52,7 +52,7 @@ internal fun grunnlagResultatFrom(packet: Packet): Map<String, Any>? =
     }?.toMap()
 
 internal fun mapFrom(packetKey: String, packet: Packet): Map<String, Any>? =
-    packet.hasField(packetKey).takeIf { it }.let { packet.getMapValue(packetKey) }
+    packet.hasField(packetKey).takeIf { it }?.let { packet.getMapValue(packetKey) }
 
 
 internal class SubsumsjonSerDerException(message: String) : RuntimeException(message)
