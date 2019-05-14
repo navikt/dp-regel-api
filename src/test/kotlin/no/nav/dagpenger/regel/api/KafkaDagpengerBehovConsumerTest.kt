@@ -158,6 +158,52 @@ class KafkaDagpengerBehovConsumerTest {
     }
 
     @Test
+    fun ` Should store received grunnlag subsumsjon with inntekt redigert manuelt `() {
+
+        val behovJson = jsonAdapter.toJson(SubsumsjonsBehov(
+            "grunnlagSubsumsjon",
+            "12345",
+            Random().nextInt(),
+            LocalDate.now(),
+            inntektV1 = Inntekt(inntektsId = "", inntektsListe = emptyList(), manueltRedigert = true),
+            grunnlagResultat = GrunnlagResultat(
+                "123",
+                "grunnlagSubsumsjon",
+                "regel",
+                1000,
+                1500,
+                "ArbeidsinntektSiste12",
+                false)
+        ))
+
+        val slot = slot<GrunnlagSubsumsjon>()
+        val subsumsjonStoreMock = mockk<SubsumsjonStore>().apply {
+
+            every { this@apply.insertSubsumsjon(subsumsjon = capture(slot)) } returns 1
+            every { this@apply.behovStatus("grunnlagSubsumsjon", Regel.GRUNNLAG) } returns Status.Pending
+        }
+
+        val consumer = KafkaDagpengerBehovConsumer(
+            Configuration(),
+            subsumsjonStoreMock
+        )
+
+        TopologyTestDriver(consumer.buildTopology(), config).use { topologyTestDriver ->
+            val inputRecord = factory.create(behovJson)
+            topologyTestDriver.pipeInput(inputRecord)
+        }
+
+        verifyAll {
+            subsumsjonStoreMock.insertSubsumsjon(any())
+            subsumsjonStoreMock.behovStatus("grunnlagSubsumsjon", Regel.GRUNNLAG)
+        }
+
+        with(slot.captured) {
+            faktum.inntektManueltRedigert shouldBe true
+        }
+    }
+
+    @Test
     fun ` Should store received grunnlagSubsumsjon without inntekt `() {
 
         val behovJson = jsonAdapter.toJson(SubsumsjonsBehov(
