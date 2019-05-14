@@ -53,6 +53,8 @@ data class GrunnlagFaktum(
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val inntektsId: String? = null,
+    val inntektManueltRedigert: Boolean? = null,
+    val inntektAvvik: Boolean? = null,
     val harAvtjentVerneplikt: Boolean? = false,
     val oppfyllerKravTilFangstOgFisk: Boolean? = false,
     val antallBarn: Int? = 0,
@@ -79,6 +81,8 @@ data class MinsteinntektFaktum(
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val inntektsId: String,
+    val inntektManueltRedigert: Boolean? = null,
+    val inntektAvvik: Boolean? = null,
     val harAvtjentVerneplikt: Boolean? = false,
     val oppfyllerKravTilFangstOgFisk: Boolean? = false,
     val bruktInntektsPeriode: InntektsPeriode? = null
@@ -103,6 +107,8 @@ data class PeriodeFaktum(
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val inntektsId: String,
+    val inntektManueltRedigert: Boolean? = null,
+    val inntektAvvik: Boolean? = null,
     val harAvtjentVerneplikt: Boolean? = false,
     val oppfyllerKravTilFangstOgFisk: Boolean? = false,
     val bruktInntektsPeriode: InntektsPeriode? = null

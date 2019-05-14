@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api
 
 import mu.KotlinLogging
+import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.GrunnlagFaktum
 import no.nav.dagpenger.regel.api.models.GrunnlagResultat
@@ -139,12 +140,15 @@ class KafkaDagpengerBehovConsumer(
             LocalDateTime.now(),
             LocalDateTime.now(),
             MinsteinntektFaktum(
-                behov.aktørId,
-                behov.vedtakId,
-                behov.beregningsDato,
-                inntekt?.inntektsId ?: "12345", // fixme
-                behov.harAvtjentVerneplikt,
-                behov.oppfyllerKravTilFangstOgFisk),
+                aktorId = behov.aktørId,
+                vedtakId = behov.vedtakId,
+                beregningsdato = behov.beregningsDato,
+                inntektsId = inntekt?.inntektsId ?: "12345", // fixme
+                inntektAvvik = inntekt?.harAvvik(),
+                inntektManueltRedigert = inntekt?.manueltRedigert,
+                harAvtjentVerneplikt = behov.harAvtjentVerneplikt,
+                oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk
+            ),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
             inntektsperioder // fixme
         )
@@ -160,12 +164,15 @@ class KafkaDagpengerBehovConsumer(
             LocalDateTime.now(),
             LocalDateTime.now(),
             PeriodeFaktum(
-                behov.aktørId,
-                behov.vedtakId,
-                behov.beregningsDato,
-                inntekt?.inntektsId ?: "12345", // fixme
-                behov.harAvtjentVerneplikt,
-                behov.oppfyllerKravTilFangstOgFisk),
+                aktorId = behov.aktørId,
+                vedtakId = behov.vedtakId,
+                beregningsdato = behov.beregningsDato,
+                inntektsId = inntekt?.inntektsId ?: "12345", // fixme
+                inntektAvvik = inntekt?.harAvvik(),
+                inntektManueltRedigert = inntekt?.manueltRedigert,
+                harAvtjentVerneplikt = behov.harAvtjentVerneplikt,
+                oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk
+            ),
             PeriodeResultat(periodeResultat.periodeAntallUker)
         )
     }
@@ -181,14 +188,22 @@ class KafkaDagpengerBehovConsumer(
             LocalDateTime.now(),
             LocalDateTime.now(),
             GrunnlagFaktum(
-                behov.aktørId,
-                behov.vedtakId,
-                behov.beregningsDato,
-                inntekt?.inntektsId,
-                behov.harAvtjentVerneplikt,
+                aktorId = behov.aktørId,
+                vedtakId = behov.vedtakId,
+                beregningsdato = behov.beregningsDato,
+                inntektsId = inntekt?.inntektsId,
+                inntektAvvik = inntekt?.harAvvik(),
+                inntektManueltRedigert = inntekt?.manueltRedigert,
+                harAvtjentVerneplikt = behov.harAvtjentVerneplikt,
                 manueltGrunnlag = behov.manueltGrunnlag,
-                oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk),
-            GrunnlagResultat(grunnlagResultat.avkortet, grunnlagResultat.uavkortet, grunnlagResultat.beregningsregel, grunnlagResultat.harAvkortet),
+                oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk
+            ),
+            GrunnlagResultat(
+                grunnlagResultat.avkortet,
+                grunnlagResultat.uavkortet,
+                grunnlagResultat.beregningsregel,
+                grunnlagResultat.harAvkortet
+            ),
             inntektsperioder
         )
     }
@@ -259,3 +274,5 @@ class KafkaDagpengerBehovConsumer(
         )
     )
 }
+
+fun Inntekt.harAvvik(): Boolean = this.inntektsListe.any { it.harAvvik ?: false }
