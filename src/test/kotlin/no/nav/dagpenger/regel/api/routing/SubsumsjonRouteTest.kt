@@ -25,7 +25,7 @@ internal class SubsumsjonRouteTest {
         val subsumsjon = Subsumsjon(
             "id",
             "behovId",
-            Faktum("aktorid", 1, LocalDate.now(), "inntektsId", true, true, 1, 0, InntektsPeriode(YearMonth.now(), YearMonth.now())),
+            Faktum("aktorid", 1, LocalDate.now()),
             mapOf(),
             mapOf(),
             mapOf(),

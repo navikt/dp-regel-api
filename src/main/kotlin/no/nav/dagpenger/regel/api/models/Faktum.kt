@@ -1,8 +1,6 @@
 package no.nav.dagpenger.regel.api.models
 
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.events.inntekt.v1.Inntekt
-import no.nav.dagpenger.regel.api.moshiInstance
 import java.time.LocalDate
 
 internal data class Faktum(
@@ -10,6 +8,8 @@ internal data class Faktum(
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val inntektsId: String? = null,
+    val inntektAvvik: Boolean? = null,
+    val inntektManueltRedigert: Boolean? = null,
     val harAvtjentVerneplikt: Boolean? = null,
     val oppfyllerKravTilFangstOgFisk: Boolean? = null,
     val antallBarn: Int? = null,
@@ -17,21 +17,21 @@ internal data class Faktum(
     val bruktInntektsPeriode: InntektsPeriode? = null
 ) {
     companion object Mapper {
-        fun faktumFrom(packet: Packet): Faktum =
-            Faktum(
+        fun faktumFrom(packet: Packet): Faktum {
+            val inntekt = inntektFrom(packet)
+            return Faktum(
                 aktorId = packet.getStringValue(PacketKeys.AKTØR_ID),
                 vedtakId = packet.getIntValue(PacketKeys.VEDTAK_ID),
                 beregningsdato = packet.getLocalDate(PacketKeys.BEREGNINGS_DATO),
-                inntektsId = inntektsIdFrom(packet),
+                inntektsId = inntekt?.inntektsId,
+                inntektAvvik = inntekt?.harAvvik(),
+                inntektManueltRedigert = inntekt?.manueltRedigert,
                 harAvtjentVerneplikt = packet.getNullableBoolean(PacketKeys.HAR_AVTJENT_VERNE_PLIKT),
                 oppfyllerKravTilFangstOgFisk = packet.getNullableBoolean(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK),
                 antallBarn = packet.getNullableIntValue(PacketKeys.ANTALL_BARN),
                 manueltGrunnlag = packet.getNullableIntValue(PacketKeys.MANUELT_GRUNNLAG),
                 bruktInntektsPeriode = InntektsPeriode.fromPacket(packet)
             )
+        }
     }
-}
-
-private fun inntektsIdFrom(packet: Packet): String? = packet.getNullableObjectValue(PacketKeys.INNTEKT) { json ->
-    moshiInstance.adapter<Inntekt>(Inntekt::class.java).fromJson(json as String)?.inntektsId
 }

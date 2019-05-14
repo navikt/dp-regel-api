@@ -13,12 +13,12 @@ internal class SubsumsjonTest {
         Subsumsjon(
             "id",
             "behovId",
-            Faktum("aktorId", 1, LocalDate.of(2019, 5, 9), "inntektsId", true, true, 1, 0, InntektsPeriode(YearMonth.of(2019, 5), YearMonth.of(2019, 5))),
+            Faktum("aktorId", 1, LocalDate.of(2019, 5, 9)),
             mapOf(),
             mapOf(),
             mapOf(),
             mapOf()
-        ).toJson() shouldBe """{"id":"id","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09","inntektsId":"inntektsId","harAvtjentVerneplikt":true,"oppfyllerKravTilFangstOgFisk":true,"antallBarn":1,"manueltGrunnlag":0,"bruktInntektsPeriode":{"førsteMåned":"2019-05","sisteMåned":"2019-05"}},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{}}"""
+        ).toJson() shouldBe """{"id":"id","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{}}"""
     }
 
     @Test
