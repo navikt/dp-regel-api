@@ -22,7 +22,7 @@ internal class BehovTest {
         packet.getBoolean(PacketKeys.HAR_AVTJENT_VERNE_PLIKT) shouldBe behov.harAvtjentVerneplikt
         packet.getBoolean(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK) shouldBe behov.oppfyllerKravTilFangstOgFisk
         packet.getYearMonth(PacketKeys.SENESTE_INNTEKTSMÅNED) shouldBe behov.senesteInntektsmåned()
-        packet.getNullableObjectValue(PacketKeys.BRUKT_INNTEKTSPERIODE, InntektsPeriode.adapter::fromJsonValue) shouldBe behov.bruktInntektsPeriode
+        InntektsPeriode.fromPacket(packet) shouldBe behov.bruktInntektsPeriode
         packet.getIntValue(PacketKeys.ANTALL_BARN) shouldBe behov.antallBarn
         packet.getIntValue(PacketKeys.MANUELT_GRUNNLAG) shouldBe behov.manueltGrunnlag
     }
@@ -34,7 +34,7 @@ internal class BehovTest {
 
         packet.getNullableBoolean(PacketKeys.HAR_AVTJENT_VERNE_PLIKT) shouldBe null
         packet.getNullableBoolean(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK) shouldBe null
-        packet.getNullableObjectValue(PacketKeys.BRUKT_INNTEKTSPERIODE, InntektsPeriode.adapter::fromJsonValue) shouldBe behov.bruktInntektsPeriode
+        InntektsPeriode.fromPacket(packet) shouldBe behov.bruktInntektsPeriode
         packet.getNullableIntValue(PacketKeys.ANTALL_BARN) shouldBe null
         packet.getNullableIntValue(PacketKeys.MANUELT_GRUNNLAG) shouldBe null
     }

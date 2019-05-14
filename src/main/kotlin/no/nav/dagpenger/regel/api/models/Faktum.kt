@@ -27,15 +27,10 @@ internal data class Faktum(
                 oppfyllerKravTilFangstOgFisk = packet.getNullableBoolean(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK),
                 antallBarn = packet.getNullableIntValue(PacketKeys.ANTALL_BARN),
                 manueltGrunnlag = packet.getNullableIntValue(PacketKeys.MANUELT_GRUNNLAG),
-                bruktInntektsPeriode = bruktInntekstPeriodeFrom(packet)
+                bruktInntektsPeriode = InntektsPeriode.fromPacket(packet)
             )
     }
 }
-
-private fun bruktInntekstPeriodeFrom(packet: Packet): InntektsPeriode? =
-    packet.getNullableObjectValue(PacketKeys.BRUKT_INNTEKTSPERIODE) { json ->
-        moshiInstance.adapter<InntektsPeriode>(InntektsPeriode::class.java).fromJsonValue(json)
-    }
 
 private fun inntektsIdFrom(packet: Packet): String? = packet.getNullableObjectValue(PacketKeys.INNTEKT) { json ->
     moshiInstance.adapter<Inntekt>(Inntekt::class.java).fromJson(json as String)?.inntektsId

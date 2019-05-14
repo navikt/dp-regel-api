@@ -35,7 +35,7 @@ internal data class Behov(
             this.putValue(PacketKeys.SENESTE_INNTEKTSMÅNED, behov.senesteInntektsmåned())
             behov.harAvtjentVerneplikt?.let { this.putValue(PacketKeys.HAR_AVTJENT_VERNE_PLIKT, it) }
             behov.oppfyllerKravTilFangstOgFisk?.let { this.putValue(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK, it) }
-            behov.bruktInntektsPeriode?.let { this.putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, InntektsPeriode.adapter.toJsonValue(it)!!) }
+            behov.bruktInntektsPeriode?.let { this.putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, it.toJson()) }
             behov.antallBarn?.let { this.putValue(PacketKeys.ANTALL_BARN, it) }
             behov.manueltGrunnlag?.let { this.putValue(PacketKeys.MANUELT_GRUNNLAG, it) }
         }
