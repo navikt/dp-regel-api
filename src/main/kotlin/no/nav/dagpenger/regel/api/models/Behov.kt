@@ -3,7 +3,6 @@ package no.nav.dagpenger.regel.api.models
 import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.moshiInstance
-import no.nav.dagpenger.regel.api.senesteInntektsmåned
 import java.time.LocalDate
 import java.time.YearMonth
 
