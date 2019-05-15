@@ -8,7 +8,6 @@ import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntektMåned
 import org.junit.jupiter.api.Test
 import java.time.YearMonth
 
-
 internal class InntektsPeriodeTest {
 
     @Test
@@ -53,5 +52,4 @@ internal class InntektTest {
             it.manueltRedigert shouldBe true
         }
     }
-
 }

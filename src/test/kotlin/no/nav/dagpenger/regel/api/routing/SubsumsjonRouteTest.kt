@@ -13,11 +13,9 @@ import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Faktum
-import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.time.YearMonth
 
 internal class SubsumsjonRouteTest {
     @Test
