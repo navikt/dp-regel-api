@@ -17,6 +17,7 @@ repositories {
     jcenter()
     maven("http://packages.confluent.io/maven/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://jitpack.io")
 }
 
 application {
@@ -28,7 +29,7 @@ java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 }
-val ktorVersion = "1.1.1"
+val ktorVersion = "1.2.0"
 val kotlinLoggingVersion = "1.6.22"
 val log4j2Version = "2.11.1"
 val jupiterVersion = "5.3.2"
@@ -49,8 +50,8 @@ val prometheusVersion = "0.6.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("no.nav.dagpenger:events:0.3.11-SNAPSHOT")
-    implementation("no.nav.dagpenger:streams:0.3.3-SNAPSHOT")
+    implementation("com.github.navikt:dagpenger-events:2019.05.20-11.56.33cd4c73a439")
+    implementation("com.github.navikt:dagpenger-streams:2019.05.20-12.02.83ff2b7cb7f6")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")
