@@ -73,7 +73,6 @@ pipeline {
           when { branch 'master' }
           steps {
 
-
             sh label: 'Deploy with kubectl', script: """
               kubectl config use-context dev-${env.ZONE}
               kubectl apply -f ./nais/nais-dev-deploy.yaml --wait
@@ -81,6 +80,17 @@ pipeline {
             """
 
             archiveArtifacts artifacts: 'nais/nais-dev-deploy.yaml', fingerprint: true
+          }
+        }
+
+        stage('Deploy to pre-production, namespace dp') {
+          when { branch 'one_route' }
+          steps {
+            sh label: 'Deploy with kubectl', script: """
+              kubectl config use-context dev-${env.ZONE}
+              kubectl apply -f ./nais/nais-dev-deploy.yaml --wait
+              kubectl rollout status -w deployment/${APPLICATION_NAME}
+            """
           }
         }
 

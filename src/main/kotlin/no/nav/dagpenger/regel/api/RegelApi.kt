@@ -36,7 +36,7 @@ import no.nav.dagpenger.regel.api.streams.producerConfig
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 
-val APPLICATION_NAME = "dp-regel-api"
+val APPLICATION_NAME = "dp-regel-api-branch"
 
 fun main() {
     val config = Configuration()
