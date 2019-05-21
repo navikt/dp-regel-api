@@ -2,8 +2,8 @@ package no.nav.dagpenger.regel.api.models
 
 import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.regel.api.moshiInstance
 import no.nav.dagpenger.regel.api.models.Faktum.Mapper.faktumFrom
+import no.nav.dagpenger.regel.api.moshiInstance
 
 internal data class Subsumsjon(
     val id: String,
@@ -40,13 +40,13 @@ internal data class Subsumsjon(
 //todo Remove once "minsteinntektInntektsPerioder" is part of the result and return the map
 internal fun minsteinntektResultatFrom(packet: Packet): Map<String, Any>? =
     mapFrom(PacketKeys.MINSTEINNTEKT_RESULTAT, packet)?.toMutableMap()?.apply {
-        put(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER, packet.getMapValue(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER))
+        put(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER, packet.getObjectValue(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER) { any -> any })
     }?.toMap()
 
 //todo Remove once "grunnlagInntektsPerioder" is part of the result and return the map
 internal fun grunnlagResultatFrom(packet: Packet): Map<String, Any>? =
     mapFrom(PacketKeys.GRUNNLAG_RESULTAT, packet)?.toMutableMap()?.apply {
-        put(PacketKeys.GRUNNLAG_INNTEKTSPERIODER, packet.getMapValue(PacketKeys.GRUNNLAG_INNTEKTSPERIODER))
+        put(PacketKeys.GRUNNLAG_INNTEKTSPERIODER, packet.getObjectValue(PacketKeys.GRUNNLAG_INNTEKTSPERIODER) { any -> any })
     }?.toMap()
 
 internal fun mapFrom(packetKey: String, packet: Packet): Map<String, Any>? =
