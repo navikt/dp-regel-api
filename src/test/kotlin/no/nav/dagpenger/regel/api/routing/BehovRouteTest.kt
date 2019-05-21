@@ -123,3 +123,20 @@ class BehovRouteTest {
         }
     }
 }
+
+internal class BehovRequestMappingTest {
+    @Test
+    fun `Add antallBarn to behov if not present in request`() {
+        val behov = mapRequestToBehov(BehovRequest(
+            aktorId = "aktorId",
+            vedtakId = 1,
+            beregningsdato = LocalDate.of(2019, 11, 7),
+            harAvtjentVerneplikt = null,
+            oppfyllerKravTilFangstOgFisk = null,
+            bruktInntektsPeriode = null,
+            manueltGrunnlag = null,
+            antallBarn = null
+        ))
+        behov.antallBarn shouldBe 0
+    }
+}

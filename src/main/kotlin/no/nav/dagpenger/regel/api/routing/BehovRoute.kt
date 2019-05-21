@@ -50,7 +50,7 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
 
 private data class StatusResponse(val status: String)
 
-private fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
+internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
     aktørId = request.aktorId,
     vedtakId = request.vedtakId,
     beregningsDato = request.beregningsdato,
@@ -58,10 +58,10 @@ private fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
     oppfyllerKravTilFangstOgFisk = request.oppfyllerKravTilFangstOgFisk,
     bruktInntektsPeriode = request.bruktInntektsPeriode,
     manueltGrunnlag = request.manueltGrunnlag,
-    antallBarn = request.antallBarn
+    antallBarn = request.antallBarn ?: 0
 )
 
-private data class BehovRequest(
+internal data class BehovRequest(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
