@@ -108,7 +108,7 @@ class KafkaDagpengerBehovConsumer(
                 else -> LOGGER.info("Ignoring behov with id ${behov.behovId}")
             }
         } catch (e: RuntimeException) {
-            //todo I am ashamed of myself
+            // todo I am ashamed of myself
             LOGGER.error { "Error for behov: ${behov.behovId}. Error: $e" }
         }
     }
