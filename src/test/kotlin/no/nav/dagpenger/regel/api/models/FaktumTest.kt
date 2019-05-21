@@ -9,7 +9,11 @@ internal class FaktumTest {
     @Test
     fun `Mapping from  Packet to Faktum`() {
         val packet = Behov("behovId", "aktørId", 1, LocalDate.of(2011, 7, 22), true, true, InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7)), 1, 1).toPacket().apply {
-            this.putValue(PacketKeys.INNTEKT, """{"inntektsId": "inntektsId",  "inntektsListe":[]}""")
+            this.putValue(PacketKeys.INNTEKT, mapOf(
+                Pair("inntektsId", "inntektsId"),
+                Pair("inntektsListe", listOf<String>()),
+                Pair("manueltRedigert", true))
+            )
         }
 
         Faktum.faktumFrom(packet).let {

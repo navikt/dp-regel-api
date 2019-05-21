@@ -15,14 +15,22 @@ internal class InntektsPeriodeTest {
     @Test
     fun `Mapping to JSON`() {
         InntektsPeriode(YearMonth.of(2019, 1), YearMonth.of(2019, 2)).toJson().let {
-            it shouldBe """{"førsteMåned":"2019-01","sisteMåned":"2019-02"}"""
+            val jsonMap = it as? Map<*, *>
+
+            jsonMap shouldNotBe null
+            jsonMap?.get("førsteMåned") shouldBe "2019-01"
+            jsonMap?.get("sisteMåned") shouldBe "2019-02"
         }
     }
 
     @Test
     fun `Mapping from Packet`() {
         val inntektsPeriode = Packet().apply {
-            putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, """{"førsteMåned":"2019-01","sisteMåned":"2019-02"}""")
+            putValue(PacketKeys.BRUKT_INNTEKTSPERIODE,
+                mapOf(
+                    Pair("førsteMåned", "2019-01"),
+                    Pair("sisteMåned", "2019-02")
+                ))
         }.let { InntektsPeriode.fromPacket(it) }
 
         inntektsPeriode shouldNotBe null
@@ -45,7 +53,13 @@ internal class InntektTest {
 
     @Test
     fun `Mapping from Packet`() {
-        val inntekt = inntektFrom(Packet().apply { putValue(PacketKeys.INNTEKT, """{"inntektsId":"id", "inntektsListe":[],"manueltRedigert": true }""") })
+        val inntekt = inntektFrom(Packet().apply {
+            putValue(PacketKeys.INNTEKT, mapOf(
+                Pair("inntektsId", "id"),
+                Pair("inntektsListe", listOf<String>()),
+                Pair("manueltRedigert", true))
+            )
+        })
 
         inntekt shouldNotBe null
         inntekt?.let {

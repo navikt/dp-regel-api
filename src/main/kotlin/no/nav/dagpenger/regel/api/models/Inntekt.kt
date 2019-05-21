@@ -21,17 +21,17 @@ internal data class InntektsPeriode(
         private val adapter = moshiInstance.adapter<InntektsPeriode>(InntektsPeriode::class.java)
 
         fun fromPacket(packet: Packet): InntektsPeriode? = packet.getNullableObjectValue(PacketKeys.BRUKT_INNTEKTSPERIODE) { json ->
-            adapter.fromJson(json as String)
+            adapter.fromJsonValue(json)
         }
 
-        fun toJson(inntektsPeriode: InntektsPeriode) = adapter.toJson(inntektsPeriode)
+        fun toJson(inntektsPeriode: InntektsPeriode) = adapter.toJsonValue(inntektsPeriode)!!
     }
 
-    fun toJson(): String = toJson(this)
+    fun toJson(): Any = toJson(this)
 }
 
 internal fun inntektFrom(packet: Packet): Inntekt? = packet.getNullableObjectValue(PacketKeys.INNTEKT) { json ->
-    moshiInstance.adapter<Inntekt>(Inntekt::class.java).fromJson(json as String)
+    moshiInstance.adapter<Inntekt>(Inntekt::class.java).fromJsonValue(json)
 }
 
 internal fun Inntekt.harAvvik(): Boolean = this.inntektsListe.any { it.harAvvik ?: false }
