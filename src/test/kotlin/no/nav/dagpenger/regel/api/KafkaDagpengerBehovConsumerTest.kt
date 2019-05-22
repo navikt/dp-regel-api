@@ -51,6 +51,10 @@ class KafkaDagpengerBehovConsumerTest {
             Random().nextInt(),
             LocalDate.now(),
             inntektV1 = Inntekt("", emptyList()),
+            bruktInntektsPeriode = BruktInntektsPeriode(
+                YearMonth.now(),
+                YearMonth.now()
+            ),
             minsteinntektResultat = MinsteinntektResultat(
                 "123",
                 "minsteinntektSubsumsjon",
@@ -106,6 +110,7 @@ class KafkaDagpengerBehovConsumerTest {
         with(slot.captured) {
             subsumsjonsId shouldBe "minsteinntektSubsumsjon"
             inntekt.size shouldBe 3
+            faktum.bruktInntektsPeriode shouldNotBe null
         }
     }
 
@@ -258,6 +263,10 @@ class KafkaDagpengerBehovConsumerTest {
             Random().nextInt(),
             LocalDate.now(),
             inntektV1 = Inntekt("", emptyList()),
+            bruktInntektsPeriode = BruktInntektsPeriode(
+                YearMonth.now(),
+                YearMonth.now()
+            ),
             periodeResultat = PeriodeResultat(
                 "123",
                 "periodeSubsumsjon",
@@ -288,6 +297,7 @@ class KafkaDagpengerBehovConsumerTest {
 
         with(slot.captured) {
             subsumsjonsId shouldBe "periodeSubsumsjon"
+            faktum.bruktInntektsPeriode shouldNotBe null
         }
     }
 
