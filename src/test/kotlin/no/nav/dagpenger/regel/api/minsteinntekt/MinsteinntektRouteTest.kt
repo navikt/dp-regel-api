@@ -10,11 +10,14 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.Status
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.MinsteinntektSubsumsjon
 import no.nav.dagpenger.regel.api.routes.MockApi
 import org.junit.jupiter.api.Test
 
@@ -58,6 +61,15 @@ class MinsteinntektRouteTest {
     @Test
     fun `Subpaths subsumsjon and status are present`() {
         val storeMock = mockk<SubsumsjonStore>(relaxed = true)
+        val subsumsjon = mockk<MinsteinntektSubsumsjon>(relaxed = true)
+
+        every {
+            storeMock.getSubsumsjon("1", Regel.MINSTEINNTEKT)
+        } returns subsumsjon
+
+        every {
+            storeMock.behovStatus("1", Regel.MINSTEINNTEKT)
+        } returns Status.Done("1")
 
         withTestApplication(MockApi(
             subsumsjonStore = storeMock

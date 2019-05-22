@@ -147,7 +147,8 @@ class KafkaDagpengerBehovConsumer(
                 inntektAvvik = inntekt?.harAvvik(),
                 inntektManueltRedigert = inntekt?.manueltRedigert,
                 harAvtjentVerneplikt = behov.harAvtjentVerneplikt,
-                oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk
+                oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk,
+                bruktInntektsPeriode = behov.bruktInntektsPeriode?.let { InntektsPeriode(it.førsteMåned, it.sisteMåned) }
             ),
             MinsteinntektResultat(minsteinntektResultat.oppfyllerMinsteinntekt),
             inntektsperioder // fixme
@@ -171,7 +172,9 @@ class KafkaDagpengerBehovConsumer(
                 inntektAvvik = inntekt?.harAvvik(),
                 inntektManueltRedigert = inntekt?.manueltRedigert,
                 harAvtjentVerneplikt = behov.harAvtjentVerneplikt,
-                oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk
+                oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk,
+                bruktInntektsPeriode = behov.bruktInntektsPeriode?.let { InntektsPeriode(it.førsteMåned, it.sisteMåned) }
+
             ),
             PeriodeResultat(periodeResultat.periodeAntallUker)
         )

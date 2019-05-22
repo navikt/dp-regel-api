@@ -17,8 +17,10 @@ import io.mockk.verify
 import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.Regel
+import no.nav.dagpenger.regel.api.Status
 import no.nav.dagpenger.regel.api.SubsumsjonsBehov
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.SatsSubsumsjon
 import no.nav.dagpenger.regel.api.routes.MockApi
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -80,6 +82,16 @@ class SatsRouteTest {
     @Test
     fun `Subpaths subsumsjon and status are present`() {
         val storeMock = mockk<SubsumsjonStore>(relaxed = true)
+
+        val subsumsjon = mockk<SatsSubsumsjon>(relaxed = true)
+
+        every {
+            storeMock.getSubsumsjon("1", Regel.SATS)
+        } returns subsumsjon
+
+        every {
+            storeMock.behovStatus("2", Regel.SATS)
+        } returns Status.Done("2")
 
         withTestApplication(MockApi(
             subsumsjonStore = storeMock
