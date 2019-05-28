@@ -48,7 +48,6 @@ data class Opptjeningsperiode(val beregningsdato: LocalDate) {
 
     val sisteAvsluttendeKalenderMåned: YearMonth = beregningsdato.minusMonths(månedSubtraksjon).toYearMonth()
 
-
     private fun finnFørsteArbeidsdagEtterRapporterteringsFrist(rapporteringsFrist: LocalDate): LocalDate {
         return if (rapporteringsFrist.erArbeidsdag()) rapporteringsFrist else finnFørsteArbeidsdagEtterRapporterteringsFrist(
             rapporteringsFrist.plusDays(1)
