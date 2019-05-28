@@ -42,7 +42,7 @@ internal data class Behov(
 
     fun toPacket(): Packet = Mapper.toPacket(this)
 
-    fun senesteInntektsmåned(): YearMonth = senesteInntektsmåned(this.beregningsDato)
+    fun senesteInntektsmåned(): YearMonth = Opptjeningsperiode(this.beregningsDato).sisteAvsluttendeKalenderMåned
 }
 
 sealed class Status {
