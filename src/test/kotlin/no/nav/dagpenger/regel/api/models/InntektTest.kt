@@ -6,9 +6,7 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntektMåned
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 import java.time.YearMonth
-import kotlin.test.assertEquals
 
 internal class InntektsPeriodeTest {
 
