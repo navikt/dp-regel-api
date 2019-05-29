@@ -5,7 +5,7 @@ import no.nav.dagpenger.events.Packet
 internal object PacketKeys {
     const val MANUELT_GRUNNLAG = "manueltGrunnlag"
     const val ANTALL_BARN = "antallBarn"
-    const val HAR_AVTJENT_VERNE_PLIKT = "harAvtjentVernePlikt"
+    const val HAR_AVTJENT_VERNE_PLIKT = "harAvtjentVerneplikt"
     const val BEREGNINGS_DATO = "beregningsDato"
     const val VEDTAK_ID = "vedtakId"
     const val AKTØR_ID = "aktørId"
