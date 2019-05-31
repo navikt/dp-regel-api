@@ -4,7 +4,6 @@ import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.moshiInstance
 import java.time.LocalDate
-import java.time.YearMonth
 
 internal data class Behov(
     val behovId: String = ulidGenerator.nextULID(),
@@ -31,7 +30,6 @@ internal data class Behov(
             this.putValue(PacketKeys.AKTØR_ID, behov.aktørId)
             this.putValue(PacketKeys.VEDTAK_ID, behov.vedtakId)
             this.putValue(PacketKeys.BEREGNINGS_DATO, behov.beregningsDato)
-            this.putValue(PacketKeys.SENESTE_INNTEKTSMÅNED, behov.senesteInntektsmåned())
             behov.harAvtjentVerneplikt?.let { this.putValue(PacketKeys.HAR_AVTJENT_VERNE_PLIKT, it) }
             behov.oppfyllerKravTilFangstOgFisk?.let { this.putValue(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK, it) }
             behov.bruktInntektsPeriode?.let { this.putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, it.toJson()) }
@@ -41,8 +39,6 @@ internal data class Behov(
     }
 
     fun toPacket(): Packet = Mapper.toPacket(this)
-
-    fun senesteInntektsmåned(): YearMonth = Opptjeningsperiode(this.beregningsDato).sisteAvsluttendeKalenderMåned
 }
 
 sealed class Status {
