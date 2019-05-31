@@ -19,7 +19,6 @@ data class SubsumsjonsBehov(
     val antallBarn: Int? = null,
     val inntektV1: Inntekt? = null,
     val manueltGrunnlag: Int? = null,
-    val senesteInntektsmåned: YearMonth? = null,
     val bruktInntektsPeriode: BruktInntektsPeriode? = null,
 
     val minsteinntektInntektsPerioder: Set<InntektResponse>? = null,

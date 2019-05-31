@@ -17,7 +17,6 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.routes.getStatus
 import no.nav.dagpenger.regel.api.routes.getSubsumsjon
-import no.nav.dagpenger.regel.api.senesteInntektsmåned
 import no.nav.dagpenger.regel.api.tasks.taskPending
 import no.nav.dagpenger.regel.api.ulidGenerator
 import java.time.LocalDate
@@ -52,7 +51,6 @@ fun mapRequestToBehov(request: PeriodeRequestParametere) = SubsumsjonsBehov(
     request.beregningsdato,
     request.harAvtjentVerneplikt,
     request.oppfyllerKravTilFangstOgFisk,
-    senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
     bruktInntektsPeriode = request.bruktInntektsPeriode?.let { BruktInntektsPeriode(it.førsteMåned, it.sisteMåned) }
 )
 
