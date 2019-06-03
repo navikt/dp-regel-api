@@ -50,7 +50,7 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
-            inntektV1 = Inntekt("", emptyList()),
+            inntektV1 = Inntekt("", emptyList(), sisteAvsluttendeKalenderMåned = YearMonth.now()),
             bruktInntektsPeriode = BruktInntektsPeriode(
                 YearMonth.now(),
                 YearMonth.now()
@@ -122,7 +122,7 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
-            inntektV1 = Inntekt("", emptyList()),
+            inntektV1 = Inntekt("", emptyList(), sisteAvsluttendeKalenderMåned = YearMonth.now()),
             grunnlagResultat = GrunnlagResultat(
                 "123",
                 "grunnlagSubsumsjon",
@@ -170,7 +170,7 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
-            inntektV1 = Inntekt(inntektsId = "", inntektsListe = emptyList(), manueltRedigert = true),
+            inntektV1 = Inntekt(inntektsId = "", inntektsListe = emptyList(), manueltRedigert = true, sisteAvsluttendeKalenderMåned = YearMonth.now()),
             grunnlagResultat = GrunnlagResultat(
                 "123",
                 "grunnlagSubsumsjon",
@@ -262,7 +262,7 @@ class KafkaDagpengerBehovConsumerTest {
             "12345",
             Random().nextInt(),
             LocalDate.now(),
-            inntektV1 = Inntekt("", emptyList()),
+            inntektV1 = Inntekt("", emptyList(), sisteAvsluttendeKalenderMåned = YearMonth.now()),
             bruktInntektsPeriode = BruktInntektsPeriode(
                 YearMonth.now(),
                 YearMonth.now()
