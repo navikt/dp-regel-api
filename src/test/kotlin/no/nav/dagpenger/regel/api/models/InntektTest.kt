@@ -44,9 +44,9 @@ internal class InntektTest {
         val avvik = KlassifisertInntektMåned(YearMonth.now(), listOf(), true)
         val notAvvik = KlassifisertInntektMåned(YearMonth.now(), listOf(), false)
 
-        Inntekt("id", listOf(avvik, notAvvik)).harAvvik() shouldBe true
-        Inntekt("id", listOf(notAvvik, notAvvik)).harAvvik() shouldBe false
-        Inntekt("id", listOf()).harAvvik() shouldBe false
+        Inntekt("id", listOf(avvik, notAvvik), sisteAvsluttendeKalenderMåned = YearMonth.now()).harAvvik() shouldBe true
+        Inntekt("id", listOf(notAvvik, notAvvik), sisteAvsluttendeKalenderMåned = YearMonth.now()).harAvvik() shouldBe false
+        Inntekt("id", listOf(), sisteAvsluttendeKalenderMåned = YearMonth.now()).harAvvik() shouldBe false
     }
 
     @Test
@@ -55,7 +55,8 @@ internal class InntektTest {
             putValue(PacketKeys.INNTEKT, mapOf(
                 Pair("inntektsId", "id"),
                 Pair("inntektsListe", listOf<String>()),
-                Pair("manueltRedigert", true))
+                Pair("manueltRedigert", true),
+                Pair("sisteAvsluttendeKalenderMåned", YearMonth.now().toString()))
             )
         })
 

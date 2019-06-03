@@ -15,6 +15,7 @@ apply {
 repositories {
     mavenCentral()
     jcenter()
+    maven("https://jitpack.io")
     maven("http://packages.confluent.io/maven/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
 }
@@ -49,8 +50,9 @@ val prometheusVersion = "0.6.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("no.nav.dagpenger:events:0.3.11-SNAPSHOT")
-    implementation("no.nav.dagpenger:streams:0.3.4-SNAPSHOT")
+    implementation("com.github.navikt:dagpenger-events:2019.05.28-13.44.ab5008b3ee50")
+    implementation("com.github.navikt:dagpenger-streams:2019.06.03-21.15.cf80ca7a33d5")
+
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")

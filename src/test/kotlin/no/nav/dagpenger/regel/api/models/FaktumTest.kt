@@ -12,7 +12,8 @@ internal class FaktumTest {
             this.putValue(PacketKeys.INNTEKT, mapOf(
                 Pair("inntektsId", "inntektsId"),
                 Pair("inntektsListe", listOf<String>()),
-                Pair("manueltRedigert", true))
+                Pair("manueltRedigert", true),
+                Pair("sisteAvsluttendeKalenderMåned", YearMonth.now().toString()))
             )
         }
 
