@@ -15,7 +15,6 @@ import no.nav.dagpenger.regel.api.SubsumsjonsBehov
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.routes.getStatus
 import no.nav.dagpenger.regel.api.routes.getSubsumsjon
-import no.nav.dagpenger.regel.api.senesteInntektsmåned
 import no.nav.dagpenger.regel.api.tasks.taskPending
 import no.nav.dagpenger.regel.api.ulidGenerator
 import java.time.LocalDate
@@ -48,7 +47,6 @@ fun mapRequestToBehov(request: SatsRequestParametere) = SubsumsjonsBehov(
     request.aktorId,
     request.vedtakId,
     request.beregningsdato,
-    senesteInntektsmåned = senesteInntektsmåned(request.beregningsdato),
     antallBarn = request.antallBarn,
     manueltGrunnlag = request.manueltGrunnlag,
     harAvtjentVerneplikt = request.harAvtjentVerneplikt,
