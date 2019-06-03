@@ -44,7 +44,7 @@ val vaultJdbcVersion = "1.3.1"
 val kotliqueryVersion = "1.3.0"
 val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
-val mockkVersion = "1.9"
+val mockkVersion = "1.9.3"
 val prometheusVersion = "0.6.0"
 
 dependencies {
