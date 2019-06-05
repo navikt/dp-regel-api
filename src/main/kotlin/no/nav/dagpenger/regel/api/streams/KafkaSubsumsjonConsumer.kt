@@ -4,10 +4,7 @@ import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.APPLICATION_NAME
 import no.nav.dagpenger.regel.api.Configuration
-import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.PacketKeys
-import no.nav.dagpenger.regel.api.models.Status
-import no.nav.dagpenger.regel.api.models.behovId
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.Pond
@@ -20,11 +17,12 @@ private val LOGGER = KotlinLogging.logger {}
 
 internal class KafkaSubsumsjonConsumer(
     private val config: Configuration,
-    private val subsumsjonStore: SubsumsjonStore
+    private val subsumsjonPond: SubsumsjonPond
+
 ) : HealthCheck {
 
     private val streams: KafkaStreams by lazy {
-        KafkaStreams(SubsumsjonPond(subsumsjonStore, subsumsjonPacketStrategies(subsumsjonStore)).buildTopology(), this.getConfig()).apply {
+        KafkaStreams(subsumsjonPond.buildTopology(), this.getConfig()).apply {
             setUncaughtExceptionHandler { _, _ -> System.exit(0) }
         }
     }
@@ -39,29 +37,24 @@ internal class KafkaSubsumsjonConsumer(
     }
 
     override fun status(): HealthStatus =
-            when (streams.state()) {
-                KafkaStreams.State.ERROR -> HealthStatus.DOWN
-                KafkaStreams.State.PENDING_SHUTDOWN -> HealthStatus.DOWN
-                else -> HealthStatus.UP
-            }
+        when (streams.state()) {
+            KafkaStreams.State.ERROR -> HealthStatus.DOWN
+            KafkaStreams.State.PENDING_SHUTDOWN -> HealthStatus.DOWN
+            else -> HealthStatus.UP
+        }
 
     private fun getConfig() = streamConfig(
-            appId = APPLICATION_NAME,
-            bootStapServerUrl = config.kafka.brokers,
-            credential = config.kafka.credential()
+        appId = APPLICATION_NAME,
+        bootStapServerUrl = config.kafka.brokers,
+        credential = config.kafka.credential()
     )
 }
 
-internal class SubsumsjonPond(private val subsumsjonStore: SubsumsjonStore, private val packetStrategies: List<SubsumsjonPacketStrategy>) : Pond() {
+internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacketStrategy>) : Pond() {
     override val SERVICE_APP_ID: String = APPLICATION_NAME
 
     override fun filterPredicates(): List<Predicate<String, Packet>> =
-            listOf(Predicate { _, packet -> packet.hasField(PacketKeys.BEHOV_ID) && behovPending(packet.behovId) })
+        listOf(Predicate { _, packet -> packet.hasField(PacketKeys.BEHOV_ID) })
 
     override fun onPacket(packet: Packet) = packetStrategies.forEach { it.run(packet) }
-
-    private fun behovPending(behovId: String) = runCatching { subsumsjonStore.behovStatus(behovId) }
-            .onFailure { LOGGER.error(it) { "Failed to get status of behov: $behovId" } }
-            .map { it == Status.Pending }
-            .getOrDefault(false)
 }

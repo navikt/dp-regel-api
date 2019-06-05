@@ -32,7 +32,9 @@ import no.nav.dagpenger.regel.api.routing.subsumsjon
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonConsumer
+import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
 import no.nav.dagpenger.regel.api.streams.producerConfig
+import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 
@@ -45,7 +47,7 @@ fun main() {
 
     val subsumsjonStore = PostgresSubsumsjonStore(dataSourceFrom(config))
 
-    val kafkaConsumer = KafkaSubsumsjonConsumer(config, subsumsjonStore).also {
+    val kafkaConsumer = KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
         it.start()
     }
 
