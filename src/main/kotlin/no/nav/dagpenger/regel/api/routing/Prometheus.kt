@@ -1,4 +1,4 @@
-package no.nav.dagpenger.regel.api.monitoring
+package no.nav.dagpenger.regel.api.routing
 
 import io.ktor.application.call
 import io.ktor.http.ContentType

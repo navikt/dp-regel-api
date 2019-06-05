@@ -1,13 +1,13 @@
-package no.nav.dagpenger.regel.api.routes
+package no.nav.dagpenger.regel.api.routing
 
 import io.ktor.application.Application
 import io.mockk.mockk
-import no.nav.dagpenger.regel.api.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.api
-import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
+import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 
-fun MockApi(
+internal fun MockApi(
     subsumsjonStore: SubsumsjonStore = mockk(),
     kafkaDagpengerBehovProducer: DagpengerBehovProducer = mockk(),
     healthChecks: List<HealthCheck> = mockk()

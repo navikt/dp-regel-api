@@ -18,30 +18,25 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.pipeline.PipelineContext
-import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
-import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.db.dataSourceFrom
 import no.nav.dagpenger.regel.api.db.migrate
-import no.nav.dagpenger.regel.api.grunnlag.grunnlag
-import no.nav.dagpenger.regel.api.minsteinntekt.minsteinntekt
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
-import no.nav.dagpenger.regel.api.monitoring.metrics
-import no.nav.dagpenger.regel.api.monitoring.naischecks
-import no.nav.dagpenger.regel.api.periode.periode
-import no.nav.dagpenger.regel.api.sats.sats
+import no.nav.dagpenger.regel.api.routing.metrics
+import no.nav.dagpenger.regel.api.routing.naischecks
+import no.nav.dagpenger.regel.api.db.BehovNotFoundException
+import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
+import no.nav.dagpenger.regel.api.routing.behov
+import no.nav.dagpenger.regel.api.routing.subsumsjon
+import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
+import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
+import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonConsumer
+import no.nav.dagpenger.regel.api.streams.producerConfig
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 
 val APPLICATION_NAME = "dp-regel-api"
-
-enum class Regel {
-    MINSTEINNTEKT,
-    PERIODE,
-    GRUNNLAG,
-    SATS;
-}
 
 fun main() {
     val config = Configuration()
@@ -50,7 +45,7 @@ fun main() {
 
     val subsumsjonStore = PostgresSubsumsjonStore(dataSourceFrom(config))
 
-    val kafkaConsumer = KafkaDagpengerBehovConsumer(config, subsumsjonStore).also {
+    val kafkaConsumer = KafkaSubsumsjonConsumer(config, subsumsjonStore).also {
         it.start()
     }
 
@@ -75,7 +70,7 @@ fun main() {
     })
 }
 
-fun Application.api(
+internal fun Application.api(
     subsumsjonStore: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer,
     healthChecks: List<HealthCheck>
@@ -112,10 +107,8 @@ fun Application.api(
     }
 
     routing {
-        minsteinntekt(subsumsjonStore, kafkaProducer)
-        periode(subsumsjonStore, kafkaProducer)
-        grunnlag(subsumsjonStore, kafkaProducer)
-        sats(subsumsjonStore, kafkaProducer)
+        behov(subsumsjonStore, kafkaProducer)
+        subsumsjon(subsumsjonStore)
         naischecks(healthChecks)
         metrics()
     }

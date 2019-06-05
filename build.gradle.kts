@@ -37,7 +37,7 @@ val kafkaVersion = "2.0.1"
 val confluentVersion = "5.0.2"
 val moshiVersion = "1.8.0"
 val ktorMoshiVersion = "1.0.1"
-val testcontainers_version = "1.10.6"
+val testcontainers_version = "1.11.2"
 val flywayVersion = "6.0.0-beta"
 val hikariVersion = "3.3.1"
 val postgresVersion = "42.2.5"
@@ -45,7 +45,7 @@ val vaultJdbcVersion = "1.3.1"
 val kotliqueryVersion = "1.3.0"
 val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
-val mockkVersion = "1.9"
+val mockkVersion = "1.9.3"
 val prometheusVersion = "0.6.0"
 
 dependencies {
@@ -79,7 +79,6 @@ dependencies {
         exclude(module = "slf4j-simple")
         exclude(module = "slf4j-api")
     }
-    implementation("no.bekk.bekkopen:nocommons:0.8.2")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_log4j2:$prometheusVersion")

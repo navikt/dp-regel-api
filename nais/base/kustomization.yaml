@@ -1,5 +1,5 @@
 # Adds namespace to all resources.
-namespace: default
+namespace: dp
 
 # Labels to add to all resources and selectors.
 commonLabels:
@@ -16,4 +16,3 @@ commonAnnotations:
 # markers ("---").
 resources:
 - nais.yaml
-- alerts.yaml

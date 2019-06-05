@@ -1,24 +1,29 @@
-package no.nav.dagpenger.regel.api
+package no.nav.dagpenger.regel.api.streams
 
 import mu.KotlinLogging
+import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.regel.api.APPLICATION_NAME
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
+import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.streams.KafkaCredential
+import no.nav.dagpenger.streams.Topics
 import no.nav.dagpenger.streams.Topics.DAGPENGER_BEHOV_PACKET_EVENT
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.KafkaException
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
-import org.apache.kafka.common.serialization.StringSerializer
 import java.io.File
 import java.util.Properties
+import java.util.concurrent.Future
 
 private val LOGGER = KotlinLogging.logger {}
 
-fun producerConfig(
+internal fun producerConfig(
     appId: String,
     bootStapServerUrl: String,
     credential: KafkaCredential? = null
@@ -27,8 +32,6 @@ fun producerConfig(
         putAll(
             listOf(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootStapServerUrl,
-                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java.name,
                 ProducerConfig.CLIENT_ID_CONFIG to appId,
                 ProducerConfig.ACKS_CONFIG to "all",
                 ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
@@ -64,10 +67,13 @@ fun producerConfig(
     }
 }
 
-class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProducer, HealthCheck {
+internal interface DagpengerBehovProducer {
+    fun produceEvent(behov: Behov): Future<RecordMetadata>
+}
 
-    private val jsonAdapter = moshiInstance.adapter(SubsumsjonsBehov::class.java)
-    private val kafkaProducer = KafkaProducer<String, String>(kafkaProps)
+internal class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProducer, HealthCheck {
+
+    private val kafkaProducer = KafkaProducer<String, Packet>(kafkaProps, Topics.DAGPENGER_BEHOV_PACKET_EVENT.keySerde.serializer(), Topics.DAGPENGER_BEHOV_PACKET_EVENT.valueSerde.serializer())
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
@@ -88,11 +94,9 @@ class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProduc
         return HealthStatus.UP
     }
 
-    override fun produceEvent(behov: SubsumsjonsBehov) {
-        val behovJson = jsonAdapter.toJson(behov)
-        LOGGER.info { "Producing dagpenger behov $behovJson" }
-        kafkaProducer.send(
-            ProducerRecord(DAGPENGER_BEHOV_PACKET_EVENT.name, behov.behovId, behovJson)
+    override fun produceEvent(behov: Behov): Future<RecordMetadata> {
+        return kafkaProducer.send(
+            ProducerRecord(DAGPENGER_BEHOV_PACKET_EVENT.name, behov.behovId, Behov.toPacket(behov))
         ) { metadata, exception ->
             exception?.let { LOGGER.error { "Failed to produce dagpenger behov" } }
             metadata?.let { LOGGER.info { "Produced -> ${metadata.topic()}  to offset ${metadata.offset()}" } }
