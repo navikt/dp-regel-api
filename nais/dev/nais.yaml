@@ -4,5 +4,5 @@ metadata:
   name: dp-regel-api
 spec:
   ingresses:
-    - "https://dp-regel-api-dp.nais.preprod.local"
+    - "https://dp-regel-api.nais.preprod.local"
 
