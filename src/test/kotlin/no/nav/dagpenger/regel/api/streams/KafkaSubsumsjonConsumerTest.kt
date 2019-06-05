@@ -1,174 +1,98 @@
 package no.nav.dagpenger.regel.api.streams
 
 import io.mockk.Called
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyAll
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.behovId
 import no.nav.dagpenger.streams.Topics
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.test.ConsumerRecordFactory
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 import java.util.Properties
 
 internal class KafkaSubsumsjonConsumerTest {
 
-    companion object {
+    @Test
+    fun `Packet is ignored if behovId is missing`() {
+        val mock = mockk<SubsumsjonPacketStrategy>()
+
+        runTest(mockk(), listOf(mock, mock), Packet()) {
+            verifyAll { mock wasNot Called }
+        }
+    }
+
+    @Test
+    fun `Packet is ignored if behov status is not pending`() {
+        val mock = mockk<SubsumsjonPacketStrategy>()
+        val packetWithBehovId = Packet().apply { this.putValue(PacketKeys.BEHOV_ID, "behovId") }
+        val subsumsjonStore = mockk<SubsumsjonStore>().apply {
+            every { this@apply.behovStatus("behovId") } returns Status.Done("id")
+        }
+
+        runTest(subsumsjonStore, listOf(mock, mock), packetWithBehovId) {
+            verifyAll {
+                subsumsjonStore.behovStatus("behovId")
+                mock wasNot Called
+            }
+        }
+    }
+
+    @Test
+    fun `Packet is handled if behovId is set on packet and behov status is pending`() {
+        val packet = Packet().apply { this.putValue(PacketKeys.BEHOV_ID, "behovId") }
+        val mock = mockk<SubsumsjonPacketStrategy>().apply {
+            every { this@apply.run(match { it.behovId == "behovId" }) } just Runs
+        }
+        val subsumsjonStore = mockk<SubsumsjonStore>().apply {
+            every { this@apply.behovStatus(any()) } returns Status.Pending
+        }
+
+        runTest(subsumsjonStore, listOf(mock, mock), packet) {
+            verify(exactly = 2) { mock.run(match { it.behovId == "behovId" }) }
+        }
+    }
+
+    @Test
+    fun `Ignore Packet if excecption when looking up behov status`() {
+        val packet = Packet().apply { this.putValue(PacketKeys.BEHOV_ID, "behovId") }
+        val mock = mockk<SubsumsjonPacketStrategy>()
+
+        val subsumsjonStore = mockk<SubsumsjonStore>().apply {
+            every { this@apply.behovStatus(any()) } throws BehovNotFoundException("not found")
+        }
+        runTest(subsumsjonStore, listOf(mock, mock), packet) {
+            verifyAll { mock wasNot Called }
+        }
+    }
+
+    private companion object {
         val factory = ConsumerRecordFactory<String, Packet>(
-            Topics.DAGPENGER_BEHOV_PACKET_EVENT.name,
-            Topics.DAGPENGER_BEHOV_PACKET_EVENT.keySerde.serializer(),
-            Topics.DAGPENGER_BEHOV_PACKET_EVENT.valueSerde.serializer()
+                Topics.DAGPENGER_BEHOV_PACKET_EVENT.name,
+                Topics.DAGPENGER_BEHOV_PACKET_EVENT.keySerde.serializer(),
+                Topics.DAGPENGER_BEHOV_PACKET_EVENT.valueSerde.serializer()
         )
 
         val config = Properties().apply {
             this[StreamsConfig.APPLICATION_ID_CONFIG] = "test"
             this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = "dummy:1234"
         }
-    }
 
-    @Test
-    fun `Ignore packets which does not satisfy any rules`() {
-        val subsumsjonStore = mockk<SubsumsjonStore>()
-
-        with(subsumsjonStore, Packet("{}")) {
-            verify { subsumsjonStore wasNot Called }
-        }
-    }
-
-    @Test
-    fun `Packet which satisfies Manuell Grunnlag rules are processed `() {
-        val subsumsjonStore = mockk<SubsumsjonStore>().apply {
-            every { this@apply.insertSubsumsjon(any()) } returns 1
-            every { this@apply.behovStatus("behovId") } returns Status.Pending
-        }
-
-        val packet = Behov("behovId", "aktorId", 1, LocalDate.now()).toPacket().apply {
-            this.putValue(PacketKeys.MANUELT_GRUNNLAG, 2)
-            this.putValue(PacketKeys.GRUNNLAG_RESULTAT, mapOf<String, Any>())
-            this.putValue(PacketKeys.SATS_RESULTAT, mapOf<String, Any>())
-            this.putValue(PacketKeys.GRUNNLAG_INNTEKTSPERIODER, mapOf<String, Any>())
-        }
-
-        with(subsumsjonStore, packet) {
-            verifyAll {
-                subsumsjonStore.insertSubsumsjon(any())
-                subsumsjonStore.behovStatus("behovId")
-            }
-        }
-    }
-
-    @Test
-    fun `Ignore Packages with result allready processed `() {
-        val subsumsjonStore = mockk<SubsumsjonStore>().apply {
-            every { this@apply.behovStatus("behovId") } returns Status.Done("id")
-        }
-
-        val packet = Packet("{}").apply {
-            this.putValue(PacketKeys.BEHOV_ID, "behovId")
-            this.putValue(PacketKeys.MANUELT_GRUNNLAG, 2)
-            this.putValue(PacketKeys.GRUNNLAG_RESULTAT, mapOf<String, Any>())
-            this.putValue(PacketKeys.SATS_RESULTAT, mapOf<String, Any>())
-        }
-
-        with(subsumsjonStore, packet) {
-            verifyAll {
-                subsumsjonStore.behovStatus("behovId")
-            }
-        }
-    }
-
-    @Test
-    fun `Handle missing required packet value behovId gracefully`() {
-        val subsumsjonStore = mockk<SubsumsjonStore>()
-
-        val packet = Packet("{}").apply {
-            this.putValue(PacketKeys.MANUELT_GRUNNLAG, 2)
-            this.putValue(PacketKeys.GRUNNLAG_RESULTAT, mapOf<String, Any>())
-            this.putValue(PacketKeys.SATS_RESULTAT, mapOf<String, Any>())
-        }
-
-        with(subsumsjonStore, packet) {
-            verify { subsumsjonStore wasNot Called }
-        }
-    }
-
-    @Test
-    fun `Handle missing behov gracefully`() {
-        val subsumsjonStore = mockk<SubsumsjonStore>().apply {
-            every { this@apply.behovStatus("behovId") } throws BehovNotFoundException("not found")
-        }
-
-        val packet = Packet("{}").apply {
-            this.putValue(PacketKeys.BEHOV_ID, "behovId")
-            this.putValue(PacketKeys.MANUELT_GRUNNLAG, 2)
-            this.putValue(PacketKeys.GRUNNLAG_RESULTAT, mapOf<String, Any>())
-            this.putValue(PacketKeys.SATS_RESULTAT, mapOf<String, Any>())
-        }
-
-        with(subsumsjonStore, packet) {
-            verifyAll {
-                subsumsjonStore.behovStatus("behovId")
-            }
-        }
-    }
-
-    @Test
-    fun `Handle error gracefull when unable to map from Packet to Subsumsjon `() {
-        val subsumsjonStore = mockk<SubsumsjonStore>().apply {
-            every { this@apply.behovStatus("behovId") } returns Status.Pending
-        }
-
-        val packet = Packet("{}").apply {
-            this.putValue(PacketKeys.BEHOV_ID, "behovId")
-            this.putValue(PacketKeys.MANUELT_GRUNNLAG, 2)
-            this.putValue(PacketKeys.GRUNNLAG_RESULTAT, mapOf<String, Any>())
-            this.putValue(PacketKeys.SATS_RESULTAT, mapOf<String, Any>())
-        }
-
-        with(subsumsjonStore, packet) {
-            verifyAll {
-                subsumsjonStore.behovStatus("behovId")
-            }
-        }
-    }
-
-    @Test
-    fun `Packet which has a full result set is processed`() {
-        val subsumsjonStore = mockk<SubsumsjonStore>().apply {
-            every { this@apply.insertSubsumsjon(any()) } returns 1
-            every { this@apply.behovStatus("behovId") } returns Status.Pending
-        }
-
-        val packet = Behov("behovId", "aktorId", 1, LocalDate.now()).toPacket().apply {
-            this.putValue(PacketKeys.GRUNNLAG_RESULTAT, mapOf<String, Any>())
-            this.putValue(PacketKeys.SATS_RESULTAT, mapOf<String, Any>())
-            this.putValue(PacketKeys.MINSTEINNTEKT_RESULTAT, mapOf<String, Any>())
-            this.putValue(PacketKeys.PERIODE_RESULTAT, mapOf<String, Any>())
-            this.putValue(PacketKeys.GRUNNLAG_INNTEKTSPERIODER, mapOf<String, Any>())
-            this.putValue(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER, mapOf<String, Any>())
-        }
-
-        with(subsumsjonStore, packet) {
-            verifyAll {
-                subsumsjonStore.insertSubsumsjon(any())
-                subsumsjonStore.behovStatus("behovId")
-            }
-        }
-    }
-
-    private fun with(subsumsjonStore: SubsumsjonStore, packet: Packet, testBlock: () -> Unit) {
-        SumsumsjonPond(subsumsjonStore, "test").let {
-            TopologyTestDriver(it.buildTopology(), config).use { topologyTestDriver ->
-                topologyTestDriver.pipeInput(factory.create(packet))
-                testBlock()
+        fun runTest(subsumsjonStore: SubsumsjonStore, strategies: List<SubsumsjonPacketStrategy>, packet: Packet, testBlock: () -> Unit) {
+            SubsumsjonPond(subsumsjonStore, strategies).let {
+                TopologyTestDriver(it.buildTopology(), config).use { topologyTestDriver ->
+                    topologyTestDriver.pipeInput(factory.create(packet))
+                    testBlock()
+                }
             }
         }
     }
