@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 
 private object Kafka {
     val instance by lazy {
-        //See https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility
+        // See https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility
         KafkaContainer("5.0.1").apply { this.start() }
     }
 }

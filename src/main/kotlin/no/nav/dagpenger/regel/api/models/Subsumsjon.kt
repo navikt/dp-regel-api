@@ -37,7 +37,7 @@ internal data class Subsumsjon(
     fun toJson(): String = toJson(this)
 }
 
-//todo Remove once "minsteinntektInntektsPerioder" is part of the result and return the map
+// todo Remove once "minsteinntektInntektsPerioder" is part of the result and return the map
 internal fun minsteinntektResultatFrom(packet: Packet): Map<String, Any>? =
     mapFrom(PacketKeys.MINSTEINNTEKT_RESULTAT, packet)?.toMutableMap()?.apply {
         packet.getNullableObjectValue(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER) { any -> any }?.let {
@@ -45,7 +45,7 @@ internal fun minsteinntektResultatFrom(packet: Packet): Map<String, Any>? =
         }
     }?.toMap()
 
-//todo Remove once "grunnlagInntektsPerioder" is part of the result and return the map
+// todo Remove once "grunnlagInntektsPerioder" is part of the result and return the map
 internal fun grunnlagResultatFrom(packet: Packet): Map<String, Any>? =
     mapFrom(PacketKeys.GRUNNLAG_RESULTAT, packet)?.toMutableMap()?.apply {
         packet.getNullableObjectValue(PacketKeys.GRUNNLAG_INNTEKTSPERIODER) { any -> any }?.let {

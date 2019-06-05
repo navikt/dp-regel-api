@@ -77,7 +77,7 @@ internal class SumsumsjonPond(private val subsumsjonStore: SubsumsjonStore, over
                 else -> LOGGER.info { "Ignoring done subsumsjon. Packet: $packet" }
             }
         }.onFailure { t ->
-            //todo add prometheus counter?
+            // todo add prometheus counter?
             LOGGER.error(t) { "Failure handling packet: $packet" }
         }
     }
