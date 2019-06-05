@@ -21,5 +21,5 @@ internal object PacketKeys {
     const val BRUKT_INNTEKTSPERIODE = "bruktInntektsPeriode"
 }
 
-internal fun Packet.getBehovId(): String =
-    this.getStringValue(PacketKeys.BEHOV_ID)
+internal val Packet.behovId: String
+    get() = this.getStringValue(PacketKeys.BEHOV_ID)
