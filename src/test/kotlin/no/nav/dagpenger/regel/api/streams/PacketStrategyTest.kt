@@ -2,9 +2,12 @@ package no.nav.dagpenger.regel.api.streams
 
 import io.kotlintest.shouldBe
 import io.mockk.Called
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.unmockkAll
 import io.mockk.verifyAll
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.Problem
@@ -55,6 +58,8 @@ internal class SuccessStrategyTest {
             subsumsjonStore.insertSubsumsjon(subsumsjon)
             subsumsjonStore.behovStatus(pendingBehov.behovId)
         }
+
+        unmockkAll()
     }
 
     @Test
@@ -72,14 +77,32 @@ internal class ManuellGrunnlagStrategyTest {
     private val thing = Any()
 
     @Test
-    internal fun `Criteria for handling packets`() {
-        ManuellGrunnlagStrategy(SuccessStrategy(storeMock)).shouldHandle(pendingBehov) shouldBe false
-        ManuellGrunnlagStrategy(SuccessStrategy(storeMock)).shouldHandle(Packet().apply {
-            this.putValue(PacketKeys.BEHOV_ID, pendingBehov.behovId)
+    internal fun `Should delegate to SuccessStrategy if criterias are matched`() {
+        val packet = Packet().apply {
             this.putValue(PacketKeys.MANUELT_GRUNNLAG, thing)
             this.putValue(PacketKeys.GRUNNLAG_RESULTAT, thing)
             this.putValue(PacketKeys.SATS_RESULTAT, thing)
-        }) shouldBe true
+        }
+        val successStrategy = mockk<SuccessStrategy>().apply {
+            every { this@apply.handle(packet) } just Runs
+            every { this@apply.shouldHandle(packet) } returns true
+        }
+
+        ManuellGrunnlagStrategy(successStrategy).run(packet)
+
+        verifyAll {
+            successStrategy.handle(packet)
+            successStrategy.shouldHandle(packet)
+        }
+    }
+
+    @Test
+    internal fun `Do nothing if criterias are not met`() {
+        val successStrategy = mockk<SuccessStrategy>()
+
+        ManuellGrunnlagStrategy(successStrategy).run(Packet())
+
+        verifyAll { successStrategy wasNot Called }
     }
 }
 
@@ -87,14 +110,32 @@ internal class CompleteStrategyTest {
     private val thing = Any()
 
     @Test
-    internal fun `Criteria for handling packets`() {
-        CompleteResultStrategy(SuccessStrategy(storeMock)).shouldHandle(pendingBehov) shouldBe false
-        CompleteResultStrategy(SuccessStrategy(storeMock)).shouldHandle(Packet().apply {
-            this.putValue(PacketKeys.BEHOV_ID, pendingBehov.behovId)
+    internal fun `Should delegate to SuccessStrategy if criterias are matched`() {
+        val packet = Packet().apply {
             this.putValue(PacketKeys.GRUNNLAG_RESULTAT, thing)
             this.putValue(PacketKeys.SATS_RESULTAT, thing)
-            this.putValue(PacketKeys.MINSTEINNTEKT_RESULTAT, thing)
             this.putValue(PacketKeys.PERIODE_RESULTAT, thing)
-        }) shouldBe true
+            this.putValue(PacketKeys.MINSTEINNTEKT_RESULTAT, thing)
+        }
+        val successStrategy = mockk<SuccessStrategy>().apply {
+            every { this@apply.shouldHandle(packet) } returns true
+            every { this@apply.handle(packet) } just Runs
+        }
+
+        CompleteResultStrategy(successStrategy).run(packet)
+
+        verifyAll {
+            successStrategy.handle(packet)
+            successStrategy.shouldHandle(packet)
+        }
+    }
+
+    @Test
+    internal fun `Do nothing if criterias are not met`() {
+        val successStrategy = mockk<SuccessStrategy>()
+
+        CompleteResultStrategy(successStrategy).run(Packet())
+
+        verifyAll { successStrategy wasNot Called }
     }
 }
