@@ -26,8 +26,8 @@ internal interface SubsumsjonPacketStrategy {
     }
 }
 
-internal class SuccessStrategy(private val subsumsjonStore: SubsumsjonStore) : SubsumsjonPacketStrategy {
-    override fun shouldHandle(packet: Packet): Boolean = !packet.hasProblem() && behovPending(packet.behovId)
+internal class PendingBehovStrategy(private val subsumsjonStore: SubsumsjonStore) : SubsumsjonPacketStrategy {
+    override fun shouldHandle(packet: Packet): Boolean = behovPending(packet.behovId)
 
     override fun handle(packet: Packet) {
         runCatching { subsumsjonStore.insertSubsumsjon(subsumsjonFrom(packet)) }
@@ -40,6 +40,12 @@ internal class SuccessStrategy(private val subsumsjonStore: SubsumsjonStore) : S
         .onFailure { LOGGER.error(it) { "Failed to get status of behov: $behovId" } }
         .map { it == Status.Pending }
         .getOrDefault(false)
+}
+
+internal class SuccessStrategy(private val delegate: PendingBehovStrategy) : SubsumsjonPacketStrategy {
+    override fun handle(packet: Packet) = delegate.handle(packet)
+
+    override fun shouldHandle(packet: Packet): Boolean = !packet.hasProblem() && delegate.shouldHandle(packet)
 }
 
 internal class CompleteResultStrategy(private val delegate: SuccessStrategy) : SubsumsjonPacketStrategy {
@@ -56,16 +62,17 @@ internal class ManuellGrunnlagStrategy(private val delegate: SuccessStrategy) : 
         delegate.shouldHandle(packet)
 }
 
-internal class ProblemStrategy : SubsumsjonPacketStrategy {
-    override fun shouldHandle(packet: Packet) = packet.hasProblem()
-    override fun handle(packet: Packet) {
-        // todo LOg for now
-        LOGGER.error { "Packet has problem  : ${packet.getProblem()}" }
-    }
+internal class ProblemStrategy(private val delegate: PendingBehovStrategy) : SubsumsjonPacketStrategy {
+    override fun shouldHandle(packet: Packet) = packet.hasProblem() && delegate.shouldHandle(packet)
+    override fun handle(packet: Packet) = delegate.handle(packet)
 }
 
-internal fun subsumsjonPacketStrategies(subsumsjonStore: SubsumsjonStore): List<SubsumsjonPacketStrategy> = listOf(
-    ProblemStrategy(),
-    ManuellGrunnlagStrategy(SuccessStrategy(subsumsjonStore)),
-    CompleteResultStrategy(SuccessStrategy(subsumsjonStore))
-)
+internal fun subsumsjonPacketStrategies(subsumsjonStore: SubsumsjonStore): List<SubsumsjonPacketStrategy> {
+    val pendingBehovStrategy = PendingBehovStrategy(subsumsjonStore)
+    val successStrategy = SuccessStrategy(pendingBehovStrategy)
+    return listOf(
+        ProblemStrategy(pendingBehovStrategy),
+        ManuellGrunnlagStrategy(successStrategy),
+        CompleteResultStrategy(successStrategy)
+    )
+}

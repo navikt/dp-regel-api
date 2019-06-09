@@ -19,29 +19,21 @@ import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.behovId
 import org.junit.jupiter.api.Test
 
-private val pendingBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "behovId") }
-private val doneBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "invalid") }
-private val notFoundBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "notfound") }
-private val problemPacket = Packet().apply {
-    addProblem(Problem(title = "problem"))
-    putValue(PacketKeys.BEHOV_ID, "behovId")
-}
-
-private val storeMock
-    get() = mockk<SubsumsjonStore>().apply {
+internal class PendingBehovStrategyTest {
+    private val pendingBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "behovId") }
+    private val doneBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "invalid") }
+    private val notFoundBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "notfound") }
+    private val storeMock = mockk<SubsumsjonStore>().apply {
         every { this@apply.behovStatus(pendingBehov.behovId) } returns Status.Pending
         every { this@apply.behovStatus(doneBehov.behovId) } returns Status.Done("id")
         every { this@apply.behovStatus(notFoundBehov.behovId) } throws BehovNotFoundException("notfound")
     }
 
-internal class SuccessStrategyTest {
-
     @Test
     internal fun `Criteria for handling packets`() {
-        SuccessStrategy(storeMock).shouldHandle(problemPacket) shouldBe false
-        SuccessStrategy(storeMock).shouldHandle(doneBehov) shouldBe false
-        SuccessStrategy(storeMock).shouldHandle(notFoundBehov) shouldBe false
-        SuccessStrategy(storeMock).shouldHandle(pendingBehov) shouldBe true
+        PendingBehovStrategy(storeMock).shouldHandle(doneBehov) shouldBe false
+        PendingBehovStrategy(storeMock).shouldHandle(notFoundBehov) shouldBe false
+        PendingBehovStrategy(storeMock).shouldHandle(pendingBehov) shouldBe true
     }
 
     @Test
@@ -52,7 +44,7 @@ internal class SuccessStrategyTest {
         }
         val subsumsjonStore = storeMock.apply { every { this@apply.insertSubsumsjon(subsumsjon) } returns 1 }
 
-        SuccessStrategy(subsumsjonStore).run(pendingBehov)
+        PendingBehovStrategy(subsumsjonStore).run(pendingBehov)
 
         verifyAll {
             subsumsjonStore.insertSubsumsjon(subsumsjon)
@@ -64,12 +56,68 @@ internal class SuccessStrategyTest {
 
     @Test
     internal fun `Do nothing if should not handle`() {
-        val mock = storeMock
-        SuccessStrategy(mock).run(problemPacket)
+        PendingBehovStrategy(storeMock).run(doneBehov)
 
         verifyAll {
-            mock wasNot Called
+            storeMock.behovStatus(doneBehov.behovId)
         }
+    }
+}
+
+internal class SuccessStrategyTest {
+    @Test
+    fun `Should delegate to PendingBehovStrategy if criterias are matched`() {
+        val packet = Packet()
+
+        val pendingBehovStrategy = mockk<PendingBehovStrategy>().apply {
+            every { this@apply.handle(packet) } just Runs
+            every { this@apply.shouldHandle(packet) } returns true
+        }
+
+        SuccessStrategy(pendingBehovStrategy).run(packet)
+
+        verifyAll {
+            pendingBehovStrategy.handle(packet)
+            pendingBehovStrategy.shouldHandle(packet)
+        }
+    }
+
+    @Test
+    fun `Do nothing if criterias are not met`() {
+        val problemPacket = Packet().apply { addProblem(Problem(title = "problem")) }
+        val pendingBehovStrategy = mockk<PendingBehovStrategy>()
+
+        SuccessStrategy(pendingBehovStrategy).run(problemPacket)
+
+        verifyAll { pendingBehovStrategy wasNot Called }
+    }
+}
+
+internal class ProblemStrategyTest {
+    @Test
+    fun `Should delegate to PendingBehovStrategy if criterias are matched`() {
+        val packet = Packet().apply { addProblem(Problem(title = "problem")) }
+
+        val pendingBehovStrategy = mockk<PendingBehovStrategy>().apply {
+            every { this@apply.handle(packet) } just Runs
+            every { this@apply.shouldHandle(packet) } returns true
+        }
+
+        ProblemStrategy(pendingBehovStrategy).run(packet)
+
+        verifyAll {
+            pendingBehovStrategy.handle(packet)
+            pendingBehovStrategy.shouldHandle(packet)
+        }
+    }
+
+    @Test
+    fun `Do nothing if criterias are not met`() {
+        val pendingBehovStrategy = mockk<PendingBehovStrategy>()
+
+        ProblemStrategy(pendingBehovStrategy).run(Packet())
+
+        verifyAll { pendingBehovStrategy wasNot Called }
     }
 }
 
@@ -77,7 +125,7 @@ internal class ManuellGrunnlagStrategyTest {
     private val thing = Any()
 
     @Test
-    internal fun `Should delegate to SuccessStrategy if criterias are matched`() {
+    fun `Should delegate to SuccessStrategy if criterias are matched`() {
         val packet = Packet().apply {
             this.putValue(PacketKeys.MANUELT_GRUNNLAG, thing)
             this.putValue(PacketKeys.GRUNNLAG_RESULTAT, thing)
@@ -97,7 +145,7 @@ internal class ManuellGrunnlagStrategyTest {
     }
 
     @Test
-    internal fun `Do nothing if criterias are not met`() {
+    fun `Do nothing if criterias are not met`() {
         val successStrategy = mockk<SuccessStrategy>()
 
         ManuellGrunnlagStrategy(successStrategy).run(Packet())
@@ -110,7 +158,7 @@ internal class CompleteStrategyTest {
     private val thing = Any()
 
     @Test
-    internal fun `Should delegate to SuccessStrategy if criterias are matched`() {
+    fun `Should delegate to SuccessStrategy if criterias are matched`() {
         val packet = Packet().apply {
             this.putValue(PacketKeys.GRUNNLAG_RESULTAT, thing)
             this.putValue(PacketKeys.SATS_RESULTAT, thing)
@@ -131,7 +179,7 @@ internal class CompleteStrategyTest {
     }
 
     @Test
-    internal fun `Do nothing if criterias are not met`() {
+    fun `Do nothing if criterias are not met`() {
         val successStrategy = mockk<SuccessStrategy>()
 
         CompleteResultStrategy(successStrategy).run(Packet())
