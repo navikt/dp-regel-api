@@ -27,7 +27,9 @@ internal class SubsumsjonRouteTest {
             mapOf(),
             mapOf(),
             mapOf(),
+            mapOf(),
             mapOf()
+
         )
 
         val storeMock = mockk<SubsumsjonStore>(relaxed = false).apply {

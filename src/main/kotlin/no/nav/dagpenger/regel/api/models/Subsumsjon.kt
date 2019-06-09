@@ -12,7 +12,8 @@ internal data class Subsumsjon(
     val grunnlagResultat: Map<String, Any>?,
     val minsteinntektResultat: Map<String, Any>?,
     val periodeResultat: Map<String, Any>?,
-    val satsResultat: Map<String, Any>?
+    val satsResultat: Map<String, Any>?,
+    val problem: Map<String, Any>?
 
 ) {
     companion object Mapper {
@@ -30,7 +31,8 @@ internal data class Subsumsjon(
                 minsteinntektResultat = minsteinntektResultatFrom(packet),
                 grunnlagResultat = grunnlagResultatFrom(packet),
                 periodeResultat = mapFrom(PacketKeys.PERIODE_RESULTAT, packet),
-                satsResultat = mapFrom(PacketKeys.SATS_RESULTAT, packet)
+                satsResultat = mapFrom(PacketKeys.SATS_RESULTAT, packet),
+                problem = mapFrom(PacketKeys.PROBLEM, packet)
             )
     }
 

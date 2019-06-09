@@ -17,8 +17,9 @@ internal class SubsumsjonTest {
             mapOf(),
             mapOf(),
             mapOf(),
+            mapOf(),
             mapOf()
-        ).toJson() shouldBe """{"id":"id","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{}}"""
+        ).toJson() shouldBe """{"id":"id","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{}}"""
     }
 
     @Test
