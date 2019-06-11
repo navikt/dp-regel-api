@@ -2,6 +2,7 @@ package no.nav.dagpenger.regel.api.models
 
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
+import no.nav.dagpenger.events.Problem
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.YearMonth
@@ -9,7 +10,7 @@ import java.time.YearMonth
 internal class SubsumsjonTest {
 
     @Test
-    fun `Map  to JSON string`() {
+    fun `Map to JSON string`() {
         Subsumsjon(
             "id",
             "behovId",
@@ -18,13 +19,14 @@ internal class SubsumsjonTest {
             mapOf(),
             mapOf(),
             mapOf(),
-            mapOf()
-        ).toJson() shouldBe """{"id":"id","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{}}"""
+            Problem(title = "problem")
+
+        ).toJson() shouldBe """{"id":"id","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}"""
     }
 
     @Test
     fun `Map from JSON string to object`() {
-        val subsumsjon = Subsumsjon.fromJson("""{"id":"id","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09","inntektsId":"inntektsId","harAvtjentVerneplikt":true,"oppfyllerKravTilFangstOgFisk":true,"antallBarn":1,"manueltGrunnlag":0,"bruktInntektsPeriode":{"førsteMåned":"2019-05","sisteMåned":"2019-05"}},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{}}""")
+        val subsumsjon = Subsumsjon.fromJson("""{"id":"id","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09","inntektsId":"inntektsId","harAvtjentVerneplikt":true,"oppfyllerKravTilFangstOgFisk":true,"antallBarn":1,"manueltGrunnlag":0,"bruktInntektsPeriode":{"førsteMåned":"2019-05","sisteMåned":"2019-05"}},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}""")
         subsumsjon shouldNotBe null
 
         subsumsjon?.apply {
@@ -34,6 +36,7 @@ internal class SubsumsjonTest {
             periodeResultat shouldBe mapOf()
             minsteinntektResultat shouldBe mapOf()
             satsResultat shouldBe mapOf()
+            problem shouldNotBe null
         }
 
         subsumsjon?.faktum?.apply {

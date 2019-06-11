@@ -2,6 +2,7 @@ package no.nav.dagpenger.regel.api.models
 
 import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.models.Faktum.Mapper.faktumFrom
 import no.nav.dagpenger.regel.api.moshiInstance
 
@@ -13,7 +14,7 @@ internal data class Subsumsjon(
     val minsteinntektResultat: Map<String, Any>?,
     val periodeResultat: Map<String, Any>?,
     val satsResultat: Map<String, Any>?,
-    val problem: Map<String, Any>?
+    val problem: Problem?
 
 ) {
     companion object Mapper {
@@ -32,7 +33,7 @@ internal data class Subsumsjon(
                 grunnlagResultat = grunnlagResultatFrom(packet),
                 periodeResultat = mapFrom(PacketKeys.PERIODE_RESULTAT, packet),
                 satsResultat = mapFrom(PacketKeys.SATS_RESULTAT, packet),
-                problem = mapFrom(PacketKeys.PROBLEM, packet)
+                problem = packet.getProblem()
             )
     }
 

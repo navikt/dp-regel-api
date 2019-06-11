@@ -10,6 +10,7 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
+import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Faktum
@@ -28,8 +29,7 @@ internal class SubsumsjonRouteTest {
             mapOf(),
             mapOf(),
             mapOf(),
-            mapOf()
-
+            Problem(title = "problem")
         )
 
         val storeMock = mockk<SubsumsjonStore>(relaxed = false).apply {
