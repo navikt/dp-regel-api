@@ -50,7 +50,7 @@ val prometheusVersion = "0.6.0"
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("com.github.navikt:dagpenger-events:2019.06.11-11.27.39e5ab2fe4d2")
+    implementation("com.github.navikt:dagpenger-events:2019.06.12-14.01.4b1e1a663635")
     implementation("com.github.navikt:dagpenger-streams:2019.06.03-21.15.cf80ca7a33d5")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
