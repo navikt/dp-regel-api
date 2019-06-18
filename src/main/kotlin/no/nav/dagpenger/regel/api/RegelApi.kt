@@ -6,6 +6,7 @@ import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.auth.Authentication
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -18,16 +19,18 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.pipeline.PipelineContext
+import no.nav.dagpenger.ktor.auth.apiKeyAuth
+import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
+import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
+import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.db.dataSourceFrom
 import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
+import no.nav.dagpenger.regel.api.routing.behov
 import no.nav.dagpenger.regel.api.routing.metrics
 import no.nav.dagpenger.regel.api.routing.naischecks
-import no.nav.dagpenger.regel.api.db.BehovNotFoundException
-import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
-import no.nav.dagpenger.regel.api.routing.behov
 import no.nav.dagpenger.regel.api.routing.subsumsjon
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
@@ -56,10 +59,13 @@ fun main() {
         config.kafka.brokers,
         config.kafka.credential()))
 
+    val authApiKeyVerifier = AuthApiKeyVerifier(config.auth.secret, config.auth.allowedKeys)
+
     val app = embeddedServer(Netty, port = config.application.httpPort) {
         api(
             subsumsjonStore,
             kafkaProducer,
+            authApiKeyVerifier,
             listOf(subsumsjonStore as HealthCheck, kafkaConsumer as HealthCheck, kafkaProducer as HealthCheck)
         )
     }.also {
@@ -75,9 +81,18 @@ fun main() {
 internal fun Application.api(
     subsumsjonStore: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer,
+    apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     healthChecks: List<HealthCheck>
 ) {
     install(DefaultHeaders)
+
+    install(Authentication) {
+        apiKeyAuth {
+            apiKeyName = "X-API-KEY"
+            validate { creds -> apiAuthApiKeyVerifier.verify(creds) }
+        }
+    }
+
     install(CallLogging) {
         level = Level.INFO
 

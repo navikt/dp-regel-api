@@ -3,6 +3,7 @@ package no.nav.dagpenger.regel.api.routing
 import io.ktor.application.Application
 import io.mockk.mockk
 import no.nav.dagpenger.regel.api.api
+import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
@@ -10,6 +11,7 @@ import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 internal fun MockApi(
     subsumsjonStore: SubsumsjonStore = mockk(),
     kafkaDagpengerBehovProducer: DagpengerBehovProducer = mockk(),
+    authApiKeyVerifier: AuthApiKeyVerifier = mockk(relaxed = true),
     healthChecks: List<HealthCheck> = mockk()
 
 ): Application.() -> Unit {
@@ -17,6 +19,7 @@ internal fun MockApi(
         api(
             subsumsjonStore,
             kafkaDagpengerBehovProducer,
+            authApiKeyVerifier,
             healthChecks
         )
     }
