@@ -5,12 +5,19 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class ConfigurationTest {
+
+    private val defaultProps = mapOf(
+        "auth.secret" to "secret",
+        "auth.allowedKeys" to "secret1, secret2"
+    )
+
     private fun withProps(props: Map<String, String>, test: () -> Unit) {
-        for ((k, v) in props) {
+        val mergedProps = props + defaultProps
+        for ((k, v) in mergedProps) {
             System.getProperties()[k] = v
         }
         test()
-        for ((k, _) in props) {
+        for ((k, _) in mergedProps) {
             System.getProperties().remove(k)
         }
     }

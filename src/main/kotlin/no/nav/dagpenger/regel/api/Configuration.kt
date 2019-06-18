@@ -5,6 +5,7 @@ import com.natpryce.konfig.ConfigurationProperties.Companion.systemProperties
 import com.natpryce.konfig.EnvironmentVariables
 import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
+import com.natpryce.konfig.listType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import no.nav.dagpenger.streams.KafkaCredential
@@ -19,7 +20,9 @@ private val localProperties = ConfigurationMap(
         "vault.mountpath" to "postgresql/dev/",
         "kafka.bootstrap.servers" to "localhost:9092",
         "application.profile" to "LOCAL",
-        "application.httpPort" to "8092"
+        "application.httpPort" to "8092",
+        "auth.secret" to "secret",
+        "auth.allowedKeys" to "secret1, secret2"
     )
 )
 private val devProperties = ConfigurationMap(
@@ -55,12 +58,18 @@ private fun config() = when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getPro
 }
 
 data class Configuration(
+    val auth: Auth = Auth(),
     val database: Database = Database(),
     val vault: Vault = Vault(),
     val kafka: Kafka = Kafka(),
     val application: Application = Application()
 
 ) {
+    data class Auth(
+        val secret: String = config()[Key("auth.secret", stringType)],
+        val allowedKeys: List<String> = config()[Key("auth.allowedKeys", listType(stringType))]
+    )
+
     data class Database(
         val host: String = config()[Key("database.host", stringType)],
         val port: String = config()[Key("database.port", stringType)],
