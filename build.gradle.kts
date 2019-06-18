@@ -49,6 +49,12 @@ val mockkVersion = "1.9.3"
 val prometheusVersion = "0.6.0"
 val dpBibliotekerVersion = "2019.05.21-15.46.697023d907a7"
 
+configurations {
+    this.all {
+        exclude(group = "ch.qos.logback")
+    }
+}
+
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("com.github.navikt.dp-biblioteker:ktor-utils:$dpBibliotekerVersion")
