@@ -82,13 +82,17 @@ dependencies {
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
-    implementation("io.prometheus:simpleclient_log4j2:$prometheusVersion")
+    implementation("io.prometheus:simpleclient_log4j2:$prometheusVersion") {
+        exclude(group = "org.apache.logging.log4j")
+    }
     implementation("no.nav:vault-jdbc:$vaultJdbcVersion") {
         exclude(module = "slf4j-simple")
         exclude(module = "slf4j-api")
     }
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
-    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
+    implementation("org.apache.kafka:kafka-streams:$kafkaVersion") {
+        exclude(group = "org.slf4j")
+    }
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:$log4j2Version")
