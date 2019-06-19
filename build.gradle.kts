@@ -47,7 +47,7 @@ val vaultJavaDriverVersion = "3.1.0"
 val konfigVersion = "1.6.10.0"
 val mockkVersion = "1.9.3"
 val prometheusVersion = "0.6.0"
-val dpBibliotekerVersion = "2019.05.21-15.46.697023d907a7"
+val dpBibliotekerVersion = "2019.06.19-09.38.5466af242e44"
 
 configurations {
     this.all {
