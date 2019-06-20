@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api.routing
 
 import io.ktor.application.call
+import io.ktor.auth.authenticate
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
@@ -19,28 +20,30 @@ import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
 
 internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
-    route("/behov") {
-        post {
-            mapRequestToBehov(call.receive()).apply {
-                store.insertBehov(this)
-                producer.produceEvent(this)
-            }.also {
-                call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
-                call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
+    authenticate() {
+        route("/behov") {
+            post {
+                mapRequestToBehov(call.receive()).apply {
+                    store.insertBehov(this)
+                    producer.produceEvent(this)
+                }.also {
+                    call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
+                    call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
+                }
             }
-        }
 
-        route("/status") {
-            get("/{behovId}") {
-                val behovId = call.parameters["behovid"] ?: throw BadRequestException()
+            route("/status") {
+                get("/{behovId}") {
+                    val behovId = call.parameters["behovid"] ?: throw BadRequestException()
 
-                when (val status = store.behovStatus(behovId)) {
-                    is Status.Done -> {
-                        call.response.header(HttpHeaders.Location, "/subsumsjon/${status.subsumsjonsId}")
-                        call.respond(HttpStatusCode.SeeOther)
-                    }
-                    is Status.Pending -> {
-                        call.respond(StatusResponse("PENDING"))
+                    when (val status = store.behovStatus(behovId)) {
+                        is Status.Done -> {
+                            call.response.header(HttpHeaders.Location, "/subsumsjon/${status.subsumsjonsId}")
+                            call.respond(HttpStatusCode.SeeOther)
+                        }
+                        is Status.Pending -> {
+                            call.respond(StatusResponse("PENDING"))
+                        }
                     }
                 }
             }

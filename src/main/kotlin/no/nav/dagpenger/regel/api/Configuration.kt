@@ -8,6 +8,7 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.listType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
+import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.streams.KafkaCredential
 
 private val localProperties = ConfigurationMap(
@@ -57,7 +58,7 @@ private fun config() = when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getPro
     }
 }
 
-data class Configuration(
+internal data class Configuration(
     val auth: Auth = Auth(),
     val database: Database = Database(),
     val vault: Vault = Vault(),
@@ -67,7 +68,8 @@ data class Configuration(
 ) {
     data class Auth(
         val secret: String = config()[Key("auth.secret", stringType)],
-        val allowedKeys: List<String> = config()[Key("auth.allowedKeys", listType(stringType))]
+        val allowedKeys: List<String> = config()[Key("auth.allowedKeys", listType(stringType))],
+        val authApiKeyVerifier: AuthApiKeyVerifier = AuthApiKeyVerifier(secret, allowedKeys)
     )
 
     data class Database(

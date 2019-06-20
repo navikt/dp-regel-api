@@ -7,7 +7,7 @@ import no.nav.dagpenger.regel.api.Profile
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
 
-fun migrate(config: Configuration): Int {
+internal fun migrate(config: Configuration): Int {
     return when (config.application.profile) {
         Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config)).use { migrate(it) }
         else -> hikariDataSourceWithVaultIntegration(config, Role.ADMIN).use {
@@ -23,12 +23,12 @@ private fun hikariDataSourceWithVaultIntegration(config: Configuration, role: Ro
         "${config.database.name}-$role"
     )
 
-fun dataSourceFrom(config: Configuration): HikariDataSource = when (config.application.profile) {
+internal fun dataSourceFrom(config: Configuration): HikariDataSource = when (config.application.profile) {
     Profile.LOCAL -> HikariDataSource(hikariConfigFrom(config))
     else -> hikariDataSourceWithVaultIntegration(config)
 }
 
-fun hikariConfigFrom(config: Configuration) =
+internal fun hikariConfigFrom(config: Configuration) =
     HikariConfig().apply {
         jdbcUrl = "jdbc:postgresql://${config.database.host}:${config.database.port}/${config.database.name}"
         maximumPoolSize = 3
@@ -40,10 +40,10 @@ fun hikariConfigFrom(config: Configuration) =
         config.database.password?.let { password = it }
     }
 
-fun migrate(dataSource: HikariDataSource, initSql: String = ""): Int =
+internal fun migrate(dataSource: HikariDataSource, initSql: String = ""): Int =
     Flyway.configure().dataSource(dataSource).initSql(initSql).load().migrate()
 
-fun clean(dataSource: HikariDataSource) = Flyway.configure().dataSource(dataSource).load().clean()
+internal fun clean(dataSource: HikariDataSource) = Flyway.configure().dataSource(dataSource).load().clean()
 
 private enum class Role {
     ADMIN, USER;
