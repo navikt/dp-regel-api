@@ -27,6 +27,17 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 class BehovRouteTest {
+
+    @Test
+    fun `401 on unauthorized requests`() {
+        withTestApplication(MockApi()) {
+            handleRequest(HttpMethod.Get, "behov/status/id").response.status() shouldBe HttpStatusCode.Unauthorized
+            handleRequest(HttpMethod.Post, "behov/").response.status() shouldBe HttpStatusCode.Unauthorized
+            handleRequest(HttpMethod.Post, "behov/") { addHeader("X-API-KEY", "notvalid") }
+                .response.status() shouldBe HttpStatusCode.Unauthorized
+        }
+    }
+
     @Test
     fun `Status when behov is done, pending or not found`() {
         val storeMock = mockk<SubsumsjonStore>(relaxed = false)
@@ -38,15 +49,16 @@ class BehovRouteTest {
             subsumsjonStore = storeMock
         )) {
 
-            handleRequest(HttpMethod.Get, "/behov/status/pending")
+            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/pending")
                 .apply {
+
                     response.status() shouldBe HttpStatusCode.OK
                     withClue("Response should be handled") { requestHandled shouldBe true }
                     response.content shouldNotBe null
                     response.content shouldBe """{"status":"PENDING"}"""
                 }
 
-            handleRequest(HttpMethod.Get, "/behov/status/done")
+            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/done")
                 .apply {
                     response.status() shouldBe HttpStatusCode.SeeOther
                     withClue("Response should be handled") { requestHandled shouldBe true }
@@ -55,7 +67,7 @@ class BehovRouteTest {
                 }
 
             shouldThrow<BehovNotFoundException> {
-                handleRequest(HttpMethod.Get, "/behov/status/notfound")
+                handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/notfound")
             }
         }
 
@@ -80,7 +92,7 @@ class BehovRouteTest {
             kafkaMock
         )) {
 
-            handleRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody("""
             {

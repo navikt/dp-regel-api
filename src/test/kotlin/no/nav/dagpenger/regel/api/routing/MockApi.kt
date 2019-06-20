@@ -11,7 +11,7 @@ import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 internal fun MockApi(
     subsumsjonStore: SubsumsjonStore = mockk(),
     kafkaDagpengerBehovProducer: DagpengerBehovProducer = mockk(),
-    authApiKeyVerifier: AuthApiKeyVerifier = mockk(relaxed = true),
+    authVerifier: AuthApiKeyVerifier = authApiKeyVerifier,
     healthChecks: List<HealthCheck> = mockk()
 
 ): Application.() -> Unit {
@@ -19,7 +19,7 @@ internal fun MockApi(
         api(
             subsumsjonStore,
             kafkaDagpengerBehovProducer,
-            authApiKeyVerifier,
+            authVerifier,
             healthChecks
         )
     }

@@ -59,13 +59,11 @@ fun main() {
         config.kafka.brokers,
         config.kafka.credential()))
 
-    val authApiKeyVerifier = AuthApiKeyVerifier(config.auth.secret, config.auth.allowedKeys)
-
     val app = embeddedServer(Netty, port = config.application.httpPort) {
         api(
             subsumsjonStore,
             kafkaProducer,
-            authApiKeyVerifier,
+            config.auth.authApiKeyVerifier,
             listOf(subsumsjonStore as HealthCheck, kafkaConsumer as HealthCheck, kafkaProducer as HealthCheck)
         )
     }.also {
