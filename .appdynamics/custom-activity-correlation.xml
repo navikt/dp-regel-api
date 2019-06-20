@@ -1,0 +1,63 @@
+<activities>
+  <producer>
+    <instrumentation>
+      <class-name>io.netty.handler.codec.http.HttpObjectEncoder</class-name>
+      <method-name>encodeHeaders</method-name>
+      <match-type>MATCHES_CLASS</match-type>
+    </instrumentation>
+    <identifiers>
+      <identifier name="HOST">
+      <data-gatherer-type>POSITION</data-gatherer-type>
+      <position>0</position>
+      <getter-chain>get(Host)</getter-chain>
+      <transformer-type>GETTER_METHODS</transformer-type>
+    </identifier>
+    </identifiers>
+    <correlation>
+      <payload-pointer>
+        <data-gatherer-type>POSITION</data-gatherer-type>
+        <position>0</position>
+        <getter-chain>this</getter-chain>
+        <transformer-type>GETTER_METHODS</transformer-type>
+      </payload-pointer>
+    <payload-operation>
+      <access-type>method</access-type>
+      <access-method>add</access-method>
+      <param-types>java.lang.String, java.lang.Object</param-types>
+    </payload-operation>
+
+  </correlation>
+  </producer>
+
+    <producer in-process="true" activity-type="NettyProcess">
+    <instrumentation>
+      <class-name>io.netty.channel.DefaultChannelPipeline</class-name>
+      <method-name>writeAndFlush</method-name>
+      <match-type>MATCHES_CLASS</match-type>
+    </instrumentation>
+    <correlation>
+      <payload-pointer>
+        <data-gatherer-type>POSITION</data-gatherer-type>
+        <position>0</position>
+        <getter-chain>this</getter-chain>
+        <transformer-type>GETTER_METHODS</transformer-type>
+      </payload-pointer>
+  </correlation>
+  </producer>
+
+    <consumer in-process="true" identify-transaction="true">
+      <instrumentation>
+        <class-name>io.netty.channel.AbstractChannelHandlerContext$WriteAndFlushTask</class-name>
+        <method-name>write</method-name>
+        <match-type>MATCHES_CLASS</match-type>
+      </instrumentation>
+  <correlation>
+    <payload-pointer>
+      <data-gatherer-type>POSITION</data-gatherer-type>
+      <position>1</position>
+      <getter-chain>this</getter-chain>
+      <transformer-type>GETTER_METHODS</transformer-type>
+    </payload-pointer>
+  </correlation>
+  </consumer>
+</activities>
