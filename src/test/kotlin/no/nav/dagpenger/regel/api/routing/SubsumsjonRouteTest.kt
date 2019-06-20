@@ -19,6 +19,16 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 internal class SubsumsjonRouteTest {
+
+    @Test
+    fun `401 on unauthorized requests`() {
+        withTestApplication(MockApi()) {
+            handleRequest(HttpMethod.Get, "subsumsjon/id").response.status() shouldBe HttpStatusCode.Unauthorized
+            handleRequest(HttpMethod.Get, "subsumsjon/id") { addHeader("X-API-KEY", "notvalid") }
+                .response.status() shouldBe HttpStatusCode.Unauthorized
+        }
+    }
+
     @Test
     fun `Returns subsumsjon if found`() {
         val subsumsjon = Subsumsjon(
@@ -40,7 +50,7 @@ internal class SubsumsjonRouteTest {
             subsumsjonStore = storeMock
         )) {
 
-            handleRequest(HttpMethod.Get, "/subsumsjon/subsumsjonsid")
+            handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/subsumsjonsid")
                 .apply {
                     response.status() shouldBe HttpStatusCode.OK
                     response.content shouldNotBe null
@@ -65,7 +75,7 @@ internal class SubsumsjonRouteTest {
             subsumsjonStore = storeMock
         )) {
             shouldThrow<SubsumsjonNotFoundException> {
-                handleRequest(HttpMethod.Get, "/subsumsjon/notfound")
+                handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/notfound")
             }
         }
 
