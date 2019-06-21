@@ -58,7 +58,7 @@ configurations {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("com.github.navikt:dagpenger-events:2019.06.12-14.01.4b1e1a663635")
-    implementation("com.github.navikt:dagpenger-streams:2019.06.20-08.05.8645d72ef62a")
+    implementation("com.github.navikt:dagpenger-streams:2019.06.21-06.51.ec8ab5f89d1a")
     implementation("com.github.navikt.dp-biblioteker:ktor-utils:$dpBibliotekerVersion")
     implementation("io.ktor:ktor-server:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
