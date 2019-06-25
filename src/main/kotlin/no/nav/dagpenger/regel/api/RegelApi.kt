@@ -13,12 +13,17 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.locations.Locations
+import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.util.pipeline.PipelineContext
+import io.micrometer.core.instrument.Clock
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
@@ -105,6 +110,10 @@ internal fun Application.api(
         moshi(moshiInstance)
     }
     install(Locations)
+
+    install(MicrometerMetrics) {
+        registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry.defaultRegistry, Clock.SYSTEM)
+    }
 
     install(StatusPages) {
         exception<BadRequestException> { cause ->
