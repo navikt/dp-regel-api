@@ -33,8 +33,8 @@ internal fun producerConfig(
             listOf(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootStapServerUrl,
                 ProducerConfig.CLIENT_ID_CONFIG to appId,
-                ProducerConfig.ACKS_CONFIG to "all",
-                ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
+                ProducerConfig.ACKS_CONFIG to "1",
+                ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to false,
                 ProducerConfig.RETRIES_CONFIG to Int.MAX_VALUE.toString(),
                 ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION to "5", // kafka 2.0 >= 1.1 so we can keep this as 5 instead of 1
                 ProducerConfig.COMPRESSION_TYPE_CONFIG to "snappy",
