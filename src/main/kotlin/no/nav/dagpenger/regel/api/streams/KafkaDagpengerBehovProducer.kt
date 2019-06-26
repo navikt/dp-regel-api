@@ -99,7 +99,7 @@ internal class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBe
             ProducerRecord(DAGPENGER_BEHOV_PACKET_EVENT.name, behov.behovId, Behov.toPacket(behov))
         ) { metadata, exception ->
             exception?.let { LOGGER.error { "Failed to produce dagpenger behov" } }
-            metadata?.let { LOGGER.info { "Produced -> ${metadata.topic()}  to offset ${metadata.offset()}" } }
+            metadata?.let { LOGGER.info { "Produced dagpenger behov on topic ${metadata.topic()} to offset ${metadata.offset()} with the key ${behov.behovId}" } }
         }
     }
 }
