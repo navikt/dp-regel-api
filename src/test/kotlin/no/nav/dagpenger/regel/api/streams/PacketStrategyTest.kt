@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.streams
 
+import io.kotlintest.matchers.doubles.shouldBeGreaterThan
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.mockk.Called
@@ -80,6 +81,7 @@ internal class PendingBehovStrategyTest {
 
         registry.metricFamilySamples().asSequence().find { it.name == PACKET_PROCESS_TIME_METRIC_NAME }?.let { metric ->
             metric.samples[0].value shouldNotBe null
+            metric.samples[0].value shouldBeGreaterThan 0.0
             metric.samples[0].labelValues[0] shouldBe PendingBehovStrategy::class.java.simpleName
         }
     }

@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 
 private val LOGGER = KotlinLogging.logger {}
 
-const val PACKET_PROCESS_TIME_METRIC_NAME = "packet_process_time_seconds"
+const val PACKET_PROCESS_TIME_METRIC_NAME = "packet_process_time_nanoseconds"
 val packetProcessTimeLatency: Summary = Summary.build()
     .name(PACKET_PROCESS_TIME_METRIC_NAME)
     .quantile(0.5, 0.05) // Add 50th percentile (= median) with 5% tolerated error
@@ -39,7 +39,7 @@ internal interface SubsumsjonPacketStrategy {
             LOGGER.info { "Strategy triggered: $simpleStrategyName" }
             handle(packet)
             started?.let { Duration.between(it, LocalDateTime.now()) }?.let {
-                packetProcessTimeLatency.labels(this.simpleStrategyName).observe(it.seconds.toDouble())
+                packetProcessTimeLatency.labels(this.simpleStrategyName).observe(it.nano.toDouble())
             }
         }
     }
