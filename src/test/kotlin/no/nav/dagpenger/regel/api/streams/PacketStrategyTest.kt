@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api.streams
 
 import io.kotlintest.shouldBe
+import io.kotlintest.shouldNotBe
 import io.mockk.Called
 import io.mockk.Runs
 import io.mockk.every
@@ -9,6 +10,7 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verifyAll
+import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
@@ -60,6 +62,25 @@ internal class PendingBehovStrategyTest {
 
         verifyAll {
             storeMock.behovStatus(doneBehov.behovId)
+        }
+    }
+
+    @Test
+    fun `Should time spent processing a packet through whole processing`() {
+
+        val subsumsjon = mockk<Subsumsjon>()
+        mockkObject(Subsumsjon.Mapper).apply {
+            every { Subsumsjon.subsumsjonFrom(any()) } returns subsumsjon
+        }
+        val subsumsjonStore = storeMock.apply { every { this@apply.insertSubsumsjon(subsumsjon) } returns 1 }
+
+        PendingBehovStrategy(subsumsjonStore).run(pendingBehov)
+
+        val registry = CollectorRegistry.defaultRegistry
+
+        registry.metricFamilySamples().asSequence().find { it.name == PACKET_PROCESS_TIME_METRIC_NAME }?.let { metric ->
+            metric.samples[0].value shouldNotBe null
+            metric.samples[0].labelValues[0] shouldBe PendingBehovStrategy::class.java.simpleName
         }
     }
 }
