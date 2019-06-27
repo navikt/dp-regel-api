@@ -13,7 +13,7 @@ spec:
     enabled: true
     path: /metrics
   replicas:
-    min: 2
+    min: 3
     max: 4
   resources:
     limits:
