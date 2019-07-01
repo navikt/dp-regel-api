@@ -24,7 +24,9 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
+import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
+import no.nav.dagpenger.plain.producerConfig
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
@@ -39,14 +41,14 @@ import no.nav.dagpenger.regel.api.routing.naischecks
 import no.nav.dagpenger.regel.api.routing.subsumsjon
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
-import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonConsumer
 import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
-import no.nav.dagpenger.regel.api.streams.producerConfig
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 
 val APPLICATION_NAME = "dp-regel-api"
+
+private val LOGGER = KotlinLogging.logger {}
 
 fun main() {
     val config = Configuration()
@@ -55,21 +57,22 @@ fun main() {
 
     val subsumsjonStore = PostgresSubsumsjonStore(dataSourceFrom(config))
 
-    val kafkaConsumer = KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
+    val kafkaConsumer = SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), config).also {
+        LOGGER.info { "Starting Subsumsjon Consumer" }
         it.start()
     }
 
     val kafkaProducer = KafkaDagpengerBehovProducer(producerConfig(
-        APPLICATION_NAME,
-        config.kafka.brokers,
-        config.kafka.credential()))
+        clientId = APPLICATION_NAME,
+        bootstrapServers = config.kafka.brokers,
+        credential = config.kafka.credential()))
 
     val app = embeddedServer(Netty, port = config.application.httpPort) {
         api(
             subsumsjonStore,
             kafkaProducer,
             config.auth.authApiKeyVerifier,
-            listOf(subsumsjonStore as HealthCheck, kafkaConsumer as HealthCheck, kafkaProducer as HealthCheck)
+            listOf(subsumsjonStore as HealthCheck)
         )
     }.also {
         it.start(wait = false)
@@ -77,6 +80,7 @@ fun main() {
 
     Runtime.getRuntime().addShutdownHook(Thread {
         kafkaConsumer.stop()
+        kafkaProducer.stop()
         app.stop(10, 60, TimeUnit.SECONDS)
     })
 }

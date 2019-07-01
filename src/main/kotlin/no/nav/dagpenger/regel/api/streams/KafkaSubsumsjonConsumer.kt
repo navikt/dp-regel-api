@@ -1,60 +1,24 @@
 package no.nav.dagpenger.regel.api.streams
 
-import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.plain.PondConsumer
 import no.nav.dagpenger.regel.api.APPLICATION_NAME
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.PacketKeys
-import no.nav.dagpenger.regel.api.monitoring.HealthCheck
-import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import no.nav.dagpenger.streams.Pond
-import no.nav.dagpenger.streams.streamConfig
-import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.kstream.Predicate
-import java.util.concurrent.TimeUnit
+import no.nav.dagpenger.streams.KafkaCredential
+import java.util.Properties
+import java.util.function.Predicate
 
-private val LOGGER = KotlinLogging.logger {}
+internal fun Packet.hasBehovId() = this.hasField(PacketKeys.BEHOV_ID)
 
-internal class KafkaSubsumsjonConsumer(
-    private val config: Configuration,
-    private val subsumsjonPond: SubsumsjonPond
-
-) : HealthCheck {
-
-    private val streams: KafkaStreams by lazy {
-        KafkaStreams(subsumsjonPond.buildTopology(), this.getConfig()).apply {
-            setUncaughtExceptionHandler { _, _ -> System.exit(0) }
-        }
-    }
-
-    fun start() = streams.start().also { LOGGER.info { "Starting up $APPLICATION_NAME kafca consumer" } }
-
-    fun stop() = with(streams) {
-        close(3, TimeUnit.SECONDS)
-        cleanUp()
-    }.also {
-        LOGGER.info { "Shutting down $APPLICATION_NAME kafka consumer" }
-    }
-
-    override fun status(): HealthStatus =
-        when (streams.state()) {
-            KafkaStreams.State.ERROR -> HealthStatus.DOWN
-            KafkaStreams.State.PENDING_SHUTDOWN -> HealthStatus.DOWN
-            else -> HealthStatus.UP
-        }
-
-    private fun getConfig() = streamConfig(
-        appId = APPLICATION_NAME,
-        bootStapServerUrl = config.kafka.brokers,
-        credential = config.kafka.credential()
-    )
-}
-
-internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacketStrategy>) : Pond() {
+internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacketStrategy>, private val configuration: Configuration) : PondConsumer(configuration.kafka.brokers) {
     override val SERVICE_APP_ID: String = APPLICATION_NAME
 
-    override fun filterPredicates(): List<Predicate<String, Packet>> =
-        listOf(Predicate { _, packet -> packet.hasField(PacketKeys.BEHOV_ID) })
+    override fun filterPredicates() = listOf(Predicate<Packet> { p -> p.hasBehovId() })
 
     override fun onPacket(packet: Packet) = packetStrategies.forEach { it.run(packet) }
+
+    override fun getConsumerConfig(credential: KafkaCredential?): Properties {
+        return super.getConsumerConfig(configuration.kafka.credential())
+    }
 }
