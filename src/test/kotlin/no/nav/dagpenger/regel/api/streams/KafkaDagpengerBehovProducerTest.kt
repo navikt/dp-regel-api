@@ -3,7 +3,7 @@ package no.nav.dagpenger.regel.api.streams
 import io.kotlintest.matchers.numerics.shouldBeGreaterThan
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
-import no.nav.dagpenger.plain.producerConfig
+import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.Behov
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
@@ -21,10 +21,8 @@ internal class KafkaDagpengerBehovProducerTest {
 
     @Test
     fun `Produce packet should success`() {
-        KafkaDagpengerBehovProducer(producerConfig(
-            clientId = "APP",
-            bootstrapServers = Kafka.instance.bootstrapServers
-        ))
+        val config = Configuration(kafka = Configuration.Kafka(brokers = Kafka.instance.bootstrapServers))
+        KafkaDagpengerBehovProducer(kafkaProperties(config))
             .apply {
                 val metadata = produceEvent(Behov("behovId", "aktorId", 1, LocalDate.now())).get(5, TimeUnit.SECONDS)
 

@@ -26,7 +26,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
-import no.nav.dagpenger.plain.producerConfig
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
@@ -42,6 +41,7 @@ import no.nav.dagpenger.regel.api.routing.subsumsjon
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
+import no.nav.dagpenger.regel.api.streams.kafkaProperties
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
@@ -62,10 +62,7 @@ fun main() {
         it.start()
     }
 
-    val kafkaProducer = KafkaDagpengerBehovProducer(producerConfig(
-        clientId = APPLICATION_NAME,
-        bootstrapServers = config.kafka.brokers,
-        credential = config.kafka.credential()))
+    val kafkaProducer = KafkaDagpengerBehovProducer(kafkaProperties(config))
 
     val app = embeddedServer(Netty, port = config.application.httpPort) {
         api(
