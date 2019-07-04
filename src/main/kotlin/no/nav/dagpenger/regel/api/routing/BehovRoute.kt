@@ -11,6 +11,7 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
+import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
@@ -19,8 +20,10 @@ import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
 
+private val LOGGER = KotlinLogging.logger {}
+
 internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
-    authenticate() {
+    authenticate {
         route("/behov") {
             post {
                 mapRequestToBehov(call.receive()).apply {
@@ -29,6 +32,8 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
                 }.also {
                     call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
                     call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
+                }.also {
+                    LOGGER.info("Produserte behov ${it.behovId} for vedtak ${it.vedtakId} med beregningsdato ${it.beregningsDato}.")
                 }
             }
 
