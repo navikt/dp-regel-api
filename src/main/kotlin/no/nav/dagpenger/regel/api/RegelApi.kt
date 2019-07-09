@@ -27,6 +27,8 @@ import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
+import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
+import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -34,6 +36,7 @@ import no.nav.dagpenger.regel.api.db.dataSourceFrom
 import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.routing.behov
+import no.nav.dagpenger.regel.api.routing.bruktSubsumsjonRoute
 import no.nav.dagpenger.regel.api.routing.metrics
 import no.nav.dagpenger.regel.api.routing.naischecks
 import no.nav.dagpenger.regel.api.routing.subsumsjon
@@ -52,9 +55,9 @@ fun main() {
     val config = Configuration()
 
     migrate(config)
-
-    val subsumsjonStore = PostgresSubsumsjonStore(dataSourceFrom(config))
-
+    val dataSource = dataSourceFrom(config)
+    val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
+    val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource)
     val kafkaConsumer = KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
         it.start()
     }
@@ -69,7 +72,11 @@ fun main() {
             subsumsjonStore,
             kafkaProducer,
             config.auth.authApiKeyVerifier,
-            listOf(subsumsjonStore as HealthCheck, kafkaConsumer as HealthCheck, kafkaProducer as HealthCheck)
+            listOf(subsumsjonStore as HealthCheck,
+                bruktSubsumsjonStore as HealthCheck,
+                kafkaConsumer as HealthCheck,
+                kafkaProducer as HealthCheck),
+            bruktSubsumsjonStore
         )
     }.also {
         it.start(wait = false)
@@ -85,7 +92,8 @@ internal fun Application.api(
     subsumsjonStore: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
-    healthChecks: List<HealthCheck>
+    healthChecks: List<HealthCheck>,
+    bruktSubsumsjonStore: BruktSubsumsjonStore
 ) {
     install(DefaultHeaders)
 
@@ -133,6 +141,7 @@ internal fun Application.api(
     routing {
         behov(subsumsjonStore, kafkaProducer)
         subsumsjon(subsumsjonStore)
+        bruktSubsumsjonRoute(bruktSubsumsjonStore)
         naischecks(healthChecks)
         metrics()
     }

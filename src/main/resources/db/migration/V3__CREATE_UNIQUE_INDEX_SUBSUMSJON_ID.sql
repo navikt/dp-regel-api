@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_subsumsjon_id ON SUBSUMSJON (id);
