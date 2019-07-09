@@ -19,7 +19,7 @@ apply {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
     maven("http://packages.confluent.io/maven/")
     maven("https://jitpack.io")
 }
@@ -107,11 +107,11 @@ dependencies {
 
 spotless {
     kotlin {
-        ktlint("0.31.0")
+        ktlint(Klint.version)
     }
     kotlinGradle {
         target("*.gradle.kts", "additionalScripts/*.gradle.kts")
-        ktlint("0.31.0")
+        ktlint(Klint.version)
     }
 }
 
