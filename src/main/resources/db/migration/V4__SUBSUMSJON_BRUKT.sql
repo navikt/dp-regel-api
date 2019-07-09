@@ -1,4 +1,3 @@
-CREATE UNIQUE INDEX IF NOT EXISTS uniq_subsumsjon_id ON SUBSUMSJON (id);
 CREATE TABLE IF NOT EXISTS v1_subsumsjon_brukt
 (
     id VARCHAR(64) NOT NULL,
