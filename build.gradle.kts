@@ -91,7 +91,7 @@ dependencies {
 
     runtime(Vault.javaDriver)
 
-    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit5"))
     testImplementation(Ktor.ktorTest)
     testImplementation(Junit5.api)
     testImplementation(Junit5.kotlinRunner)
