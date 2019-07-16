@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api.db
 
 import com.zaxxer.hikari.HikariDataSource
+import io.prometheus.client.Counter
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -12,6 +13,11 @@ import org.postgresql.util.PSQLException
 private val LOGGER = KotlinLogging.logger {}
 
 class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : BruktSubsumsjonStore, HealthCheck {
+    companion object {
+        val insertCounter = Counter.build().name("subsumsjon_brukt_insert")
+            .namespace("no_nav_dagpenger")
+            .help("Hvor mange subsumsjoner fra vedtak lytter").register()
+    }
     override fun status(): HealthStatus {
         return try {
             using(sessionOf(dataSource)) { session ->
@@ -36,7 +42,9 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
                         subsumsjonBrukt.eksternId,
                         "Vedtak", subsumsjonBrukt.arenaTs
                     ).asUpdate
-                )
+                ).also {
+                    insertCounter.inc()
+                }
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message ?: "")
