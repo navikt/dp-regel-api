@@ -6,14 +6,18 @@ import io.kotlintest.shouldThrow
 import io.mockk.mockk
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
-import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.PostgreSQLContainer
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 
 private object PostgresContainer {
@@ -45,7 +49,7 @@ class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(4, migrations, "Wrong number of migrations")
+            assertEquals(6, migrations, "Wrong number of migrations")
         }
     }
 
@@ -174,4 +178,40 @@ class PostgresSubsumsjonStoreTest {
     }
 
     private val subsumsjon = Subsumsjon("subsumsjonId", "behovId", Faktum("aktorId", 1, LocalDate.now()), mapOf(), mapOf(), mapOf(), mapOf(), Problem(title = "problem"))
+}
+
+class PostgresBruktSubsumsjonsStoreTest {
+    @Test
+    fun `successfully inserts BruktSubsumsjon`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                insertBehov(Behov(subsumsjon.behovId, "aktorid", 1, LocalDate.now())) shouldBe 1
+                insertSubsumsjon(subsumsjon) shouldBe 1
+                getSubsumsjon(subsumsjon.id)
+            }
+            with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
+                insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
+            }
+        }
+    }
+
+    @Test
+    fun `successfully fetches inserted BruktSubsumsjon`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                insertBehov(Behov(subsumsjon.behovId, "aktorid", 1, LocalDate.now())) shouldBe 1
+                insertSubsumsjon(subsumsjon) shouldBe 1
+                with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
+                    insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
+                    getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs shouldBe exampleDate.withZoneSameInstant(ZoneId.of("Europe/Oslo")).toArenaTs()
+                }
+            }
+        }
+    }
+    val exampleDate = ZonedDateTime.now(ZoneOffset.UTC).minusHours(6)
+    private val subsumsjon = Subsumsjon("subsumsjonid", "behovId", Faktum("aktorId", 1, LocalDate.now()), mapOf(), mapOf(), mapOf(), mapOf(), Problem(title = "problem"))
+    private val bruktSubsumsjon = SubsumsjonBrukt(subsumsjon.id, "Arena", exampleDate.toArenaTs(), ts = Instant.now().toEpochMilli())
+    fun ZonedDateTime.toArenaTs(): String {
+        return this.format(secondGranularityFormatter)
+    }
 }
