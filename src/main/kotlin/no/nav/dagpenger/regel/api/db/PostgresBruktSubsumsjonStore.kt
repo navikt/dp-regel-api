@@ -12,7 +12,6 @@ import org.postgresql.util.PSQLException
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 private val LOGGER = KotlinLogging.logger {}
@@ -103,13 +102,7 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
 
 val timeStampFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
 val secondGranularityFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-fun String.toZonedDateTime(): ZonedDateTime {
-    return LocalDateTime.parse(this, timeStampFormatter).atZone(ZoneOffset.UTC)
-}
 
 fun String.toInstant(): Instant {
     return LocalDateTime.parse(this, timeStampFormatter).toInstant(ZoneOffset.UTC)
-}
-fun ZonedDateTime.toArenaTs(): String {
-    return this.format(secondGranularityFormatter)
 }
