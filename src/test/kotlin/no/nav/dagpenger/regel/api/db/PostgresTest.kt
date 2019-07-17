@@ -187,7 +187,6 @@ class PostgresBruktSubsumsjonsStoreTest {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 insertBehov(Behov(subsumsjon.behovId, "aktorid", 1, LocalDate.now())) shouldBe 1
                 insertSubsumsjon(subsumsjon) shouldBe 1
-                getSubsumsjon(subsumsjon.id)
             }
             with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
                 insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
