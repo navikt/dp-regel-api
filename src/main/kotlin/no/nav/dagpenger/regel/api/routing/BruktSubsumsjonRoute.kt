@@ -8,9 +8,11 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
+import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonBrukt
 
+val logging = KotlinLogging.logger { }
 internal fun Route.bruktSubsumsjonRoute(store: BruktSubsumsjonStore) {
 
     authenticate {
@@ -19,8 +21,13 @@ internal fun Route.bruktSubsumsjonRoute(store: BruktSubsumsjonStore) {
                 val subsumsjonBrukt = call.receive<SubsumsjonBrukt>()
                 runCatching {
                     store.insertSubsumsjonBrukt(subsumsjonBrukt)
+                }.fold(onSuccess = {
+                    logging.info("Successfully inserted $subsumsjonBrukt")
                     call.respond(HttpStatusCode.Accepted)
-                }.recover { call.respond(HttpStatusCode.InternalServerError) }
+                }, onFailure = { t ->
+                    logging.error("Something went wrong when saving to database", t)
+                    call.respond(HttpStatusCode.InternalServerError)
+                })
             }
         }
     }
