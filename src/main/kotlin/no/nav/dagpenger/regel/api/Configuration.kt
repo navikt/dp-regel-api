@@ -32,7 +32,7 @@ private val devProperties = ConfigurationMap(
         "database.port" to "5432",
         "database.name" to "dp-regel-api-preprod",
         "vault.mountpath" to "postgresql/preprod-fss/",
-        "kafka.bootstrap.servers" to "d26apvl00159.test.local:8443,d26apvl00160.test.local:8443,d26apvl00161.test.local:8443",
+        "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "application.profile" to "DEV",
         "application.httpPort" to "8092"
 
