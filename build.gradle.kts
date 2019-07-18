@@ -143,5 +143,5 @@ tasks.named("jar") {
 }
 
 tasks.named("compileKotlin") {
-    dependsOn("spotlessKotlinCheck", "spotlessKotlinGradle")
+    dependsOn("spotlessCheck")
 }
