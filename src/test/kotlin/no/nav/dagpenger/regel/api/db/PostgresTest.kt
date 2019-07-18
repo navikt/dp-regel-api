@@ -41,7 +41,8 @@ private object DataSource {
 
 private fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
 
-private fun withMigratedDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
+private fun withMigratedDb(test: () -> Unit) =
+    DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
 
 class PostgresTest {
 
@@ -184,10 +185,6 @@ class PostgresBruktSubsumsjonsStoreTest {
     @Test
     fun `successfully inserts BruktSubsumsjon`() {
         withMigratedDb {
-            with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insertBehov(Behov(subsumsjon.behovId, "aktorid", 1, LocalDate.now())) shouldBe 1
-                insertSubsumsjon(subsumsjon) shouldBe 1
-            }
             with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
                 insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
             }
@@ -197,16 +194,26 @@ class PostgresBruktSubsumsjonsStoreTest {
     @Test
     fun `successfully fetches inserted BruktSubsumsjon`() {
         withMigratedDb {
-            with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insertBehov(Behov(subsumsjon.behovId, "aktorid", 1, LocalDate.now())) shouldBe 1
-                insertSubsumsjon(subsumsjon) shouldBe 1
-                with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
-                    insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
-                    getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(secondFormatter)
-                }
+            with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
+                insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
+                getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
+                    secondFormatter
+                )
             }
         }
     }
+
+    @Test
+    fun `trying to insert duplicate ids keeps what's already in the db`() {
+        withMigratedDb {
+            with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
+                insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
+                insertSubsumsjonBrukt(bruktSubsumsjon.copy(eksternId = "arena")) shouldBe 0
+                getSubsumsjonBrukt(bruktSubsumsjon.id)?.eksternId shouldBe "Arena"
+            }
+        }
+    }
+
     val secondFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
     val oslo = ZoneId.of("Europe/Oslo")
     val exampleDate = ZonedDateTime.now(oslo).minusHours(6)

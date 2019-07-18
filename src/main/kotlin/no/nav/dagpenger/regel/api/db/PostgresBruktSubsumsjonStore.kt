@@ -36,7 +36,7 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
                     queryOf(
                         """
                     INSERT INTO v1_subsumsjon_brukt(id, ekstern_id, kontekst, arena_ts) 
-                        VALUES (?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING
                 """.trimIndent(),
                         subsumsjonBrukt.id,
                         subsumsjonBrukt.eksternId,
