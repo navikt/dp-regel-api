@@ -9,12 +9,14 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 val moshiInstance: Moshi = Moshi.Builder()
     .add(YearMonthJsonAdapter())
     .add(LocalDateTimeJsonAdapter())
     .add(LocalDateJsonAdapter())
+    .add(ZonedDateTimeJsonAdapter())
     .add(KotlinJsonAdapterFactory())
     .add(BigDecimalJsonAdapter())
     .add(URIJsonAdapter())
@@ -66,5 +68,16 @@ class BigDecimalJsonAdapter {
     @FromJson
     fun fromJson(json: String): BigDecimal {
         return BigDecimal(json)
+    }
+}
+
+class ZonedDateTimeJsonAdapter {
+    @ToJson
+    fun toJson(zonedDateTime: ZonedDateTime): String {
+        return zonedDateTime.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
+    }
+    @FromJson
+    fun fromJson(json: String): ZonedDateTime {
+        return ZonedDateTime.parse(json)
     }
 }

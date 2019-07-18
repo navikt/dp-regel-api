@@ -40,7 +40,8 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
                 """.trimIndent(),
                         subsumsjonBrukt.id,
                         subsumsjonBrukt.eksternId,
-                        "Vedtak", subsumsjonBrukt.arenaTs
+                        "Vedtak",
+                        subsumsjonBrukt.arenaTs
                     ).asUpdate
                 ).also {
                     insertCounter.inc()
@@ -56,14 +57,14 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
             return using(sessionOf(dataSource)) { session ->
                 session.run(
                     queryOf(
-                        """SELECT * FROM v1_subsumsjon_brukt" +
+                        """SELECT * FROM v1_subsumsjon_brukt
                         WHERE id = ?""".trimMargin(), subsumsjonsId
                     ).map { row ->
                         SubsumsjonBrukt(
                             id = row.string("id"),
                             eksternId = row.string("ekstern_id"),
-                            arenaTs = row.string("arena_ts"),
-                            ts = row.long("created")
+                            arenaTs = row.zonedDateTime("arena_ts"),
+                            ts = row.instant("created").toEpochMilli()
                         )
                     }.asSingle
                 )
@@ -83,7 +84,7 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
                         SubsumsjonBrukt(
                             id = row.string("id"),
                             eksternId = row.string("ekstern_id"),
-                            arenaTs = row.string("arena_ts"),
+                            arenaTs = row.zonedDateTime("arena_ts"),
                             ts = row.long("created")
                         )
                     }.asSingle
