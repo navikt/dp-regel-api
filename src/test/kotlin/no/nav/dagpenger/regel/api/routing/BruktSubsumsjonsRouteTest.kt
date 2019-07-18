@@ -13,8 +13,10 @@ import io.mockk.slot
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.StoreException
 import no.nav.dagpenger.regel.api.db.SubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.isoFormat
 import org.junit.jupiter.api.Test
 import java.time.Instant
+import java.time.ZonedDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -35,12 +37,12 @@ internal class BruktSubsumsjonsRouteTest {
         val storeMock = mockk<BruktSubsumsjonStore>(relaxed = false).apply {
             every { this@apply.insertSubsumsjonBrukt(capture(savedToStore)) } returns 1
         }
-        val now = Instant.now()
+        val now = ZonedDateTime.now()
         val expected = SubsumsjonBrukt(
             id = "someid",
             eksternId = "arenaId",
-            arenaTs = now.toString(),
-            ts = now.toEpochMilli()
+            arenaTs = now,
+            ts = now.toInstant().toEpochMilli()
         )
         withTestApplication(MockApi(
             bruktSubsumsjonStore = storeMock
@@ -50,8 +52,8 @@ internal class BruktSubsumsjonsRouteTest {
                 setBody("""{
                         "id": "someid",
                         "eksternId": "arenaId",
-                        "arenaTs": "$now",
-                        "ts": ${now.toEpochMilli()}
+                        "arenaTs": "${now.format(isoFormat)}",
+                        "ts": ${now.toInstant().toEpochMilli()}
                     }
                 """.trimIndent())
             }.apply {

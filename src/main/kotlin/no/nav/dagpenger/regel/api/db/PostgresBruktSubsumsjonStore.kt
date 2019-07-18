@@ -9,10 +9,6 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PSQLException
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -45,7 +41,7 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
                         subsumsjonBrukt.id,
                         subsumsjonBrukt.eksternId,
                         "Vedtak",
-                        subsumsjonBrukt.arenaTs.toInstant()
+                        subsumsjonBrukt.arenaTs
                     ).asUpdate
                 ).also {
                     insertCounter.inc()
@@ -67,7 +63,7 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
                         SubsumsjonBrukt(
                             id = row.string("id"),
                             eksternId = row.string("ekstern_id"),
-                            arenaTs = row.zonedDateTime("arena_ts").format(secondGranularityFormatter),
+                            arenaTs = row.zonedDateTime("arena_ts"),
                             ts = row.instant("created").toEpochMilli()
                         )
                     }.asSingle
@@ -88,7 +84,7 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
                         SubsumsjonBrukt(
                             id = row.string("id"),
                             eksternId = row.string("ekstern_id"),
-                            arenaTs = row.string("arena_ts"),
+                            arenaTs = row.zonedDateTime("arena_ts"),
                             ts = row.long("created")
                         )
                     }.asSingle
@@ -98,11 +94,4 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
             throw StoreException(p.message ?: "")
         }
     }
-}
-
-val timeStampFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]")
-val secondGranularityFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-
-fun String.toInstant(): Instant {
-    return LocalDateTime.parse(this, timeStampFormatter).toInstant(ZoneOffset.UTC)
 }

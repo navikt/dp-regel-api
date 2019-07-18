@@ -16,8 +16,8 @@ import org.testcontainers.containers.PostgreSQLContainer
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
 
 private object PostgresContainer {
@@ -202,15 +202,14 @@ class PostgresBruktSubsumsjonsStoreTest {
                 insertSubsumsjon(subsumsjon) shouldBe 1
                 with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
                     insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
-                    getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs shouldBe exampleDate.withZoneSameInstant(ZoneId.of("Europe/Oslo")).toArenaTs()
+                    getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(secondFormatter)
                 }
             }
         }
     }
-    val exampleDate = ZonedDateTime.now(ZoneOffset.UTC).minusHours(6)
+    val secondFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+    val oslo = ZoneId.of("Europe/Oslo")
+    val exampleDate = ZonedDateTime.now(oslo).minusHours(6)
     private val subsumsjon = Subsumsjon("subsumsjonid", "behovId", Faktum("aktorId", 1, LocalDate.now()), mapOf(), mapOf(), mapOf(), mapOf(), Problem(title = "problem"))
-    private val bruktSubsumsjon = SubsumsjonBrukt(subsumsjon.id, "Arena", exampleDate.toArenaTs(), ts = Instant.now().toEpochMilli())
-    fun ZonedDateTime.toArenaTs(): String {
-        return this.format(secondGranularityFormatter)
-    }
+    private val bruktSubsumsjon = SubsumsjonBrukt(subsumsjon.id, "Arena", exampleDate, ts = Instant.now().toEpochMilli())
 }
