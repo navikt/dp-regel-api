@@ -1,0 +1,8 @@
+# Ignore everything
+**
+
+# Except shadow jar
+!build/libs/*.jar
+
+## And appdynamics
+!.appdynamics/*

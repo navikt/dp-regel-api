@@ -1,0 +1,582 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Dagpenger Regel API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://dp-regel-api.nais.adeo.no/v1",
+      "description": "Produksjon (bruker ekte data)"
+    },
+    {
+      "url": "https://dp-regel-api.nais.preprod.local/v1",
+      "description": "Test (bruker test data)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Behov"
+    },
+    {
+      "name": "Subsumsjon"
+    }
+  ],
+  "security": [
+    {
+      "stsTokenAuth": []
+    },
+    {
+      "stsOIDC": [
+        "openid"
+      ]
+    }
+  ],
+  "paths": {
+    "/behov": {
+      "post": {
+        "tags": [
+          "Behov"
+        ],
+        "summary": "Opprett nytt behov for dagpenger",
+        "requestBody": {
+          "description": "Hva vi allerede vet om brukerens behov",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BehovRequest"
+              },
+              "examples": {
+                "verneplikt": {
+                  "$ref": "#/components/examples/behovMedVerneplikt"
+                },
+                "medBarn": {
+                  "$ref": "#/components/examples/behovMedBarnOgInntekt"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nytt behov opprettet. Redirecter automatisk til status for behovet.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "self": {
+                      "type": "string",
+                      "example": "/behov/123"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "/behov/123/status"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Location": {
+                "description": "Endepunkt for å sjekke status på behov",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/behov/{id}": {
+      "get": {
+        "operationId": "getBehovById",
+        "tags": [
+          "Behov"
+        ],
+        "summary": "Se et helt behov",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Hvilket behov du vil se på",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saul Goodman",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Behov"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/behov/{id}/status": {
+      "get": {
+        "operationId": "getBehovStatus",
+        "tags": [
+          "Behov"
+        ],
+        "summary": "Gir status på behov",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Hvilket behov du vil vite status på",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "regler",
+            "description": "Liste over regler som må være besvart med subsumsjoner.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Regel"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Behovet (eller reglene du ba om) er ikke ferdige enda",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BehovStatus"
+                }
+              }
+            }
+          },
+          "303": {
+            "description": "Behovet (eller reglene du ba om) er ferdig.",
+            "headers": {
+              "Location": {
+                "description": "URL til ferdig behov",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subsumsjon/{id}": {
+      "get": {
+        "operationId": "getSubsumsjonById",
+        "tags": [
+          "Subsumsjon"
+        ],
+        "summary": "Se en subsumsjon",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Hvilken subsumsjon du vil se på",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saul Goodman",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subsumsjon"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subsumsjon/{id}/vedtakskobling": {
+      "post": {
+        "operationId": "connectSubsumsjonToVedtak",
+        "tags": [
+          "Subsumsjon"
+        ],
+        "summary": "Koble en subsumsjon til et vedtak",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Hvilken subsumsjon du vil knytte",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Hva vi allerede vet om brukerens behov",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vedtakId": {
+                    "$ref": "#/components/schemas/VedtaksId"
+                  },
+                  "utfall": {
+                    "$ref": "#/components/schemas/VedtaksUtfall"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "En nylig opprettet kobling til vedtak. Det bør reflekteres på subsumsjonen også.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vedtakskobling"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Behov": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "03ARZ3SDFKTSV4RRFFQ69G5G23"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "subsumsjoner": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Subsumsjon"
+            }
+          }
+        }
+      },
+      "BehovRequest": {
+        "type": "object",
+        "required": [
+          "aktorId",
+          "vedtakId",
+          "beregningsdato"
+        ],
+        "properties": {
+          "aktorId": {
+            "type": "string",
+            "description": "Identifikasjon av bruker",
+            "example": "01019955667"
+          },
+          "vedtakId": {
+            "type": "integer",
+            "description": "Identifikasjon av dagpengevedtak",
+            "format": "int32",
+            "example": 1234
+          },
+          "beregningsdato": {
+            "type": "string",
+            "description": "Dato beregning skal utføres på bakgrunn av. Regelverk på aktuelt tidspunkt skal benyttes. Inntekter i henhold til gitt dato skal benyttes.",
+            "example": "2019-01-11"
+          },
+          "harAvtjentVerneplikt": {
+            "type": "boolean",
+            "default": false,
+            "description": "Om bruker har avtjent verneplikt minst 3 av de siste 12 måneder."
+          },
+          "oppfyllerKravTilFangstOgFisk": {
+            "type": "boolean",
+            "default": false,
+            "description": "Om bruker oppfyller særvilkårene for fangst og fisk."
+          },
+          "bruktInntektsPeriode": {
+            "type": "object",
+            "default": false,
+            "description": "Om bruker oppfyller særvilkårene for fangst og fisk."
+          },
+          "manueltGrunnlag": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Er grunnlaget allerede kjent, kan det manuelt overstyres ved å sette sum her"
+          },
+          "antallBarn": {
+            "type": "integer",
+            "default": 0,
+            "description": "Antall barn bruker søker barnetillegg for"
+          }
+        }
+      },
+      "BehovStatus": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "03ARZ3SDFKTSV4RRFFQ69G5G23"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "subsumsjoner": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubsumsjonStatus"
+            }
+          }
+        }
+      },
+      "HttpProblem": {
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "status"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "about:blank",
+            "description": "URI referanse [RFC3986] som identifiserer problemtypen. Standard verdi er \"about:blank\""
+          },
+          "title": {
+            "type": "string",
+            "example": "En feil har oppstått ved beregningen",
+            "description": "Tittel, kort oppsummering av problemtypen."
+          },
+          "status": {
+            "type": "integer",
+            "example": 500,
+            "description": "HTTP status-kode [RFC7231] generert av tjenesten der feilen oppstod."
+          },
+          "detail": {
+            "type": "string",
+            "example": "Beregningen feilet - inntektskomponenten svarte ikke",
+            "description": "Menneskelesbar beskrivelse spesifikt til dette problemet"
+          },
+          "instance": {
+            "type": "string",
+            "example": "/inntekt/1234",
+            "description": "URI referanse [RFC3986] som identifiserer den spesifikke ressursen der problemet oppstod"
+          }
+        }
+      },
+      "Regel": {
+        "type": "string",
+        "description": "Identifikator for alle reglene våre",
+        "enum": [
+          "Minsteinntekt",
+          "Foobar"
+        ]
+      },
+      "Status": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "COMPLETE"
+        ]
+      },
+      "Subsumsjon": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/SubsumsjonId"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "regel": {
+            "$ref": "#/components/schemas/Regel"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SubsumsjonMinsteinntekt"
+              },
+              {
+                "$ref": "#/components/schemas/SubsumsjonPeriode"
+              },
+              {
+                "$ref": "#/components/schemas/SubsumsjonGrunnlag"
+              },
+              {
+                "$ref": "#/components/schemas/SubsumsjonSats"
+              }
+            ],
+            "example": {
+              "foo": "bar",
+              "bar": "foo"
+            }
+          }
+        }
+      },
+      "SubsumsjonGrunnlag": {
+        "type": "object",
+        "properties": {
+          "foo": {
+            "type": "string"
+          },
+          "bar": {
+            "type": "string"
+          }
+        }
+      },
+      "SubsumsjonId": {
+        "type": "string",
+        "description": "Identifikator for en subsumsjon",
+        "example": "01ARZ3NDEKTSV4RRFFQ69G5FAV"
+      },
+      "SubsumsjonMinsteinntekt": {
+        "type": "object",
+        "properties": {
+          "foo": {
+            "type": "string",
+            "example": "foo"
+          },
+          "bar": {
+            "type": "string"
+          }
+        }
+      },
+      "SubsumsjonPeriode": {
+        "type": "object",
+        "properties": {
+          "foo": {
+            "type": "string"
+          },
+          "bar": {
+            "type": "string"
+          }
+        }
+      },
+      "SubsumsjonSats": {
+        "type": "object",
+        "properties": {
+          "foo": {
+            "type": "string"
+          },
+          "bar": {
+            "type": "string"
+          }
+        }
+      },
+      "SubsumsjonStatus": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/SubsumsjonId"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "href-self-this-something": {
+            "type": "string",
+            "example": "/subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV"
+          }
+        }
+      },
+      "VedtaksId": {
+        "type": "string",
+        "example": 1234
+      },
+      "Vedtakskobling": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "some-ulid"
+          },
+          "vedtaksId": {
+            "$ref": "#/components/schemas/VedtaksId"
+          },
+          "utfall": {
+            "type": "string",
+            "example": "Innvilget"
+          },
+          "opprettet": {
+            "type": "string",
+            "example": "2004-02-12T15:19:21+00:00"
+          }
+        }
+      },
+      "VedtaksUtfall": {
+        "type": "string",
+        "example": "Innvilget",
+        "enum": [
+          "Innvilget",
+          "Avslått"
+        ]
+      }
+    },
+    "examples": {
+      "behovMedBarnOgInntekt": {
+        "summary": "Behov med 3 barn og alt i orden",
+        "value": {
+          "aktorId": "01019955667",
+          "vedtakId": 1234,
+          "beregningsdato": "2019-01-11",
+          "harAvtjentVerneplikt": false,
+          "oppfyllerKravTilFangstOgFisk": false,
+          "bruktInntektsPeriode": {},
+          "manueltGrunnlag": 0,
+          "antallBarn": 3
+        }
+      },
+      "behovMedVerneplikt": {
+        "summary": "Behov med avtjent verneplikt",
+        "value": {
+          "aktorId": "01019955667",
+          "vedtakId": 1234,
+          "beregningsdato": "2019-01-11",
+          "harAvtjentVerneplikt": false,
+          "oppfyllerKravTilFangstOgFisk": false,
+          "bruktInntektsPeriode": {},
+          "manueltGrunnlag": 0,
+          "antallBarn": 0
+        }
+      }
+    },
+    "headers": {
+      "ExpiresAfter": {
+        "description": "date in UTC when token expires",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "securitySchemes": {
+      "stsOIDC": {
+        "type": "openIdConnect",
+        "openIdConnectUrl": "https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration"
+      },
+      "stsTokenAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Lag OIDC tokens med STS:\n* Prod: <https://security-token-service.nais.adeo.no/>\n* Test: <https://security-token-service.nais.preprod.local/>\n\nTriks for å lage token i CLI: \n\n    DP_TOKEN=$(curl -v --user <SystemBRUKER>:<Passord> \\\n      https://security-token-service.nais.preprod.local/rest/v1/sts/token/\\?grant_type\\=client_credentials\\&scope\\=openid \\\n      | jq -r .access_token)\n"
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+ALTER TABLE V1_SUBSUMSJON_BRUKT DROP CONSTRAINT v1_subsumsjon_brukt_id_fkey;
