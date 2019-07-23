@@ -2,7 +2,7 @@ get:
   operationId: getBehovById
   tags:
     - Behov
-  summary: Se et helt behov
+  summary: Se på et behov
   parameters:
     - in: path
       name: behovId
