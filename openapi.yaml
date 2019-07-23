@@ -28,29 +28,24 @@ paths:
               $ref: '#/components/schemas/BehovRequest'
             examples:
               verneplikt:
-                $ref: '#/components/examples/behovMedVerneplikt'
+                $ref: '#/components/examples/behovRequestMedVerneplikt'
               medBarn:
-                $ref: '#/components/examples/behovMedBarnOgInntekt'
+                $ref: '#/components/examples/behovRequestMedBarnOgInntekt'
       responses:
-        '200':
-          description: Nytt behov opprettet. Redirecter automatisk til status for behovet.
+        '202':
+          description: Nytt behov opprettet. Gir link til status for å følge fremgang på når behovet innfris.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  self:
-                    type: string
-                    example: /behov/123
-                  status:
-                    type: string
-                    example: /behov/123/status
-          headers:
-            Location:
-              description: Endepunkt for å sjekke status på behov
-              schema:
-                type: string
-  '/behov/{id}':
+                  links:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: /behov/03ARZ3SDFKTSV4RRFFQ69G5G23/status
+  '/behov/{behovId}':
     get:
       operationId: getBehovById
       tags:
@@ -58,31 +53,40 @@ paths:
       summary: Se et helt behov
       parameters:
         - in: path
-          name: id
+          name: behovId
           required: true
           description: Hvilket behov du vil se på
           schema:
             type: string
       responses:
         '200':
-          description: Saul Goodman
+          description: Behovet er fiks og flott ferdig. Bør det inneholde data fra POSTen?
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Behov'
-  '/behov/{id}/status':
+        '404':
+          description: 'Behovet er ikke ferdig innfridd enda, og kan ikke vises.'
+  '/behov/{behovId}/status':
     get:
       operationId: getBehovStatus
       tags:
         - Behov
       summary: Gir status på behov
+      description: |
+        Et endepunkt som kan polles regelmessig for å vite om et behov er komplett, eller om et subsett av reglene er komplett.
+
+        Er behovet, eller et subsett av reglene, komplette så settes status til COMPLETE.
+
+        Klienten må så loope gjennom alle subsumsjonene for å hente det den vil.
       parameters:
         - in: path
-          name: id
+          name: behovId
           required: true
           description: Hvilket behov du vil vite status på
           schema:
             type: string
+          example: 03ARZ3SDFKTSV4RRFFQ69G5G23
         - in: query
           name: regler
           description: Liste over regler som må være besvart med subsumsjoner.
@@ -90,21 +94,24 @@ paths:
             type: array
             items:
               $ref: '#/components/schemas/Regel'
+          example:
+            - Minsteinntekt
+            - Grunnlag
       responses:
         '200':
-          description: Behovet (eller reglene du ba om) er ikke ferdige enda
+          description: Status på behovet (eller subsettet av reglene du ba om)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BehovStatus'
-        '303':
-          description: Behovet (eller reglene du ba om) er ferdig.
-          headers:
-            Location:
-              description: URL til ferdig behov
-              schema:
-                type: string
-  '/subsumsjon/{id}':
+              examples:
+                behovPendingUtenSubsumsjoner:
+                  $ref: '#/components/examples/behovPendingUtenSubsumsjoner'
+                behovPendingMedEnSubsumsjon:
+                  $ref: '#/components/examples/behovPendingMedEnSubsumsjon'
+                behovCompleteMedAlleSubsumsjonene:
+                  $ref: '#/components/examples/behovCompleteMedAlleSubsumsjonene'
+  '/subsumsjon/{subsumsjonId}':
     get:
       operationId: getSubsumsjonById
       tags:
@@ -112,7 +119,7 @@ paths:
       summary: Se en subsumsjon
       parameters:
         - in: path
-          name: id
+          name: subsumsjonId
           required: true
           description: Hvilken subsumsjon du vil se på
           schema:
@@ -124,7 +131,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Subsumsjon'
-  '/subsumsjon/{id}/vedtakskobling':
+  '/subsumsjon/{subsumsjonId}/vedtakskobling':
     post:
       operationId: connectSubsumsjonToVedtak
       tags:
@@ -132,7 +139,7 @@ paths:
       summary: Koble en subsumsjon til et vedtak
       parameters:
         - in: path
-          name: id
+          name: subsumsjonId
           required: true
           description: Hvilken subsumsjon du vil knytte
           schema:
@@ -149,7 +156,7 @@ paths:
                 utfall:
                   $ref: '#/components/schemas/VedtaksUtfall'
       responses:
-        '200':
+        '201':
           description: En nylig opprettet kobling til vedtak. Det bør reflekteres på subsumsjonen også.
           content:
             application/json:
@@ -161,14 +168,21 @@ components:
       type: object
       properties:
         id:
-          type: string
-          example: 03ARZ3SDFKTSV4RRFFQ69G5G23
-        status:
-          $ref: '#/components/schemas/Status'
+          $ref: '#/components/schemas/BehovId'
         subsumsjoner:
           type: array
           items:
-            $ref: '#/components/schemas/Subsumsjon'
+            type: object
+            properties:
+              id:
+                $ref: '#/components/schemas/SubsumsjonId'
+              regel:
+                $ref: '#/components/schemas/Regel'
+              links:
+                $ref: '#/components/schemas/SubsumsjonLink'
+    BehovId:
+      type: string
+      example: 03ARZ3SDFKTSV4RRFFQ69G5G23
     BehovRequest:
       type: object
       required:
@@ -210,17 +224,12 @@ components:
           default: 0
           description: Antall barn bruker søker barnetillegg for
     BehovStatus:
-      type: object
-      properties:
-        id:
-          type: string
-          example: 03ARZ3SDFKTSV4RRFFQ69G5G23
-        status:
-          $ref: '#/components/schemas/Status'
-        subsumsjoner:
-          type: array
-          items:
-            $ref: '#/components/schemas/SubsumsjonStatus'
+      allOf:
+        - $ref: '#/components/schemas/Behov'
+        - type: object
+          properties:
+            status:
+              $ref: '#/components/schemas/Status'
     HttpProblem:
       type: object
       required:
@@ -253,7 +262,9 @@ components:
       description: Identifikator for alle reglene våre
       enum:
         - Minsteinntekt
-        - Foobar
+        - Grunnlag
+        - Periode
+        - Sats
     Status:
       type: string
       enum:
@@ -264,8 +275,6 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/SubsumsjonId'
-        status:
-          $ref: '#/components/schemas/Status'
         regel:
           $ref: '#/components/schemas/Regel'
         data:
@@ -277,6 +286,8 @@ components:
           example:
             foo: bar
             bar: foo
+        links:
+          $ref: '#/components/schemas/SubsumsjonLink'
     SubsumsjonGrunnlag:
       type: object
       properties:
@@ -288,6 +299,18 @@ components:
       type: string
       description: Identifikator for en subsumsjon
       example: 01ARZ3NDEKTSV4RRFFQ69G5FAV
+    SubsumsjonLink:
+      type: object
+      properties:
+        self:
+          type: string
+          example: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+        behov:
+          type: string
+          example: /behov/01ARZ3NDEKTSV4RRFFQ69G5FAV
+        vedtakskobling:
+          type: string
+          example: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling
     SubsumsjonMinsteinntekt:
       type: object
       properties:
@@ -315,11 +338,14 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/SubsumsjonId'
-        status:
-          $ref: '#/components/schemas/Status'
-        href-self-this-something:
-          type: string
-          example: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+        regel:
+          $ref: '#/components/schemas/Regel'
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+              example: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
     VedtaksId:
       type: string
       example: 1234
@@ -344,7 +370,45 @@ components:
         - Innvilget
         - Avslått
   examples:
-    behovMedBarnOgInntekt:
+    behovCompleteMedAlleSubsumsjonene:
+      summary: 'Et behov som er ferdig, og har subsumsjoner for alle reglene'
+      value:
+        id: 03ARZ3SDFKTSV4RRFFQ69G5G23
+        status: COMPLETE
+        subsumsjoner:
+          - regel: Minsteinntekt
+            links:
+              self: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+              vedtakskobling: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling
+          - regel: Grunnlag
+            links:
+              self: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+              vedtakskobling: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling
+          - regel: Periode
+            links:
+              self: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+              vedtakskobling: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling
+          - regel: Sats
+            links:
+              self: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+              vedtakskobling: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling
+    behovPendingMedEnSubsumsjon:
+      summary: 'Et behov som er pending, og en subsumsjon'
+      value:
+        id: 03ARZ3SDFKTSV4RRFFQ69G5G23
+        status: PENDING
+        subsumsjoner:
+          - regel: Minsteinntekt
+            links:
+              self: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+              vedtakskobling: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling
+    behovPendingUtenSubsumsjoner:
+      summary: 'Et behov som er pending, og har ingen subsumsjoner enda'
+      value:
+        id: 03ARZ3SDFKTSV4RRFFQ69G5G23
+        status: PENDING
+        subsumsjoner: []
+    behovRequestMedBarnOgInntekt:
       summary: Behov med 3 barn og alt i orden
       value:
         aktorId: 01019955667
@@ -355,13 +419,41 @@ components:
         bruktInntektsPeriode: {}
         manueltGrunnlag: 0
         antallBarn: 3
-    behovMedVerneplikt:
+    behovRequestMedVerneplikt:
       summary: Behov med avtjent verneplikt
       value:
         aktorId: 01019955667
         vedtakId: 1234
         beregningsdato: '2019-01-11'
+        harAvtjentVerneplikt: true
+        oppfyllerKravTilFangstOgFisk: false
+        bruktInntektsPeriode: {}
+        manueltGrunnlag: 0
+        antallBarn: 0
+    behovResponsMedBarnOgInntekt:
+      summary: Behov med 3 barn og alt i orden
+      value:
+        id: 03ARZ3SDFKTSV4RRFFQ69G5G23
+        links:
+          self: /behov/03ARZ3SDFKTSV4RRFFQ69G5G23
+        aktorId: 01019955667
+        vedtakId: 1234
+        beregningsdato: '2019-01-11'
         harAvtjentVerneplikt: false
+        oppfyllerKravTilFangstOgFisk: false
+        bruktInntektsPeriode: {}
+        manueltGrunnlag: 0
+        antallBarn: 3
+    behovResponsMedVerneplikt:
+      summary: Behov med avtjent verneplikt
+      value:
+        id: 03ARZ3SDFKTSV4RRFFQ69G5G23
+        links:
+          self: /behov/03ARZ3SDFKTSV4RRFFQ69G5G23
+        aktorId: 01019955667
+        vedtakId: 1234
+        beregningsdato: '2019-01-11'
+        harAvtjentVerneplikt: true
         oppfyllerKravTilFangstOgFisk: false
         bruktInntektsPeriode: {}
         manueltGrunnlag: 0
