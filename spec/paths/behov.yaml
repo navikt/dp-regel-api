@@ -10,25 +10,22 @@ post:
           $ref: '#/components/schemas/BehovRequest'
         examples:
           verneplikt:
-            $ref: '#/components/examples/behovMedVerneplikt'
+            $ref: '#/components/examples/behovRequestMedVerneplikt'
           medBarn:
-            $ref: '#/components/examples/behovMedBarnOgInntekt'
+            $ref: '#/components/examples/behovRequestMedBarnOgInntekt'
   responses:
-    '200':
-      description: Nytt behov opprettet. Redirecter automatisk til status for behovet.
+    '202':
+      description: >-
+        Nytt behov opprettet. Gir link til status for å følge fremgang på når
+        behovet innfris.
       content:
         application/json:
           schema:
             type: object
             properties:
-              self:
-                type: string
-                example: /behov/123
-              status:
-                type: string
-                example: /behov/123/status
-      headers:
-        Location:
-          description: Endepunkt for å sjekke status på behov
-          schema:
-            type: string
+              links:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: /behov/03ARZ3SDFKTSV4RRFFQ69G5G23/status

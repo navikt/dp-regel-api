@@ -1,0 +1,10 @@
+summary: Behov med avtjent verneplikt
+value:
+  aktorId: 01019955667
+  vedtakId: 1234
+  beregningsdato: '2019-01-11'
+  harAvtjentVerneplikt: true
+  oppfyllerKravTilFangstOgFisk: false
+  bruktInntektsPeriode: {}
+  manueltGrunnlag: 0
+  antallBarn: 0

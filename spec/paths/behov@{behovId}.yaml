@@ -5,15 +5,17 @@ get:
   summary: Se et helt behov
   parameters:
     - in: path
-      name: id
+      name: behovId
       required: true
       description: Hvilket behov du vil se på
       schema:
         type: string
   responses:
     '200':
-      description: Saul Goodman
+      description: Behovet er fiks og flott ferdig. Bør det inneholde data fra POSTen?
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Behov'
+    '404':
+      description: 'Behovet er ikke ferdig innfridd enda, og kan ikke vises.'

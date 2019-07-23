@@ -1,0 +1,47 @@
+get:
+  operationId: getBehovStatus
+  tags:
+    - Behov
+  summary: Gir status på behov
+  description: >
+    Et endepunkt som kan polles regelmessig for å vite om et behov er komplett,
+    eller om et subsett av reglene er komplett.
+
+
+    Er behovet, eller et subsett av reglene, komplette så settes status til
+    COMPLETE.
+
+
+    Klienten må så loope gjennom alle subsumsjonene for å hente det den vil.
+  parameters:
+    - in: path
+      name: behovId
+      required: true
+      description: Hvilket behov du vil vite status på
+      schema:
+        type: string
+      example: 03ARZ3SDFKTSV4RRFFQ69G5G23
+    - in: query
+      name: regler
+      description: Liste over regler som må være besvart med subsumsjoner.
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/Regel'
+      example:
+        - Minsteinntekt
+        - Grunnlag
+  responses:
+    '200':
+      description: Status på behovet (eller subsettet av reglene du ba om)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BehovStatus'
+          examples:
+            behovPendingUtenSubsumsjoner:
+              $ref: '#/components/examples/behovPendingUtenSubsumsjoner'
+            behovPendingMedEnSubsumsjon:
+              $ref: '#/components/examples/behovPendingMedEnSubsumsjon'
+            behovCompleteMedAlleSubsumsjonene:
+              $ref: '#/components/examples/behovCompleteMedAlleSubsumsjonene'

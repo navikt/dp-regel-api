@@ -2,8 +2,6 @@ type: object
 properties:
   id:
     $ref: '#/components/schemas/SubsumsjonId'
-  status:
-    $ref: '#/components/schemas/Status'
   regel:
     $ref: '#/components/schemas/Regel'
   data:
@@ -15,3 +13,5 @@ properties:
     example:
       foo: bar
       bar: foo
+  links:
+    $ref: '#/components/schemas/SubsumsjonLink'

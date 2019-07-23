@@ -1,0 +1,21 @@
+summary: 'Et behov som er ferdig, og har subsumsjoner for alle reglene'
+value:
+  id: 03ARZ3SDFKTSV4RRFFQ69G5G23
+  status: COMPLETE
+  subsumsjoner:
+    - regel: Minsteinntekt
+      links:
+        self: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+        vedtakskobling: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling
+    - regel: Grunnlag
+      links:
+        self: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+        vedtakskobling: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling
+    - regel: Periode
+      links:
+        self: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+        vedtakskobling: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling
+    - regel: Sats
+      links:
+        self: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+        vedtakskobling: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling

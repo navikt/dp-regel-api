@@ -1,0 +1,11 @@
+type: object
+properties:
+  self:
+    type: string
+    example: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV
+  behov:
+    type: string
+    example: /behov/01ARZ3NDEKTSV4RRFFQ69G5FAV
+  vedtakskobling:
+    type: string
+    example: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV/vedtakskobling

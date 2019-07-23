@@ -1,5 +1,8 @@
-summary: Behov med avtjent verneplikt
+summary: Behov med 3 barn og alt i orden
 value:
+  id: 03ARZ3SDFKTSV4RRFFQ69G5G23
+  links:
+    self: /behov/03ARZ3SDFKTSV4RRFFQ69G5G23
   aktorId: 01019955667
   vedtakId: 1234
   beregningsdato: '2019-01-11'
@@ -7,4 +10,4 @@ value:
   oppfyllerKravTilFangstOgFisk: false
   bruktInntektsPeriode: {}
   manueltGrunnlag: 0
-  antallBarn: 0
+  antallBarn: 3

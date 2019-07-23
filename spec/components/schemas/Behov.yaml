@@ -1,11 +1,15 @@
 type: object
 properties:
   id:
-    type: string
-    example: 03ARZ3SDFKTSV4RRFFQ69G5G23
-  status:
-    $ref: '#/components/schemas/Status'
+    $ref: '#/components/schemas/BehovId'
   subsumsjoner:
     type: array
     items:
-      $ref: '#/components/schemas/Subsumsjon'
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/SubsumsjonId'
+        regel:
+          $ref: '#/components/schemas/Regel'
+        links:
+          $ref: '#/components/schemas/SubsumsjonLink'

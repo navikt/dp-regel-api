@@ -2,4 +2,6 @@ type: string
 description: Identifikator for alle reglene våre
 enum:
   - Minsteinntekt
-  - Foobar
+  - Grunnlag
+  - Periode
+  - Sats

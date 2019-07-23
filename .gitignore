@@ -187,4 +187,4 @@ gradle-app.setting
 .docker_tmp/
 
 node_modules
-web
+web_deploy

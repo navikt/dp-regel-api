@@ -5,7 +5,7 @@ get:
   summary: Se en subsumsjon
   parameters:
     - in: path
-      name: id
+      name: subsumsjonId
       required: true
       description: Hvilken subsumsjon du vil se på
       schema:

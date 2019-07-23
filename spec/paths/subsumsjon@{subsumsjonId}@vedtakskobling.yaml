@@ -5,7 +5,7 @@ post:
   summary: Koble en subsumsjon til et vedtak
   parameters:
     - in: path
-      name: id
+      name: subsumsjonId
       required: true
       description: Hvilken subsumsjon du vil knytte
       schema:
@@ -22,7 +22,7 @@ post:
             utfall:
               $ref: '#/components/schemas/VedtaksUtfall'
   responses:
-    '200':
+    '201':
       description: >-
         En nylig opprettet kobling til vedtak. Det bør reflekteres på
         subsumsjonen også.
