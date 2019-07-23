@@ -138,8 +138,8 @@
           },
           {
             "in": "query",
-            "name": "regler",
-            "description": "Liste over regler som må være besvart med subsumsjoner.",
+            "name": "regel",
+            "description": "Liste med regler som må være besvart med subsumsjoner.",
             "schema": {
               "type": "array",
               "items": {
