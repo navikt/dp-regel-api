@@ -1,0 +1,43 @@
+type: object
+required:
+  - aktorId
+  - vedtakId
+  - beregningsdato
+properties:
+  aktorId:
+    type: string
+    description: Identifikasjon av bruker
+    example: 01019955667
+  vedtakId:
+    type: integer
+    description: Identifikasjon av dagpengevedtak
+    format: int32
+    example: 1234
+  beregningsdato:
+    type: string
+    description: >-
+      Dato beregning skal utføres på bakgrunn av. Regelverk på aktuelt tidspunkt
+      skal benyttes. Inntekter i henhold til gitt dato skal benyttes.
+    example: '2019-01-11'
+  harAvtjentVerneplikt:
+    type: boolean
+    default: false
+    description: Om bruker har avtjent verneplikt minst 3 av de siste 12 måneder.
+  oppfyllerKravTilFangstOgFisk:
+    type: boolean
+    default: false
+    description: Om bruker oppfyller særvilkårene for fangst og fisk.
+  bruktInntektsPeriode:
+    type: object
+    default: false
+    description: Om bruker oppfyller særvilkårene for fangst og fisk.
+  manueltGrunnlag:
+    type: integer
+    nullable: true
+    description: >-
+      Er grunnlaget allerede kjent, kan det manuelt overstyres ved å sette sum
+      her
+  antallBarn:
+    type: integer
+    default: 0
+    description: Antall barn bruker søker barnetillegg for

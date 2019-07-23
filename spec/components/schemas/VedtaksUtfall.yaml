@@ -1,0 +1,5 @@
+type: string
+example: Innvilget
+enum:
+  - Innvilget
+  - Avslått

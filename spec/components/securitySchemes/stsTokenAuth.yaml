@@ -1,0 +1,13 @@
+type: http
+scheme: bearer
+bearerFormat: JWT
+description: |
+  Lag OIDC tokens med STS:
+  * Prod: <https://security-token-service.nais.adeo.no/>
+  * Test: <https://security-token-service.nais.preprod.local/>
+
+  Triks for å lage token i CLI: 
+
+      DP_TOKEN=$(curl -v --user <SystemBRUKER>:<Passord> \
+        https://security-token-service.nais.preprod.local/rest/v1/sts/token/\?grant_type\=client_credentials\&scope\=openid \
+        | jq -r .access_token)

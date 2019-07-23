@@ -1,0 +1,19 @@
+get:
+  operationId: getSubsumsjonById
+  tags:
+    - Subsumsjon
+  summary: Se en subsumsjon
+  parameters:
+    - in: path
+      name: id
+      required: true
+      description: Hvilken subsumsjon du vil se på
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Saul Goodman
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Subsumsjon'

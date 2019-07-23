@@ -1,0 +1,34 @@
+post:
+  tags:
+    - Behov
+  summary: Opprett nytt behov for dagpenger
+  requestBody:
+    description: Hva vi allerede vet om brukerens behov
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/BehovRequest'
+        examples:
+          verneplikt:
+            $ref: '#/components/examples/behovMedVerneplikt'
+          medBarn:
+            $ref: '#/components/examples/behovMedBarnOgInntekt'
+  responses:
+    '200':
+      description: Nytt behov opprettet. Redirecter automatisk til status for behovet.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              self:
+                type: string
+                example: /behov/123
+              status:
+                type: string
+                example: /behov/123/status
+      headers:
+        Location:
+          description: Endepunkt for å sjekke status på behov
+          schema:
+            type: string

@@ -1,0 +1,30 @@
+type: object
+required:
+  - type
+  - title
+  - status
+properties:
+  type:
+    type: string
+    example: 'about:blank'
+    description: >-
+      URI referanse [RFC3986] som identifiserer problemtypen. Standard verdi er
+      "about:blank"
+  title:
+    type: string
+    example: En feil har oppstått ved beregningen
+    description: 'Tittel, kort oppsummering av problemtypen.'
+  status:
+    type: integer
+    example: 500
+    description: 'HTTP status-kode [RFC7231] generert av tjenesten der feilen oppstod.'
+  detail:
+    type: string
+    example: Beregningen feilet - inntektskomponenten svarte ikke
+    description: Menneskelesbar beskrivelse spesifikt til dette problemet
+  instance:
+    type: string
+    example: /inntekt/1234
+    description: >-
+      URI referanse [RFC3986] som identifiserer den spesifikke ressursen der
+      problemet oppstod

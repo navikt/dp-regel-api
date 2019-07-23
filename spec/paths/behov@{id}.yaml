@@ -1,0 +1,19 @@
+get:
+  operationId: getBehovById
+  tags:
+    - Behov
+  summary: Se et helt behov
+  parameters:
+    - in: path
+      name: id
+      required: true
+      description: Hvilket behov du vil se på
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Saul Goodman
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Behov'

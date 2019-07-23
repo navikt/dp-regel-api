@@ -1,0 +1,32 @@
+post:
+  operationId: connectSubsumsjonToVedtak
+  tags:
+    - Subsumsjon
+  summary: Koble en subsumsjon til et vedtak
+  parameters:
+    - in: path
+      name: id
+      required: true
+      description: Hvilken subsumsjon du vil knytte
+      schema:
+        type: string
+  requestBody:
+    description: Hva vi allerede vet om brukerens behov
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            vedtakId:
+              $ref: '#/components/schemas/VedtaksId'
+            utfall:
+              $ref: '#/components/schemas/VedtaksUtfall'
+  responses:
+    '200':
+      description: >-
+        En nylig opprettet kobling til vedtak. Det bør reflekteres på
+        subsumsjonen også.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Vedtakskobling'

@@ -1,0 +1,13 @@
+type: object
+properties:
+  id:
+    type: string
+    example: some-ulid
+  vedtaksId:
+    $ref: '#/components/schemas/VedtaksId'
+  utfall:
+    type: string
+    example: Innvilget
+  opprettet:
+    type: string
+    example: '2004-02-12T15:19:21+00:00'

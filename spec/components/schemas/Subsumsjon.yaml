@@ -1,0 +1,17 @@
+type: object
+properties:
+  id:
+    $ref: '#/components/schemas/SubsumsjonId'
+  status:
+    $ref: '#/components/schemas/Status'
+  regel:
+    $ref: '#/components/schemas/Regel'
+  data:
+    oneOf:
+      - $ref: '#/components/schemas/SubsumsjonMinsteinntekt'
+      - $ref: '#/components/schemas/SubsumsjonPeriode'
+      - $ref: '#/components/schemas/SubsumsjonGrunnlag'
+      - $ref: '#/components/schemas/SubsumsjonSats'
+    example:
+      foo: bar
+      bar: foo

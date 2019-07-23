@@ -1,0 +1,9 @@
+type: object
+properties:
+  id:
+    $ref: '#/components/schemas/SubsumsjonId'
+  status:
+    $ref: '#/components/schemas/Status'
+  href-self-this-something:
+    type: string
+    example: /subsumsjon/01ARZ3NDEKTSV4RRFFQ69G5FAV

@@ -1,0 +1,16 @@
+openapi: 3.0.0
+info:
+  title: Dagpenger Regel API
+  version: '1.0'
+servers:
+  - url: 'https://dp-regel-api.nais.adeo.no/v1'
+    description: Produksjon (bruker ekte data)
+  - url: 'https://dp-regel-api.nais.preprod.local/v1'
+    description: Test (bruker test data)
+tags:
+  - name: Behov
+  - name: Subsumsjon
+security:
+  - stsTokenAuth: []
+  - stsOIDC:
+      - openid

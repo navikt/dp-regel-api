@@ -13,10 +13,10 @@ For å kjøre enkelte av testene kreves det at Docker kjører.
 ### Starte applikasjonen lokalt
 
 Applikasjonen har avhengigheter til Kafka og Postgres som kan kjøres
-opp lokalt vha Docker Compose(som følger med Docker Desktop) 
+opp lokalt vha Docker Compose(som følger med Docker Desktop)
 
 
-Starte Kafka og Postgres: 
+Starte Kafka og Postgres:
 ```
 
 docker-compose -f docker-compose.yml up
@@ -28,7 +28,7 @@ Etter at containerene er startet kan man starte applikasjonen ved å kjøre main
 Stoppe Kafka og Postgres:
 
 ```
-ctrl-c og docker-compose -f docker-compose.yml down 
+ctrl-c og docker-compose -f docker-compose.yml down
 
 ```
 
@@ -44,7 +44,7 @@ på følgende måte:
 
 Installere [Vault](https://www.vaultproject.io/downloads.html)
 
-Generere bruker/passord: 
+Generere bruker/passord:
 
 ```
 
@@ -77,3 +77,23 @@ psql -d $DATABASE_NAME -h $DATABASE_HOST -U $GENERERT_BRUKER_NAVN
 
 ```
 
+## Hvordan jobbe med API spesifikasjonen
+
+### Install
+
+1. Install [Node JS](https://nodejs.org/)
+2. Clone repo and run `npm install` in the repo root
+
+### Usage
+
+#### `npm start`
+Starts the development server.
+
+#### `npm run build`
+Bundles the spec and prepares web_deploy folder with static assets.
+
+#### `npm test`
+Validates the spec.
+
+#### `npm run gh-pages`
+Deploys docs to GitHub Pages. You don't need to run it manually if you have Travis CI configured.

@@ -1,0 +1,10 @@
+summary: Behov med 3 barn og alt i orden
+value:
+  aktorId: 01019955667
+  vedtakId: 1234
+  beregningsdato: '2019-01-11'
+  harAvtjentVerneplikt: false
+  oppfyllerKravTilFangstOgFisk: false
+  bruktInntektsPeriode: {}
+  manueltGrunnlag: 0
+  antallBarn: 3

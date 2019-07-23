@@ -185,3 +185,6 @@ gradle-app.setting
 
 # Docker
 .docker_tmp/
+
+node_modules
+web
