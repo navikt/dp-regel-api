@@ -24,6 +24,8 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
@@ -42,6 +44,7 @@ import no.nav.dagpenger.regel.api.routing.naischecks
 import no.nav.dagpenger.regel.api.routing.subsumsjon
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
+import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer
 import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonConsumer
 import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
 import no.nav.dagpenger.regel.api.streams.producerConfig
@@ -51,7 +54,7 @@ import java.util.concurrent.TimeUnit
 
 val APPLICATION_NAME = "dp-regel-api"
 
-fun main() {
+fun main() = runBlocking {
     val config = Configuration()
 
     migrate(config)
@@ -61,7 +64,10 @@ fun main() {
     val kafkaConsumer = KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
         it.start()
     }
-
+    val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer(config, bruktSubsumsjonStore)
+    launch {
+        bruktSubsumsjonConsumer.start()
+    }
     val kafkaProducer = KafkaDagpengerBehovProducer(producerConfig(
         APPLICATION_NAME,
         config.kafka.brokers,
@@ -75,7 +81,8 @@ fun main() {
             listOf(subsumsjonStore as HealthCheck,
                 bruktSubsumsjonStore as HealthCheck,
                 kafkaConsumer as HealthCheck,
-                kafkaProducer as HealthCheck),
+                kafkaProducer as HealthCheck,
+                bruktSubsumsjonConsumer as HealthCheck),
             bruktSubsumsjonStore
         )
     }.also {
@@ -84,6 +91,7 @@ fun main() {
 
     Runtime.getRuntime().addShutdownHook(Thread {
         kafkaConsumer.stop()
+        bruktSubsumsjonConsumer.stop()
         app.stop(10, 60, TimeUnit.SECONDS)
     })
 }
