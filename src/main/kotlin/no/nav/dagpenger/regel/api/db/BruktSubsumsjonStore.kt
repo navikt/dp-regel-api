@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.db
 
+import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.moshiInstance
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -17,9 +18,10 @@ data class SubsumsjonBrukt(
     val ts: Long
 ) {
     companion object Mapper {
+        private val LOGGER = KotlinLogging.logger { }
         private val adapter = moshiInstance.adapter<SubsumsjonBrukt>(SubsumsjonBrukt::class.java)
         fun fromJson(json: String): SubsumsjonBrukt? {
-            return adapter.fromJson(json)
+            return runCatching { adapter.fromJson(json) }.onFailure { e -> LOGGER.warn("Failed to convert string to object", e) }.getOrNull()
         }
     }
 
