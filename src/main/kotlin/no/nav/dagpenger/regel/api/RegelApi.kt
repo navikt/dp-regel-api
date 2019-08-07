@@ -24,12 +24,11 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
-import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
@@ -38,7 +37,6 @@ import no.nav.dagpenger.regel.api.db.dataSourceFrom
 import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.routing.behov
-import no.nav.dagpenger.regel.api.routing.bruktSubsumsjonRoute
 import no.nav.dagpenger.regel.api.routing.metrics
 import no.nav.dagpenger.regel.api.routing.naischecks
 import no.nav.dagpenger.regel.api.routing.subsumsjon
@@ -61,29 +59,34 @@ fun main() = runBlocking {
     val dataSource = dataSourceFrom(config)
     val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
     val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource)
-    val kafkaConsumer = KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
-        it.start()
+    val kafkaConsumer =
+        KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
+            it.start()
+        }
+    val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer.apply {
+        create(config, bruktSubsumsjonStore)
+        listen()
     }
-    val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer(config, bruktSubsumsjonStore)
-    launch {
-        bruktSubsumsjonConsumer.start()
-    }
-    val kafkaProducer = KafkaDagpengerBehovProducer(producerConfig(
-        APPLICATION_NAME,
-        config.kafka.brokers,
-        config.kafka.credential()))
+    val kafkaProducer = KafkaDagpengerBehovProducer(
+        producerConfig(
+            APPLICATION_NAME,
+            config.kafka.brokers,
+            config.kafka.credential()
+        )
+    )
 
     val app = embeddedServer(Netty, port = config.application.httpPort) {
         api(
             subsumsjonStore,
             kafkaProducer,
             config.auth.authApiKeyVerifier,
-            listOf(subsumsjonStore as HealthCheck,
+            listOf(
+                subsumsjonStore as HealthCheck,
                 bruktSubsumsjonStore as HealthCheck,
                 kafkaConsumer as HealthCheck,
                 kafkaProducer as HealthCheck,
-                bruktSubsumsjonConsumer as HealthCheck),
-            bruktSubsumsjonStore
+                bruktSubsumsjonConsumer as HealthCheck
+            )
         )
     }.also {
         it.start(wait = false)
@@ -91,7 +94,7 @@ fun main() = runBlocking {
 
     Runtime.getRuntime().addShutdownHook(Thread {
         kafkaConsumer.stop()
-        bruktSubsumsjonConsumer.stop()
+        bruktSubsumsjonConsumer.cancel()
         app.stop(10, 60, TimeUnit.SECONDS)
     })
 }
@@ -100,8 +103,7 @@ internal fun Application.api(
     subsumsjonStore: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
-    healthChecks: List<HealthCheck>,
-    bruktSubsumsjonStore: BruktSubsumsjonStore
+    healthChecks: List<HealthCheck>
 ) {
     install(DefaultHeaders)
 
@@ -117,8 +119,8 @@ internal fun Application.api(
 
         filter { call ->
             !call.request.path().startsWith("/isAlive") &&
-                !call.request.path().startsWith("/isReady") &&
-                !call.request.path().startsWith("/metrics")
+                    !call.request.path().startsWith("/isReady") &&
+                    !call.request.path().startsWith("/metrics")
         }
     }
 
@@ -149,7 +151,6 @@ internal fun Application.api(
     routing {
         behov(subsumsjonStore, kafkaProducer)
         subsumsjon(subsumsjonStore)
-        bruktSubsumsjonRoute(bruktSubsumsjonStore)
         naischecks(healthChecks)
         metrics()
     }

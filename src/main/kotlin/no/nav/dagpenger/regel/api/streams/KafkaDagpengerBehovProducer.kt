@@ -17,6 +17,7 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.KafkaException
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
+import org.apache.kafka.common.serialization.StringSerializer
 import java.io.File
 import java.util.Properties
 import java.util.concurrent.Future
@@ -26,7 +27,9 @@ private val LOGGER = KotlinLogging.logger {}
 internal fun producerConfig(
     appId: String,
     bootStapServerUrl: String,
-    credential: KafkaCredential? = null
+    credential: KafkaCredential? = null,
+    keySerializer: String = StringSerializer::class.java.name,
+    valueSerializer: String = StringSerializer::class.java.name
 ): Properties {
     return Properties().apply {
         putAll(
@@ -39,7 +42,9 @@ internal fun producerConfig(
                 ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION to "5", // kafka 2.0 >= 1.1 so we can keep this as 5 instead of 1
                 ProducerConfig.COMPRESSION_TYPE_CONFIG to "snappy",
                 ProducerConfig.LINGER_MS_CONFIG to "20",
-                ProducerConfig.BATCH_SIZE_CONFIG to 32.times(1024).toString() // 32Kb (default is 16 Kb)
+                ProducerConfig.BATCH_SIZE_CONFIG to 32.times(1024).toString(), // 32Kb (default is 16 Kb)
+                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to keySerializer,
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to valueSerializer
             )
         )
 
