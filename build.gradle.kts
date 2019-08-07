@@ -98,6 +98,7 @@ dependencies {
     testImplementation(TestContainers.postgresql)
     testImplementation(TestContainers.kafka)
     testImplementation(Kafka.streamTestUtils)
+    testImplementation(Assertj.core)
 
     testImplementation(Mockk.mockk)
 
