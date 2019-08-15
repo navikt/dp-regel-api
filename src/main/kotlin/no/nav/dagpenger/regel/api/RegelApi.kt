@@ -29,6 +29,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
+import no.nav.dagpenger.regel.api.db.IllegalSubsumsjonIdException
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
@@ -145,6 +146,9 @@ internal fun Application.api(
         }
         exception<SubsumsjonNotFoundException> { cause ->
             notFound(cause)
+        }
+        exception<IllegalSubsumsjonIdException> { cause ->
+            badRequest(cause)
         }
     }
 

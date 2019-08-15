@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.routing
 
+import de.huxhorn.sulky.ulid.ULID
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
@@ -11,6 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
 import no.nav.dagpenger.events.Problem
+import no.nav.dagpenger.regel.api.db.SubsumsjonId
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Faktum
@@ -62,6 +64,43 @@ internal class SubsumsjonRouteTest {
 
         verifyAll {
             storeMock.getSubsumsjon("subsumsjonsid")
+        }
+    }
+
+    @Test
+    fun `Returns subsumsjon by result id if found`() {
+        val id = ULID().nextULID()
+        val subsumsjon = Subsumsjon(
+            "id",
+            "behovId",
+            Faktum("aktorid", 1, LocalDate.now()),
+            mapOf(),
+            mapOf(),
+            mapOf(),
+            mapOf(),
+            Problem(title = "problem")
+        )
+
+        val storeMock = mockk<SubsumsjonStore>(relaxed = false).apply {
+            every { this@apply.getSubsumsjonByResult(SubsumsjonId(id)) } returns subsumsjon
+        }
+
+        withTestApplication(MockApi(
+            subsumsjonStore = storeMock
+        )) {
+
+            handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/result/$id")
+                .apply {
+                    response.status() shouldBe HttpStatusCode.OK
+                    response.content shouldNotBe null
+                    response.content?.let {
+                        Subsumsjon.fromJson(it) shouldBe subsumsjon
+                    }
+                }
+        }
+
+        verifyAll {
+            storeMock.getSubsumsjonByResult(SubsumsjonId(id))
         }
     }
 
