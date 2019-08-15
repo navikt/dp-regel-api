@@ -7,7 +7,7 @@ import no.nav.dagpenger.regel.api.models.Faktum.Mapper.faktumFrom
 import no.nav.dagpenger.regel.api.moshiInstance
 
 internal data class Subsumsjon(
-    val id: String,
+    val id: String, // todo: This id is not really necessary - could use behov id
     val behovId: String,
     val faktum: Faktum,
     val grunnlagResultat: Map<String, Any>?,

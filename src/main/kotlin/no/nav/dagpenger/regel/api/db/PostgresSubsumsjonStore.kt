@@ -65,6 +65,22 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
         }
     }
 
+    override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
+        val json = using(sessionOf(dataSource)) { session ->
+            session.run(queryOf(""" select
+                                                  data
+                                            from v1_subsumsjon
+                                            where data -> 'satsResultat' ->> 'subsumsjonsId'::text = :id
+                                               OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
+                                               OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
+                                               OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id """,
+                mapOf("id" to subsumsjonId.id))
+                .map { row -> row.string("data") }.asSingle)
+        } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
+
+        return Subsumsjon.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")
+    }
+
     private fun behovExists(behovId: String): Boolean {
         try {
             return using(sessionOf(dataSource)) { session ->

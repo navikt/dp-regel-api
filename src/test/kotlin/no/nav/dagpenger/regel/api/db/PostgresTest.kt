@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api.db
 
 import com.zaxxer.hikari.HikariDataSource
+import de.huxhorn.sulky.ulid.ULID
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.mockk
@@ -149,7 +150,7 @@ class PostgresSubsumsjonStoreTest {
     }
 
     @Test
-    fun `Do nothing if a subsumsjon allready exist`() {
+    fun `Do nothing if a subsumsjon already exist`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 insertBehov(Behov(subsumsjon.behovId, "aktorid", 1, LocalDate.now()))
@@ -174,6 +175,30 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             shouldThrow<SubsumsjonNotFoundException> {
                 PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon("notfound")
+            }
+        }
+    }
+
+    @Test
+    fun ` Should be able to get subsumsjon based on specific subsumsjon result id`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                val minsteinntektId = ULID().nextULID()
+                val satsId = ULID().nextULID()
+                val grunnlagId = ULID().nextULID()
+                val periodeId = ULID().nextULID()
+                val subsumsjonWithResults = subsumsjon.copy(id = ULID().nextULID(), behovId = ULID().nextULID(),
+                    minsteinntektResultat = mapOf("subsumsjonsId" to minsteinntektId),
+                    satsResultat = mapOf("subsumsjonsId" to satsId),
+                    grunnlagResultat = mapOf("subsumsjonsId" to grunnlagId),
+                    periodeResultat = mapOf("subsumsjonsId" to periodeId)
+                )
+                insertBehov(Behov(subsumsjonWithResults.behovId, "aktorid", 1, LocalDate.now()))
+                insertSubsumsjon(subsumsjonWithResults) shouldBe 1
+                getSubsumsjonByResult(SubsumsjonId(minsteinntektId)) shouldBe subsumsjonWithResults
+                getSubsumsjonByResult(SubsumsjonId(grunnlagId)) shouldBe subsumsjonWithResults
+                getSubsumsjonByResult(SubsumsjonId(satsId)) shouldBe subsumsjonWithResults
+                getSubsumsjonByResult(SubsumsjonId(periodeId)) shouldBe subsumsjonWithResults
             }
         }
     }
