@@ -55,7 +55,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
             using(sessionOf(dataSource)) { session ->
                 session.run(
                     queryOf(
-                        """INSERT INTO v2_behov(id, intern_id, aktorId, beregnings_dato, oppfyller_krav_til_fangst_og_fisk, 
+                        """INSERT INTO v2_behov(id, intern_id, aktor_id, beregnings_dato, oppfyller_krav_til_fangst_og_fisk, 
                     |                                       avtjent_verne_plikt, forste_maned, siste_maned, antall_barn, manuelt_grunnlag) 
                     |                  VALUES (:id, :intern_id, :aktor, :beregning, :fisk, :verneplikt, :forste, :siste, :barn, :grunnlag)""".trimMargin(),
                         mapOf(
