@@ -1,13 +1,13 @@
 package no.nav.dagpenger.regel.api.models
 
-import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.models.Faktum.Mapper.faktumFrom
 import no.nav.dagpenger.regel.api.moshiInstance
 
-internal data class Subsumsjon(
-    val id: String, // todo: This id is not really necessary - could use behov id
+data class Subsumsjon(
+    @Deprecated("Id is deprecated ", replaceWith = ReplaceWith("Subsumsjon.behovId"))
+    val id: String = "not-in-use",
     val behovId: String,
     val faktum: Faktum,
     val grunnlagResultat: Map<String, Any>?,
@@ -18,15 +18,13 @@ internal data class Subsumsjon(
 
 ) {
     companion object Mapper {
-        private val ulidGenerator = ULID()
 
-        private val adapter = moshiInstance.adapter<Subsumsjon>(Subsumsjon::class.java)
+        private val adapter = moshiInstance.adapter(Subsumsjon::class.java)
         fun toJson(subsumsjon: Subsumsjon): String = adapter.toJson(subsumsjon)
         fun fromJson(json: String): Subsumsjon? = adapter.fromJson(json)
 
         fun subsumsjonFrom(packet: Packet): Subsumsjon =
             Subsumsjon(
-                ulidGenerator.nextULID(),
                 behovId = packet.getStringValue(PacketKeys.BEHOV_ID),
                 faktum = faktumFrom(packet),
                 minsteinntektResultat = minsteinntektResultatFrom(packet),

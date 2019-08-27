@@ -3,6 +3,7 @@ package no.nav.dagpenger.regel.api.models
 import no.nav.dagpenger.events.Packet
 
 internal object PacketKeys {
+    const val BEHANDLINGSID: String = "behandlingsId"
     const val MANUELT_GRUNNLAG = "manueltGrunnlag"
     const val ANTALL_BARN = "antallBarn"
     const val HAR_AVTJENT_VERNE_PLIKT = "harAvtjentVerneplikt"

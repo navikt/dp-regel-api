@@ -27,13 +27,14 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
         route("/behov") {
             post {
                 mapRequestToBehov(call.receive()).apply {
-                    store.insertBehov(this)
-                    producer.produceEvent(this)
-                }.also {
-                    call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
-                    call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
-                }.also {
-                    LOGGER.info("Produserte behov ${it.behovId} for vedtak ${it.vedtakId} med beregningsdato ${it.beregningsDato}.")
+                    store.opprettBehov(this).also {
+                        producer.produceEvent(it)
+                    }.also {
+                        call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
+                        call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
+                    }.also {
+                        LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
+                    }
                 }
             }
 

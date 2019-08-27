@@ -8,12 +8,27 @@ import java.time.YearMonth
 internal class FaktumTest {
     @Test
     fun `Mapping from  Packet to Faktum`() {
-        val packet = Behov("behovId", "aktørId", 1, LocalDate.of(2011, 7, 22), true, true, InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7)), 1, 1).toPacket().apply {
-            this.putValue(PacketKeys.INNTEKT, mapOf(
-                Pair("inntektsId", "inntektsId"),
-                Pair("inntektsListe", listOf<String>()),
-                Pair("manueltRedigert", true),
-                Pair("sisteAvsluttendeKalenderMåned", YearMonth.now().toString()))
+        val packet = InternBehov.fromBehov(
+            behov = Behov(
+
+                aktørId = "aktørId",
+                vedtakId = 1,
+                beregningsDato = LocalDate.of(2011, 7, 22),
+                harAvtjentVerneplikt = true,
+                oppfyllerKravTilFangstOgFisk = true,
+                bruktInntektsPeriode = InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7)),
+                antallBarn = 1,
+                manueltGrunnlag = 1
+            ),
+            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("1", Kontekst.VEDTAK))
+        ).toPacket().apply {
+            this.putValue(
+                PacketKeys.INNTEKT, mapOf(
+                    Pair("inntektsId", "inntektsId"),
+                    Pair("inntektsListe", listOf<String>()),
+                    Pair("manueltRedigert", true),
+                    Pair("sisteAvsluttendeKalenderMåned", YearMonth.now().toString())
+                )
             )
         }
 
