@@ -8,7 +8,10 @@ import io.mockk.mockk
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.Behov
+import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.Faktum
+import no.nav.dagpenger.regel.api.models.InternId
+import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
@@ -139,7 +142,7 @@ class PostgresSubsumsjonStoreTest {
     }
 
     @Test
-    fun `Succesful insert and extraction of a subsumsjon`() {
+    fun `Successful insert and extraction of a subsumsjon`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 insertBehov(Behov(subsumsjon.behovId, "aktorid", 1, LocalDate.now()))
@@ -199,6 +202,30 @@ class PostgresSubsumsjonStoreTest {
                 getSubsumsjonByResult(SubsumsjonId(grunnlagId)) shouldBe subsumsjonWithResults
                 getSubsumsjonByResult(SubsumsjonId(satsId)) shouldBe subsumsjonWithResults
                 getSubsumsjonByResult(SubsumsjonId(periodeId)) shouldBe subsumsjonWithResults
+            }
+        }
+    }
+
+
+    @Test
+    fun `Should generate new intern id for ekstern id`(){
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                val eksternId = EksternId("1234", Kontekst.VEDTAK)
+                val internId: InternId = hentKoblingTilEkstern(eksternId)
+                ULID.parseULID(internId.id)
+            }
+        }
+    }
+
+    @Test
+    fun `Should not generate new intern id for already existing ekstern id`(){
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                val eksternId = EksternId("1234", Kontekst.VEDTAK)
+                val internId1: InternId = hentKoblingTilEkstern(eksternId)
+                val internId2: InternId = hentKoblingTilEkstern(eksternId)
+                internId1 shouldBe internId2
             }
         }
     }

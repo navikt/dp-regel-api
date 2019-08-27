@@ -8,6 +8,8 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.models.Behov
+import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.InternId
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
@@ -16,6 +18,28 @@ import org.postgresql.util.PSQLException
 private val LOGGER = KotlinLogging.logger {}
 
 internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : SubsumsjonStore, HealthCheck {
+    override fun hentKoblingTilEkstern(eksternId: EksternId): InternId {
+        val id: String? = using(sessionOf(dataSource)) { session ->
+            session.run(queryOf(
+                "SELECT id FROM v1_behov_ekstern_mapping WHERE kontekst = :kontekst AND ekstern_id = :ekstern_id",
+                mapOf("kontekst" to eksternId.kontekst.name, "ekstern_id" to eksternId.id)
+            ).map {
+                row-> row.string("id")
+            }.asSingle)
+        }
+        return id?.let { InternId(it, eksternId) } ?: opprettKoblingTilEkstern(eksternId)
+    }
+
+    private fun opprettKoblingTilEkstern(eksternId: EksternId): InternId {
+        val internId = InternId.nyInternIdFraEksternId(eksternId)
+        using(sessionOf(dataSource)) { session ->
+            session.run(queryOf(
+                "INSERT INTO v1_behov_ekstern_mapping(id, ekstern_id, kontekst) VALUES (:id, :ekstern_id, :kontekst)",
+                mapOf("id" to internId.id, "ekstern_id" to internId.eksternId.id, "kontekst" to internId.eksternId.kontekst.name)
+            ).asUpdate)
+        }
+        return internId
+    }
 
     override fun insertBehov(behov: Behov): Int {
         return try {
