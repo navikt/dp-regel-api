@@ -14,7 +14,8 @@ internal data class Behov(
     val oppfyllerKravTilFangstOgFisk: Boolean? = null,
     val bruktInntektsPeriode: InntektsPeriode? = null,
     val antallBarn: Int? = null,
-    val manueltGrunnlag: Int? = null
+    val manueltGrunnlag: Int? = null,
+    val inntektsId: String? = null
 ) {
     companion object Mapper {
         private val ulidGenerator = ULID()
@@ -35,6 +36,7 @@ internal data class Behov(
             behov.bruktInntektsPeriode?.let { this.putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, it.toJson()) }
             behov.antallBarn?.let { this.putValue(PacketKeys.ANTALL_BARN, it) }
             behov.manueltGrunnlag?.let { this.putValue(PacketKeys.MANUELT_GRUNNLAG, it) }
+            behov.inntektsId?.let { this.putValue(PacketKeys.INNTEKTS_ID, it) }
         }
     }
 

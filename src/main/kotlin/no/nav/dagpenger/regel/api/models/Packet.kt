@@ -20,6 +20,7 @@ internal object PacketKeys {
     const val OPPFYLLER_KRAV_TIL_FANGST_OG_FISK = "oppfyllerKravTilFangstOgFisk"
     const val BRUKT_INNTEKTSPERIODE = "bruktInntektsPeriode"
     const val PROBLEM = "system_problem"
+    const val INNTEKTS_ID = "inntektsId"
 }
 
 internal val Packet.behovId: String
