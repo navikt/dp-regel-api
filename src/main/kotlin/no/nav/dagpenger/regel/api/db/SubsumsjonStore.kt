@@ -1,6 +1,5 @@
 package no.nav.dagpenger.regel.api.db
 
-
 import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.EksternId
@@ -11,7 +10,6 @@ import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 
 internal interface SubsumsjonStore {
-
 
     fun opprettBehov(behov: Behov): InternBehov {
         val eksternId = EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)

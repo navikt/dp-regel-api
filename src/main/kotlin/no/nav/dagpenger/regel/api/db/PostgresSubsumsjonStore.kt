@@ -20,7 +20,6 @@ private val LOGGER = KotlinLogging.logger {}
 
 internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : SubsumsjonStore, HealthCheck {
 
-
     override fun hentKoblingTilEkstern(eksternId: EksternId): InternId {
         val id: String? = using(sessionOf(dataSource)) { session ->
             session.run(queryOf(

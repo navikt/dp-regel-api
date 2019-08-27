@@ -9,7 +9,7 @@ internal enum class PeriodeNumber(val number: Int) {
     ONE(1), TWO(2), THREE(3)
 }
 
-internal data class InntektsPeriode(
+data class InntektsPeriode(
     val førsteMåned: YearMonth, // todo: rename and create test that verifies the name
     val sisteMåned: YearMonth // todo: rename and create test that verifies the name
 ) {

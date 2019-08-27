@@ -88,7 +88,7 @@ class BehovRouteTest {
     @Test
     fun `Valid json to behov endpoint should be accepted, saved and produce an event to Kafka`() {
 
-        val obj : SubsumsjonStore = object : SubsumsjonStore {
+        val obj: SubsumsjonStore = object : SubsumsjonStore {
             override fun insertBehov(behov: InternBehov): Int {
                 return 1
             }

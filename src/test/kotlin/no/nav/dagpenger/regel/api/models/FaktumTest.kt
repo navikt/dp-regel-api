@@ -9,7 +9,7 @@ internal class FaktumTest {
     @Test
     fun `Mapping from  Packet to Faktum`() {
         val packet = InternBehov.fromBehov(
-            behov =  Behov(
+            behov = Behov(
 
                 aktørId = "aktørId",
                 vedtakId = 1,
