@@ -54,7 +54,7 @@ class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(7, migrations, "Wrong number of migrations")
+            assertEquals(8, migrations, "Wrong number of migrations")
         }
     }
 
@@ -79,10 +79,11 @@ class PostgresTest {
 class PostgresSubsumsjonStoreTest {
 
     @Test
-    fun `Successful insert of behov`() {
+    fun `Successful opprett of behov`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insertBehov(Behov("BEHOV_ID", "aktorid", 1, LocalDate.now())) shouldBe 1
+                val behov = Behov(aktørId = "1234", vedtakId = 1234, beregningsDato = LocalDate.now())
+                opprettBehov(behov)
             }
         }
     }
@@ -112,12 +113,11 @@ class PostgresSubsumsjonStoreTest {
     fun `Status of behov is DONE if the behov exists and a subsumsjon for the behov exists`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val id = subsumsjon.behovId
 
-                insertBehov(Behov(id, "aktorid", 1, LocalDate.now()))
-                insertSubsumsjon(subsumsjon)
 
-                behovStatus(id) shouldBe Status.Done(subsumsjon.id)
+                val internBehov = opprettBehov(Behov( "aktorid", 1, LocalDate.now()))
+                insertSubsumsjon(subsumsjon.copy(behovId = internBehov.behovId))
+                behovStatus(internBehov.behovId) shouldBe Status.Done(subsumsjon.id)
             }
         }
     }
@@ -126,8 +126,8 @@ class PostgresSubsumsjonStoreTest {
     fun `Status of behov is pending if the behov exists but no subsumsjon for the behov exists `() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insertBehov(Behov("id", "aktorid", 1, LocalDate.now()))
-                behovStatus("id") shouldBe Status.Pending
+                val internBehov = opprettBehov(Behov( "aktorid", 1, LocalDate.now()))
+                behovStatus(internBehov.behovId) shouldBe Status.Pending
             }
         }
     }
@@ -145,9 +145,11 @@ class PostgresSubsumsjonStoreTest {
     fun `Successful insert and extraction of a subsumsjon`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insertBehov(Behov(subsumsjon.behovId, "aktorid", 1, LocalDate.now()))
-                insertSubsumsjon(subsumsjon) shouldBe 1
-                getSubsumsjon(subsumsjon.id) shouldBe subsumsjon
+
+                val internBehov = opprettBehov(Behov( "aktorid", 1, LocalDate.now()))
+                val sub = subsumsjon.copy(behovId = internBehov.behovId)
+                insertSubsumsjon(sub) shouldBe 1
+                getSubsumsjon(sub.id) shouldBe sub
             }
         }
     }
@@ -156,10 +158,11 @@ class PostgresSubsumsjonStoreTest {
     fun `Do nothing if a subsumsjon already exist`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                insertBehov(Behov(subsumsjon.behovId, "aktorid", 1, LocalDate.now()))
+                val internBehov = opprettBehov(Behov( "aktorid", 1, LocalDate.now()))
+                val sub = subsumsjon.copy(behovId = internBehov.behovId)
 
-                insertSubsumsjon(subsumsjon) shouldBe 1
-                insertSubsumsjon(subsumsjon) shouldBe 0
+                insertSubsumsjon(sub) shouldBe 1
+                insertSubsumsjon(sub) shouldBe 0
             }
         }
     }
@@ -190,13 +193,14 @@ class PostgresSubsumsjonStoreTest {
                 val satsId = ULID().nextULID()
                 val grunnlagId = ULID().nextULID()
                 val periodeId = ULID().nextULID()
-                val subsumsjonWithResults = subsumsjon.copy(id = ULID().nextULID(), behovId = ULID().nextULID(),
+                val internBehov = opprettBehov(Behov( "aktorid", 1, LocalDate.now()))
+                val subsumsjonWithResults = subsumsjon.copy(id = ULID().nextULID(), behovId = internBehov.behovId,
                     minsteinntektResultat = mapOf("subsumsjonsId" to minsteinntektId),
                     satsResultat = mapOf("subsumsjonsId" to satsId),
                     grunnlagResultat = mapOf("subsumsjonsId" to grunnlagId),
                     periodeResultat = mapOf("subsumsjonsId" to periodeId)
                 )
-                insertBehov(Behov(subsumsjonWithResults.behovId, "aktorid", 1, LocalDate.now()))
+
                 insertSubsumsjon(subsumsjonWithResults) shouldBe 1
                 getSubsumsjonByResult(SubsumsjonId(minsteinntektId)) shouldBe subsumsjonWithResults
                 getSubsumsjonByResult(SubsumsjonId(grunnlagId)) shouldBe subsumsjonWithResults
@@ -206,9 +210,8 @@ class PostgresSubsumsjonStoreTest {
         }
     }
 
-
     @Test
-    fun `Should generate new intern id for ekstern id`(){
+    fun `Should generate new intern id for ekstern id`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val eksternId = EksternId("1234", Kontekst.VEDTAK)
@@ -219,7 +222,7 @@ class PostgresSubsumsjonStoreTest {
     }
 
     @Test
-    fun `Should not generate new intern id for already existing ekstern id`(){
+    fun `Should not generate new intern id for already existing ekstern id`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val eksternId = EksternId("1234", Kontekst.VEDTAK)
@@ -229,6 +232,7 @@ class PostgresSubsumsjonStoreTest {
             }
         }
     }
+
 
     private val subsumsjon = Subsumsjon("subsumsjonId", "behovId", Faktum("aktorId", 1, LocalDate.now()), mapOf(), mapOf(), mapOf(), mapOf(), Problem(title = "problem"))
 }

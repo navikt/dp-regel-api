@@ -15,16 +15,23 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+
 import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
+import no.nav.dagpenger.regel.api.db.SubsumsjonId
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.Behov
+import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.InternId
 import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.YearMonth
+import java.util.concurrent.Future
 
 class BehovRouteTest {
 
@@ -80,15 +87,40 @@ class BehovRouteTest {
 
     @Test
     fun `Valid json to behov endpoint should be accepted, saved and produce an event to Kafka`() {
-        val slot = slot<Behov>()
-        val storeMock = mockk<SubsumsjonStore>(relaxed = true).apply {
-            every { this@apply.insertBehov(behov = capture(slot)) } returns 1
+
+        val obj : SubsumsjonStore = object : SubsumsjonStore {
+            override fun insertBehov(behov: InternBehov): Int {
+                return 1
+            }
+
+            override fun hentKoblingTilEkstern(eksternId: EksternId): InternId {
+                return InternId.nyInternIdFraEksternId(eksternId)
+            }
+
+            override fun behovStatus(id: String): Status {
+                TODO("not implemented")
+            }
+
+            override fun insertSubsumsjon(subsumsjon: Subsumsjon): Int {
+                TODO("not implemented")
+            }
+
+            override fun getSubsumsjon(id: String): Subsumsjon {
+                TODO("not implemented")
+            }
+
+            override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
+                TODO("not implemented")
+            }
         }
 
-        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true)
+        val produceSlot = slot<InternBehov>()
+        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
+            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+        }
 
         withTestApplication(MockApi(
-            storeMock,
+            obj,
             kafkaMock
         )) {
 
@@ -96,7 +128,7 @@ class BehovRouteTest {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody("""
             {
-                "aktorId": "9000000028204",
+                "aktorId": "1234",
                 "vedtakId": 1,
                 "beregningsdato": "2019-01-08",
                 "manueltGrunnlag": 54200,
@@ -117,10 +149,10 @@ class BehovRouteTest {
             }
         }
 
-        with(slot.captured) {
+        with(produceSlot.captured) {
             behovId shouldNotBe null
-            aktørId shouldBe "9000000028204"
-            vedtakId shouldBe 1
+            aktørId shouldBe "1234"
+            internId shouldNotBe null
             beregningsDato shouldBe LocalDate.of(2019, 1, 8)
             harAvtjentVerneplikt shouldBe true
             oppfyllerKravTilFangstOgFisk shouldBe true
@@ -130,7 +162,6 @@ class BehovRouteTest {
         }
 
         verifyAll {
-            storeMock.insertBehov(any())
             kafkaMock.produceEvent(any())
         }
     }

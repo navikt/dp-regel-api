@@ -5,8 +5,9 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.moshiInstance
 import java.time.LocalDate
 
-internal data class Behov(
-    val behovId: String = ulidGenerator.nextULID(),
+private val ulidGenerator = ULID()
+
+data class Behov(
     val aktørId: String,
     val vedtakId: Int,
     val beregningsDato: LocalDate,
@@ -15,30 +16,57 @@ internal data class Behov(
     val bruktInntektsPeriode: InntektsPeriode? = null,
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null
+)
+
+data class InternBehov(
+    val behovId: String = ulidGenerator.nextULID(),
+    val aktørId: String,
+    val internId: InternId,
+    val beregningsDato: LocalDate,
+    val harAvtjentVerneplikt: Boolean? = null,
+    val oppfyllerKravTilFangstOgFisk: Boolean? = null,
+    val bruktInntektsPeriode: InntektsPeriode? = null,
+    val antallBarn: Int? = null,
+    val manueltGrunnlag: Int? = null
+
 ) {
+    fun toJson() = toJson(this)
+    fun toPacket() = toPacket(this)
     companion object Mapper {
-        private val ulidGenerator = ULID()
+        private val adapter = moshiInstance.adapter<InternBehov>(InternBehov::class.java)
 
-        private val adapter = moshiInstance.adapter<Behov>(Behov::class.java)
+        fun toJson(internBehov: InternBehov): String = adapter.toJson(internBehov)
 
-        fun toJson(behov: Behov): String = adapter.toJson(behov)
+        fun fromJson(json: String): InternBehov? = adapter.fromJson(json)
 
-        fun fromJson(json: String): Behov? = adapter.fromJson(json)
+        fun toPacket(internBehov: InternBehov): Packet = Packet("{}").apply {
+            this.putValue(PacketKeys.BEHOV_ID, internBehov.behovId)
+            this.putValue(PacketKeys.AKTØR_ID, internBehov.aktørId)
+            when (internBehov.internId.eksternId.kontekst) {
+                Kontekst.VEDTAK -> this.putValue(PacketKeys.VEDTAK_ID, internBehov.internId.eksternId.id)
+            }
+            this.putValue(PacketKeys.INTERN_ID, internBehov.internId.id)
+            this.putValue(PacketKeys.BEREGNINGS_DATO, internBehov.beregningsDato)
+            internBehov.harAvtjentVerneplikt?.let { this.putValue(PacketKeys.HAR_AVTJENT_VERNE_PLIKT, it) }
+            internBehov.oppfyllerKravTilFangstOgFisk?.let { this.putValue(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK, it) }
+            internBehov.bruktInntektsPeriode?.let { this.putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, it.toJson()) }
+            internBehov.antallBarn?.let { this.putValue(PacketKeys.ANTALL_BARN, it) }
+            internBehov.manueltGrunnlag?.let { this.putValue(PacketKeys.MANUELT_GRUNNLAG, it) }
+        }
 
-        fun toPacket(behov: Behov): Packet = Packet("{}").apply {
-            this.putValue(PacketKeys.BEHOV_ID, behov.behovId)
-            this.putValue(PacketKeys.AKTØR_ID, behov.aktørId)
-            this.putValue(PacketKeys.VEDTAK_ID, behov.vedtakId)
-            this.putValue(PacketKeys.BEREGNINGS_DATO, behov.beregningsDato)
-            behov.harAvtjentVerneplikt?.let { this.putValue(PacketKeys.HAR_AVTJENT_VERNE_PLIKT, it) }
-            behov.oppfyllerKravTilFangstOgFisk?.let { this.putValue(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK, it) }
-            behov.bruktInntektsPeriode?.let { this.putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, it.toJson()) }
-            behov.antallBarn?.let { this.putValue(PacketKeys.ANTALL_BARN, it) }
-            behov.manueltGrunnlag?.let { this.putValue(PacketKeys.MANUELT_GRUNNLAG, it) }
+        fun fromBehov(behov: Behov, internId: InternId): InternBehov {
+            return InternBehov(
+                internId = internId,
+                aktørId = behov.aktørId,
+                harAvtjentVerneplikt = behov.harAvtjentVerneplikt,
+                oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk,
+                manueltGrunnlag = behov.manueltGrunnlag,
+                beregningsDato = behov.beregningsDato,
+                bruktInntektsPeriode = behov.bruktInntektsPeriode,
+                antallBarn = behov.antallBarn
+            )
         }
     }
-
-    fun toPacket(): Packet = Mapper.toPacket(this)
 }
 
 sealed class Status {

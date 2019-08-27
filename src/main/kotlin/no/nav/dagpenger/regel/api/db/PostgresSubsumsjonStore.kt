@@ -5,27 +5,31 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.monitoring.HealthCheck
-import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import no.nav.dagpenger.regel.api.models.Behov
+
 import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.InternId
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
+import no.nav.dagpenger.regel.api.monitoring.HealthCheck
+import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PSQLException
 
 private val LOGGER = KotlinLogging.logger {}
 
 internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : SubsumsjonStore, HealthCheck {
+
+
     override fun hentKoblingTilEkstern(eksternId: EksternId): InternId {
         val id: String? = using(sessionOf(dataSource)) { session ->
             session.run(queryOf(
                 "SELECT id FROM v1_behov_ekstern_mapping WHERE kontekst = :kontekst AND ekstern_id = :ekstern_id",
                 mapOf("kontekst" to eksternId.kontekst.name, "ekstern_id" to eksternId.id)
-            ).map {
-                row-> row.string("id")
-            }.asSingle)
+            ).map { row ->
+                row.string("id")
+            }.asSingle
+            )
         }
         return id?.let { InternId(it, eksternId) } ?: opprettKoblingTilEkstern(eksternId)
     }
@@ -33,19 +37,42 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
     private fun opprettKoblingTilEkstern(eksternId: EksternId): InternId {
         val internId = InternId.nyInternIdFraEksternId(eksternId)
         using(sessionOf(dataSource)) { session ->
-            session.run(queryOf(
-                "INSERT INTO v1_behov_ekstern_mapping(id, ekstern_id, kontekst) VALUES (:id, :ekstern_id, :kontekst)",
-                mapOf("id" to internId.id, "ekstern_id" to internId.eksternId.id, "kontekst" to internId.eksternId.kontekst.name)
-            ).asUpdate)
+            session.run(
+                queryOf(
+                    "INSERT INTO v1_behov_ekstern_mapping(id, ekstern_id, kontekst) VALUES (:id, :ekstern_id, :kontekst)",
+                    mapOf(
+                        "id" to internId.id,
+                        "ekstern_id" to internId.eksternId.id,
+                        "kontekst" to internId.eksternId.kontekst.name
+                    )
+                ).asUpdate
+            )
         }
         return internId
     }
 
-    override fun insertBehov(behov: Behov): Int {
+    override fun insertBehov(behov: InternBehov): Int {
         return try {
             using(sessionOf(dataSource)) { session ->
-                session.run(queryOf(""" INSERT INTO v1_behov VALUES (?, (to_json(?::json))) """,
-                        behov.behovId, Behov.toJson(behov)).asUpdate)
+                session.run(
+                    queryOf(
+                        """INSERT INTO v2_behov(id, intern_id, aktorId, beregnings_dato, oppfyller_krav_til_fangst_og_fisk, 
+                    |                                       avtjent_verne_plikt, forste_maned, siste_maned, antall_barn, manuelt_grunnlag) 
+                    |                  VALUES (:id, :intern_id, :aktor, :beregning, :fisk, :verneplikt, :forste, :siste, :barn, :grunnlag)""".trimMargin(),
+                        mapOf(
+                            "id" to behov.behovId,
+                            "intern_id" to behov.internId.id,
+                            "aktor" to behov.aktørId,
+                            "beregning" to behov.beregningsDato,
+                            "fisk" to behov.oppfyllerKravTilFangstOgFisk,
+                            "verneplikt" to behov.harAvtjentVerneplikt,
+                            "forste" to behov.bruktInntektsPeriode?.førsteMåned,
+                            "siste" to behov.bruktInntektsPeriode?.sisteMåned,
+                            "barn" to behov.antallBarn,
+                            "grunnlag" to behov.manueltGrunnlag
+                        )
+                    ).asUpdate
+                )
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
@@ -62,8 +89,12 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
     override fun insertSubsumsjon(subsumsjon: Subsumsjon): Int {
         return try {
             using(sessionOf(dataSource)) { session ->
-                session.run(queryOf(""" INSERT INTO v1_subsumsjon VALUES (?,?, (to_json(?::json))) ON CONFLICT ON CONSTRAINT v1_subsumsjon_pkey DO NOTHING """,
-                        subsumsjon.id, subsumsjon.behovId, subsumsjon.toJson()).asUpdate)
+                session.run(
+                    queryOf(
+                        """ INSERT INTO v1_subsumsjon VALUES (?,?, (to_json(?::json))) ON CONFLICT ON CONSTRAINT v1_subsumsjon_pkey DO NOTHING """,
+                        subsumsjon.id, subsumsjon.behovId, subsumsjon.toJson()
+                    ).asUpdate
+                )
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
@@ -73,8 +104,8 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
     override fun getSubsumsjon(id: String): Subsumsjon {
         val json = using(sessionOf(dataSource)) { session ->
             session.run(queryOf(""" SELECT data FROM v1_subsumsjon WHERE id = ? """, id)
-                    .map { row -> row.string("data") }
-                    .asSingle)
+                .map { row -> row.string("data") }
+                .asSingle)
         } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with id $id")
 
         return Subsumsjon.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")
@@ -91,15 +122,18 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
 
     override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
         val json = using(sessionOf(dataSource)) { session ->
-            session.run(queryOf(""" select
+            session.run(queryOf(
+                """ select
                                                   data
                                             from v1_subsumsjon
                                             where data -> 'satsResultat' ->> 'subsumsjonsId'::text = :id
                                                OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
                                                OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
                                                OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id """,
-                mapOf("id" to subsumsjonId.id))
-                .map { row -> row.string("data") }.asSingle)
+                mapOf("id" to subsumsjonId.id)
+            )
+                .map { row -> row.string("data") }.asSingle
+            )
         } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
 
         return Subsumsjon.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")
@@ -108,7 +142,12 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
     private fun behovExists(behovId: String): Boolean {
         try {
             return using(sessionOf(dataSource)) { session ->
-                session.run(queryOf(""" SELECT EXISTS (SELECT 1 FROM v1_behov WHERE id = ? ) AS "exists" """, behovId).map { row -> row.boolean("exists") }.asSingle)!!
+                session.run(
+                    queryOf(
+                        """ SELECT EXISTS (SELECT 1 FROM v1_behov WHERE id = ? ) AS "exists" """,
+                        behovId
+                    ).map { row -> row.boolean("exists") }.asSingle
+                )!!
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
@@ -118,7 +157,12 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
     private fun getSubsumsjonIdBy(behovId: String): String? {
         try {
             return using(sessionOf(dataSource)) { session ->
-                session.run(queryOf(""" SELECT id FROM v1_subsumsjon WHERE behov_id = ? """, behovId).map { row -> row.stringOrNull("id") }.asSingle)
+                session.run(
+                    queryOf(
+                        """ SELECT id FROM v1_subsumsjon WHERE behov_id = ? """,
+                        behovId
+                    ).map { row -> row.stringOrNull("id") }.asSingle
+                )
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)

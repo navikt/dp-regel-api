@@ -5,6 +5,10 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.models.Behov
+import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.InternId
+import no.nav.dagpenger.regel.api.models.Kontekst
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
 import java.time.LocalDate
@@ -22,7 +26,10 @@ internal class KafkaDagpengerBehovProducerTest {
     @Test
     fun `Produce packet should success`() {
         KafkaDagpengerBehovProducer(producerConfig("APP", Kafka.instance.bootstrapServers, null)).apply {
-            val metadata = produceEvent(Behov("behovId", "aktorId", 1, LocalDate.now())).get(5, TimeUnit.SECONDS)
+            val metadata = produceEvent(InternBehov.fromBehov(
+                behov = Behov(aktørId = "aktorId", vedtakId = 1, beregningsDato = LocalDate.now()),
+                internId = InternId.nyInternIdFraEksternId(EksternId("123", Kontekst.VEDTAK))
+                )).get(5, TimeUnit.SECONDS)
 
             metadata shouldNotBe null
             metadata.hasOffset() shouldBe true
