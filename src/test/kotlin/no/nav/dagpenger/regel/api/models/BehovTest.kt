@@ -12,7 +12,18 @@ internal class BehovTest {
 
     @Test
     fun `Mapping from Behov to Packet with all fields`() {
-        val behov = Behov("behovId", "aktørId", 1, LocalDate.now(), true, true, InntektsPeriode(YearMonth.now(), YearMonth.now()), 1, 1)
+        val behov = Behov(
+            behovId = "behovId",
+            aktørId = "aktørId",
+            vedtakId = 1,
+            beregningsDato = LocalDate.now(),
+            harAvtjentVerneplikt = true,
+            oppfyllerKravTilFangstOgFisk = true,
+            bruktInntektsPeriode = InntektsPeriode(YearMonth.now(), YearMonth.now()),
+            antallBarn = 1,
+            manueltGrunnlag = 1,
+            inntektsId = "ULID"
+        )
         val packet = toPacket(behov)
 
         packet.getStringValue(PacketKeys.BEHOV_ID) shouldBe behov.behovId
@@ -24,11 +35,17 @@ internal class BehovTest {
         InntektsPeriode.fromPacket(packet) shouldBe behov.bruktInntektsPeriode
         packet.getIntValue(PacketKeys.ANTALL_BARN) shouldBe behov.antallBarn
         packet.getIntValue(PacketKeys.MANUELT_GRUNNLAG) shouldBe behov.manueltGrunnlag
+        packet.getStringValue(PacketKeys.INNTEKTS_ID) shouldBe behov.inntektsId
     }
 
     @Test
     fun `Mapping from Behov to Packet with nullable fields`() {
-        val behov = Behov("behovId", "aktørId", 1, LocalDate.now())
+        val behov = Behov(
+            behovId = "behovId",
+            aktørId = "aktørId",
+            vedtakId = 1,
+            beregningsDato = LocalDate.now()
+        )
         val packet = toPacket(behov)
 
         packet.getNullableBoolean(PacketKeys.HAR_AVTJENT_VERNE_PLIKT) shouldBe null
@@ -36,19 +53,31 @@ internal class BehovTest {
         InntektsPeriode.fromPacket(packet) shouldBe behov.bruktInntektsPeriode
         packet.getNullableIntValue(PacketKeys.ANTALL_BARN) shouldBe null
         packet.getNullableIntValue(PacketKeys.MANUELT_GRUNNLAG) shouldBe null
+        packet.getNullableStringValue(PacketKeys.INNTEKTS_ID) shouldBe null
     }
 
     @Test
     fun `Mapping from Behov to JSON `() {
         val yearMonth = YearMonth.of(2011, 7)
-        Behov("behovId", "aktørId", 1, LocalDate.of(2011, 7, 22), true, true, InntektsPeriode(yearMonth, yearMonth), 1, 1).apply {
+        Behov(
+            behovId = "behovId",
+            aktørId = "aktørId",
+            vedtakId = 1,
+            beregningsDato = LocalDate.of(2011, 7, 22),
+            harAvtjentVerneplikt = true,
+            oppfyllerKravTilFangstOgFisk = true,
+            bruktInntektsPeriode = InntektsPeriode(yearMonth, yearMonth),
+            antallBarn = 1,
+            manueltGrunnlag = 1
+        ).apply {
             toJson(this) shouldBe """{"behovId":"behovId","aktørId":"aktørId","vedtakId":1,"beregningsDato":"2011-07-22","harAvtjentVerneplikt":true,"oppfyllerKravTilFangstOgFisk":true,"bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},"antallBarn":1,"manueltGrunnlag":1}"""
         }
     }
 
     @Test
     fun `Mapping from JSON to Behov `() {
-        val behov = Behov.fromJson("""{"behovId":"behovId","aktørId":"aktørId","vedtakId":1,"beregningsDato":"2011-07-22","harAvtjentVerneplikt":true,"oppfyllerKravTilFangstOgFisk":true,"bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},"antallBarn":1,"manueltGrunnlag":1}""")
+        val behov =
+            Behov.fromJson("""{"behovId":"behovId","aktørId":"aktørId","vedtakId":1,"beregningsDato":"2011-07-22","harAvtjentVerneplikt":true,"oppfyllerKravTilFangstOgFisk":true,"bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},"antallBarn":1,"manueltGrunnlag":1}""")
 
         behov shouldNotBe null
         behov?.let {
@@ -66,7 +95,12 @@ internal class BehovTest {
 
     @Test
     fun `JSON serialization and deserialization of optional fields `() {
-        Behov("behovId", "aktørId", 1, LocalDate.of(2011, 7, 22)).apply {
+        Behov(
+            behovId = "behovId",
+            aktørId = "aktørId",
+            vedtakId = 1,
+            beregningsDato = LocalDate.of(2011, 7, 22)
+        ).apply {
             val json = toJson(this)
 
             json shouldBe """{"behovId":"behovId","aktørId":"aktørId","vedtakId":1,"beregningsDato":"2011-07-22"}"""

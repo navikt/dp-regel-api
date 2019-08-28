@@ -151,4 +151,19 @@ internal class BehovRequestMappingTest {
         ))
         behov.antallBarn shouldBe 0
     }
+
+    @Test
+    fun `InntektsId should default to null if not present in request`() {
+        val behov = mapRequestToBehov(BehovRequest(
+            aktorId = "aktorId",
+            vedtakId = 1,
+            beregningsdato = LocalDate.of(2019, 11, 7),
+            harAvtjentVerneplikt = null,
+            oppfyllerKravTilFangstOgFisk = null,
+            bruktInntektsPeriode = null,
+            manueltGrunnlag = null,
+            antallBarn = null
+        ))
+        behov.inntektsId shouldBe null
+    }
 }
