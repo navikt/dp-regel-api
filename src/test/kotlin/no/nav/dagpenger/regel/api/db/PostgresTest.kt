@@ -249,10 +249,10 @@ class PostgresSubsumsjonStoreTest {
     private val subsumsjon = Subsumsjon(
         behovId = "behovId",
         faktum = Faktum("aktorId", 1, LocalDate.now()),
-        grunnlagResultat = mapOf(),
-        minsteinntektResultat = mapOf(),
-        periodeResultat = mapOf(),
-        satsResultat = mapOf(),
+        grunnlagResultat = emptyMap(),
+        minsteinntektResultat = emptyMap(),
+        periodeResultat = emptyMap(),
+        satsResultat = emptyMap(),
         problem = Problem(title = "problem")
     )
 }
@@ -296,10 +296,10 @@ class PostgresBruktSubsumsjonsStoreTest {
     private val subsumsjon = Subsumsjon(
         behovId = "behovId",
         faktum = Faktum("aktorId", 1, LocalDate.now()),
-        grunnlagResultat = mapOf(),
-        minsteinntektResultat = mapOf(),
-        periodeResultat = mapOf(),
-        satsResultat = mapOf(),
+        grunnlagResultat = emptyMap(),
+        minsteinntektResultat = emptyMap(),
+        periodeResultat = emptyMap(),
+        satsResultat = emptyMap(),
         problem = Problem(title = "problem")
     )
     private val bruktSubsumsjon =

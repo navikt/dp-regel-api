@@ -14,10 +14,10 @@ internal class SubsumsjonTest {
         Subsumsjon(
             behovId = "behovId",
             faktum = Faktum("aktorId", 1, LocalDate.of(2019, 5, 9)),
-            grunnlagResultat = mapOf(),
-            minsteinntektResultat = mapOf(),
-            periodeResultat = mapOf(),
-            satsResultat = mapOf(),
+            grunnlagResultat = emptyMap(),
+            minsteinntektResultat = emptyMap(),
+            periodeResultat = emptyMap(),
+            satsResultat = emptyMap(),
             problem = Problem(title = "problem")
 
         ).toJson() shouldBe """{"id":"not-in-use","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}"""
@@ -30,10 +30,10 @@ internal class SubsumsjonTest {
 
         subsumsjon?.apply {
             behovId shouldBe "behovId"
-            grunnlagResultat shouldBe mapOf()
-            periodeResultat shouldBe mapOf()
-            minsteinntektResultat shouldBe mapOf()
-            satsResultat shouldBe mapOf()
+            grunnlagResultat shouldBe emptyMap()
+            periodeResultat shouldBe emptyMap()
+            minsteinntektResultat shouldBe emptyMap()
+            satsResultat shouldBe emptyMap()
             problem shouldNotBe null
         }
 

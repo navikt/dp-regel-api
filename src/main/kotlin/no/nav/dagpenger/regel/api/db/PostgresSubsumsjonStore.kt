@@ -22,12 +22,13 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
 
     override fun hentKoblingTilEkstern(eksternId: EksternId): InternId {
         val id: String? = using(sessionOf(dataSource)) { session ->
-            session.run(queryOf(
-                "SELECT id FROM v1_behov_ekstern_mapping WHERE kontekst = :kontekst AND ekstern_id = :ekstern_id",
-                mapOf("kontekst" to eksternId.kontekst.name, "ekstern_id" to eksternId.id)
-            ).map { row ->
-                row.string("id")
-            }.asSingle
+            session.run(
+                queryOf(
+                    "SELECT id FROM v1_behov_ekstern_mapping WHERE kontekst = :kontekst AND ekstern_id = :ekstern_id",
+                    mapOf("kontekst" to eksternId.kontekst.name, "ekstern_id" to eksternId.id)
+                ).map { row ->
+                    row.string("id")
+                }.asSingle
             )
         }
         return id?.let { InternId(it, eksternId) } ?: opprettKoblingTilEkstern(eksternId)
@@ -134,18 +135,35 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
     }
 
     override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
+        return try {
+            getSubsumByResultV2(subsumsjonId)
+        } catch (err: SubsumsjonNotFoundException) {
+            getSubsumByResultV1(subsumsjonId)
+        }
+    }
+
+    private fun getSubsumByResultV1(subsumsjonId: SubsumsjonId): Subsumsjon {
+        return getSubsumByResult("v1", subsumsjonId)
+    }
+
+    private fun getSubsumByResultV2(subsumsjonId: SubsumsjonId): Subsumsjon {
+        return getSubsumByResult("v2", subsumsjonId)
+    }
+
+    private fun getSubsumByResult(version: String, subsumsjonId: SubsumsjonId): Subsumsjon {
         val json = using(sessionOf(dataSource)) { session ->
-            session.run(queryOf(
-                """ select
+            session.run(
+                queryOf(
+                    """ select
                                                   data
-                                            from v2_subsumsjon
+                                            from ${version}_subsumsjon
                                             where data -> 'satsResultat' ->> 'subsumsjonsId'::text = :id
                                                OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
                                                OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
                                                OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id """,
-                mapOf("id" to subsumsjonId.id)
-            )
-                .map { row -> row.string("data") }.asSingle
+                    mapOf("id" to subsumsjonId.id)
+                )
+                    .map { row -> row.string("data") }.asSingle
             )
         } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
 
