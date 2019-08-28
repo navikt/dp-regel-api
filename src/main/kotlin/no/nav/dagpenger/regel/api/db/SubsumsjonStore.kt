@@ -20,11 +20,9 @@ internal interface SubsumsjonStore {
     }
     fun insertBehov(behov: InternBehov): Int
     fun hentKoblingTilEkstern(eksternId: EksternId): InternId
-
-    fun behovStatus(id: String): Status
-
+    fun behovStatus(behovId: String): Status
     fun insertSubsumsjon(subsumsjon: Subsumsjon): Int
-    fun getSubsumsjon(id: String): Subsumsjon
+    fun getSubsumsjon(behovId: String): Subsumsjon
     fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon
 }
 

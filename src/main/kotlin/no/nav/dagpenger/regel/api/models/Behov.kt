@@ -33,7 +33,7 @@ data class InternBehov(
     fun toJson() = toJson(this)
     fun toPacket() = toPacket(this)
     companion object Mapper {
-        private val adapter = moshiInstance.adapter<InternBehov>(InternBehov::class.java)
+        private val adapter = moshiInstance.adapter(InternBehov::class.java)
 
         fun toJson(internBehov: InternBehov): String = adapter.toJson(internBehov)
 

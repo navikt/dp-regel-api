@@ -10,6 +10,7 @@ import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.Faktum
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.InternId
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -54,7 +56,7 @@ class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(8, migrations, "Wrong number of migrations")
+            assertEquals(10, migrations, "Wrong number of migrations")
         }
     }
 
@@ -82,7 +84,17 @@ class PostgresSubsumsjonStoreTest {
     fun `Successful opprett of behov`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val behov = Behov(aktørId = "1234", vedtakId = 1234, beregningsDato = LocalDate.now())
+                val behov = Behov(
+                    aktørId = "1234",
+                    vedtakId = 1234,
+                    beregningsDato = LocalDate.now(),
+                    antallBarn = 1,
+                    manueltGrunnlag = 11,
+                    harAvtjentVerneplikt = false,
+                    bruktInntektsPeriode = InntektsPeriode(
+                        YearMonth.now().minusMonths(12),
+                        YearMonth.now()
+                    ))
                 opprettBehov(behov)
             }
         }
@@ -115,8 +127,9 @@ class PostgresSubsumsjonStoreTest {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
-                insertSubsumsjon(subsumsjon.copy(behovId = internBehov.behovId))
-                behovStatus(internBehov.behovId) shouldBe Status.Done(subsumsjon.id)
+                val sub = subsumsjon.copy(behovId = internBehov.behovId)
+                insertSubsumsjon(sub)
+                behovStatus(internBehov.behovId) shouldBe Status.Done(sub.behovId)
             }
         }
     }
@@ -148,7 +161,7 @@ class PostgresSubsumsjonStoreTest {
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
-                getSubsumsjon(sub.id) shouldBe sub
+                getSubsumsjon(sub.behovId) shouldBe sub
             }
         }
     }
@@ -193,7 +206,8 @@ class PostgresSubsumsjonStoreTest {
                 val grunnlagId = ULID().nextULID()
                 val periodeId = ULID().nextULID()
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
-                val subsumsjonWithResults = subsumsjon.copy(id = ULID().nextULID(), behovId = internBehov.behovId,
+                val subsumsjonWithResults = subsumsjon.copy(
+                    behovId = internBehov.behovId,
                     minsteinntektResultat = mapOf("subsumsjonsId" to minsteinntektId),
                     satsResultat = mapOf("subsumsjonsId" to satsId),
                     grunnlagResultat = mapOf("subsumsjonsId" to grunnlagId),
@@ -232,7 +246,15 @@ class PostgresSubsumsjonStoreTest {
         }
     }
 
-    private val subsumsjon = Subsumsjon("subsumsjonId", "behovId", Faktum("aktorId", 1, LocalDate.now()), mapOf(), mapOf(), mapOf(), mapOf(), Problem(title = "problem"))
+    private val subsumsjon = Subsumsjon(
+        behovId = "behovId",
+        faktum = Faktum("aktorId", 1, LocalDate.now()),
+        grunnlagResultat = mapOf(),
+        minsteinntektResultat = mapOf(),
+        periodeResultat = mapOf(),
+        satsResultat = mapOf(),
+        problem = Problem(title = "problem")
+    )
 }
 
 class PostgresBruktSubsumsjonsStoreTest {
@@ -271,6 +293,15 @@ class PostgresBruktSubsumsjonsStoreTest {
     val secondFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
     val oslo = ZoneId.of("Europe/Oslo")
     val exampleDate = ZonedDateTime.now(oslo).minusHours(6)
-    private val subsumsjon = Subsumsjon("subsumsjonid", "behovId", Faktum("aktorId", 1, LocalDate.now()), mapOf(), mapOf(), mapOf(), mapOf(), Problem(title = "problem"))
-    private val bruktSubsumsjon = SubsumsjonBrukt(subsumsjon.id, "Arena", exampleDate, ts = Instant.now().toEpochMilli())
+    private val subsumsjon = Subsumsjon(
+        behovId = "behovId",
+        faktum = Faktum("aktorId", 1, LocalDate.now()),
+        grunnlagResultat = mapOf(),
+        minsteinntektResultat = mapOf(),
+        periodeResultat = mapOf(),
+        satsResultat = mapOf(),
+        problem = Problem(title = "problem")
+    )
+    private val bruktSubsumsjon =
+        SubsumsjonBrukt(subsumsjon.behovId, "Arena", exampleDate, ts = Instant.now().toEpochMilli())
 }

@@ -12,25 +12,23 @@ internal class SubsumsjonTest {
     @Test
     fun `Map to JSON string`() {
         Subsumsjon(
-            "id",
-            "behovId",
-            Faktum("aktorId", 1, LocalDate.of(2019, 5, 9)),
-            mapOf(),
-            mapOf(),
-            mapOf(),
-            mapOf(),
-            Problem(title = "problem")
+            behovId = "behovId",
+            faktum = Faktum("aktorId", 1, LocalDate.of(2019, 5, 9)),
+            grunnlagResultat = mapOf(),
+            minsteinntektResultat = mapOf(),
+            periodeResultat = mapOf(),
+            satsResultat = mapOf(),
+            problem = Problem(title = "problem")
 
-        ).toJson() shouldBe """{"id":"id","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}"""
+        ).toJson() shouldBe """{"id":"not-in-use","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}"""
     }
 
     @Test
     fun `Map from JSON string to object`() {
-        val subsumsjon = Subsumsjon.fromJson("""{"id":"id","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09","inntektsId":"inntektsId","harAvtjentVerneplikt":true,"oppfyllerKravTilFangstOgFisk":true,"antallBarn":1,"manueltGrunnlag":0,"bruktInntektsPeriode":{"førsteMåned":"2019-05","sisteMåned":"2019-05"}},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}""")
+        val subsumsjon = Subsumsjon.fromJson("""{"behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09","inntektsId":"inntektsId","harAvtjentVerneplikt":true,"oppfyllerKravTilFangstOgFisk":true,"antallBarn":1,"manueltGrunnlag":0,"bruktInntektsPeriode":{"førsteMåned":"2019-05","sisteMåned":"2019-05"}},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}""")
         subsumsjon shouldNotBe null
 
         subsumsjon?.apply {
-            id shouldBe "id"
             behovId shouldBe "behovId"
             grunnlagResultat shouldBe mapOf()
             periodeResultat shouldBe mapOf()

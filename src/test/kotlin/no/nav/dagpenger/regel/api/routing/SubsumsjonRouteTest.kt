@@ -34,14 +34,13 @@ internal class SubsumsjonRouteTest {
     @Test
     fun `Returns subsumsjon if found`() {
         val subsumsjon = Subsumsjon(
-            "id",
-            "behovId",
-            Faktum("aktorid", 1, LocalDate.now()),
-            mapOf(),
-            mapOf(),
-            mapOf(),
-            mapOf(),
-            Problem(title = "problem")
+            behovId = "behovId",
+            faktum = Faktum("aktorId", 1, LocalDate.now()),
+            grunnlagResultat = mapOf(),
+            minsteinntektResultat = mapOf(),
+            periodeResultat = mapOf(),
+            satsResultat = mapOf(),
+            problem = Problem(title = "problem")
         )
 
         val storeMock = mockk<SubsumsjonStore>(relaxed = false).apply {
@@ -71,14 +70,13 @@ internal class SubsumsjonRouteTest {
     fun `Returns subsumsjon by result id if found`() {
         val id = ULID().nextULID()
         val subsumsjon = Subsumsjon(
-            "id",
-            "behovId",
-            Faktum("aktorid", 1, LocalDate.now()),
-            mapOf(),
-            mapOf(),
-            mapOf(),
-            mapOf(),
-            Problem(title = "problem")
+            behovId = "behovId",
+            faktum = Faktum("aktorId", 1, LocalDate.now()),
+            grunnlagResultat = mapOf(),
+            minsteinntektResultat = mapOf(),
+            periodeResultat = mapOf(),
+            satsResultat = mapOf(),
+            problem = Problem(title = "problem")
         )
 
         val storeMock = mockk<SubsumsjonStore>(relaxed = false).apply {
