@@ -20,6 +20,7 @@ import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonId
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.InternBehov
@@ -91,6 +92,10 @@ class BehovRouteTest {
         val obj: SubsumsjonStore = object : SubsumsjonStore {
             override fun insertBehov(behov: InternBehov): Int {
                 return 1
+            }
+
+            override fun konverterBehovV1TilV2(behovId: String, behov: Behov): InternBehov {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
 
             override fun hentKoblingTilEkstern(eksternId: EksternId): InternId {

@@ -15,8 +15,18 @@ data class Behov(
     val oppfyllerKravTilFangstOgFisk: Boolean? = null,
     val bruktInntektsPeriode: InntektsPeriode? = null,
     val antallBarn: Int? = null,
-    val manueltGrunnlag: Int? = null
-)
+    val manueltGrunnlag: Int? = null) {
+
+    fun toJson() = toJson(this)
+
+    companion object Mapper {
+        private val adapter = moshiInstance.adapter(Behov::class.java)
+
+        fun toJson(internBehov: Behov): String = adapter.toJson(internBehov)
+
+        fun fromJson(json: String): Behov? = adapter.fromJson(json)
+    }
+}
 
 data class InternBehov(
     val behovId: String = ulidGenerator.nextULID(),

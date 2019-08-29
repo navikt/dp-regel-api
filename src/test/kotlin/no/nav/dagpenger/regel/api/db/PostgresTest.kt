@@ -94,7 +94,8 @@ class PostgresSubsumsjonStoreTest {
                     bruktInntektsPeriode = InntektsPeriode(
                         YearMonth.now().minusMonths(12),
                         YearMonth.now()
-                    ))
+                    )
+                )
                 opprettBehov(behov)
             }
         }
@@ -219,6 +220,64 @@ class PostgresSubsumsjonStoreTest {
                 getSubsumsjonByResult(SubsumsjonId(grunnlagId)) shouldBe subsumsjonWithResults
                 getSubsumsjonByResult(SubsumsjonId(satsId)) shouldBe subsumsjonWithResults
                 getSubsumsjonByResult(SubsumsjonId(periodeId)) shouldBe subsumsjonWithResults
+            }
+        }
+    }
+
+    @Test
+    fun `Can convert a row from v1_behov to InternBehov `() {
+        val inntektsPeriode =
+            InntektsPeriode(førsteMåned = YearMonth.now().minusMonths(3), sisteMåned = YearMonth.now())
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                val behov = Behov(
+                    aktørId = "1",
+                    vedtakId = 1,
+                    beregningsDato = LocalDate.now(),
+                    harAvtjentVerneplikt = true,
+                    oppfyllerKravTilFangstOgFisk = true,
+                    bruktInntektsPeriode = inntektsPeriode,
+                    antallBarn = 2,
+                    manueltGrunnlag = 124
+                )
+                val behovId = ULID().nextULID()
+                insertBehovV1(behov, behovId)
+                val internBehov = hentBehovV1TilInternBehov(behovId)
+                internBehov.size shouldBe 1
+                val konvertertBehov = internBehov.first()
+                konvertertBehov.aktørId shouldBe "1"
+                konvertertBehov.behovId shouldBe behovId
+                konvertertBehov.internId.eksternId.id shouldBe "1"
+                konvertertBehov.bruktInntektsPeriode shouldBe inntektsPeriode
+
+            }
+        }
+    }
+
+    @Test
+    fun `Should fetch all behov`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                val behov = Behov(
+                    aktørId = "1",
+                    vedtakId = 1,
+                    beregningsDato = LocalDate.now(),
+                    harAvtjentVerneplikt = true,
+                    oppfyllerKravTilFangstOgFisk = true,
+                    bruktInntektsPeriode = InntektsPeriode(førsteMåned = YearMonth.now().minusMonths(3), sisteMåned = YearMonth.now()),
+                    antallBarn = 2,
+                    manueltGrunnlag = 124
+                )
+                insertBehovV1(behov)
+                val behov2 = behov.copy(vedtakId = 2)
+                insertBehovV1(behov2)
+                val behov3 = behov.copy(vedtakId = 3)
+                insertBehovV1(behov3)
+                val behov4 = behov.copy(vedtakId = 4)
+                insertBehovV1(behov4)
+                val internBehov = hentBehovV1TilInternBehov()
+                internBehov.size shouldBe 4
+                internBehov[3].internId.eksternId.id shouldBe "4"
             }
         }
     }

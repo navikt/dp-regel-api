@@ -1,13 +1,16 @@
 package no.nav.dagpenger.regel.api.db
 
 import com.zaxxer.hikari.HikariDataSource
+import de.huxhorn.sulky.ulid.ULID
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
+import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.InternId
+import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
@@ -112,6 +115,38 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
+        }
+    }
+
+    override fun konverterBehovV1TilV2(behovId: String, behov: Behov): InternBehov {
+        return InternBehov
+            .fromBehov(behov, InternId.nyInternIdFraEksternId(EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)))
+            .copy(behovId = behovId)
+    }
+
+    fun insertBehovV1(behov: Behov, behovId: String = ULID().nextULID()): Int {
+        return try {
+            using(sessionOf(dataSource)) { session ->
+                session.run(queryOf(""" INSERT INTO v1_behov VALUES (?, (to_json(?::json))) """,
+                    behovId, Behov.toJson(behov)).asUpdate)
+            }
+        } catch (p: PSQLException) {
+            throw StoreException(p.message!!)
+        }
+    }
+
+    fun hentBehovV1TilInternBehov(behovId: String? = null): List<InternBehov> {
+        val query = when(behovId) {
+            null -> queryOf("""SELECT id, data FROM v1_behov""", emptyMap())
+            else -> queryOf("""SELECT id, data FROM v1_behov WHERE id = :id""", mapOf("id" to behovId))
+        }.map { r ->
+            val id = r.string("id")
+            val behov = Behov.fromJson(r.string("data"))!!
+            val internBehov = InternBehov.fromBehov(behov, InternId.nyInternIdFraEksternId(EksternId(id = behov.vedtakId.toString(), kontekst = Kontekst.VEDTAK)))
+            internBehov.copy(behovId = id)
+        }.asList
+        return using(sessionOf(dataSource)) { session ->
+            session.run(query)
         }
     }
 
