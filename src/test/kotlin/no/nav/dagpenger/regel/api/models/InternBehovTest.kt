@@ -1,12 +1,6 @@
 package no.nav.dagpenger.regel.api.models
 
 import io.kotlintest.shouldBe
-import net.jqwik.api.Arbitraries
-import net.jqwik.api.Arbitrary
-import net.jqwik.api.Combinators
-import net.jqwik.api.ForAll
-import net.jqwik.api.Property
-import net.jqwik.api.Provide
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.YearMonth
@@ -40,31 +34,5 @@ class InternBehovTest {
         InntektsPeriode.fromPacket(packet) shouldBe behov.bruktInntektsPeriode
         packet.getNullableIntValue(PacketKeys.ANTALL_BARN) shouldBe null
         packet.getNullableIntValue(PacketKeys.MANUELT_GRUNNLAG) shouldBe null
-    }
-
-    @Property
-    fun `roundtripping json generation`(@ForAll("behovGenerator") internBehov: InternBehov): Boolean {
-        return internBehov == InternBehov.fromJson(internBehov.toJson())
-    }
-
-    @Provide
-    fun behovGenerator(): Arbitrary<InternBehov> {
-        val aktorIder = Arbitraries.strings()
-        val eksternId = Arbitraries.integers()
-        val verneplikt = Arbitraries.integers().between(0, 1)
-        val fangst = Arbitraries.integers().between(0, 1)
-        val antallBarn = Arbitraries.integers().between(0, 10)
-        val manuellGrunnlag = Arbitraries.integers().between(0, 581298) // 6 G
-        return Combinators.combine(aktorIder, eksternId, verneplikt, fangst, antallBarn, manuellGrunnlag).`as` { aktor, ekstern, vern, fangstOgFisk, barn, grunnlag ->
-            InternBehov(
-                aktørId = aktor,
-                internId = InternId.nyInternIdFraEksternId(EksternId(ekstern.toString(), Kontekst.VEDTAK)),
-                harAvtjentVerneplikt = vern == 0,
-                oppfyllerKravTilFangstOgFisk = fangstOgFisk == 0,
-                manueltGrunnlag = grunnlag,
-                antallBarn = barn,
-                beregningsDato = LocalDate.now()
-            )
-        }
     }
 }

@@ -40,8 +40,6 @@ configurations {
     }
 }
 
-val jqwikVersion = "1.2.0"
-
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(Dagpenger.Streams)
@@ -106,9 +104,6 @@ dependencies {
 
     testRuntimeOnly(Junit5.engine)
     testRuntimeOnly(Junit5.vintageEngine)
-
-    testImplementation("net.jqwik:jqwik-api:$jqwikVersion")
-    testRuntimeOnly("net.jqwik:jqwik-engine:$jqwikVersion")
 }
 
 spotless {
