@@ -15,7 +15,8 @@ data class Behov(
     val oppfyllerKravTilFangstOgFisk: Boolean? = null,
     val bruktInntektsPeriode: InntektsPeriode? = null,
     val antallBarn: Int? = null,
-    val manueltGrunnlag: Int? = null) {
+    val manueltGrunnlag: Int? = null
+) {
 
     fun toJson() = toJson(this)
 

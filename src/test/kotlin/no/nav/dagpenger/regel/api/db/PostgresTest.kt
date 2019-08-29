@@ -5,6 +5,9 @@ import de.huxhorn.sulky.ulid.ULID
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.mockk
+import kotliquery.queryOf
+import kotliquery.sessionOf
+import kotliquery.using
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.Behov
@@ -249,7 +252,6 @@ class PostgresSubsumsjonStoreTest {
                 konvertertBehov.behovId shouldBe behovId
                 konvertertBehov.internId.eksternId.id shouldBe "1"
                 konvertertBehov.bruktInntektsPeriode shouldBe inntektsPeriode
-
             }
         }
     }
@@ -278,6 +280,116 @@ class PostgresSubsumsjonStoreTest {
                 val internBehov = hentBehovV1TilInternBehov()
                 internBehov.size shouldBe 4
                 internBehov[3].internId.eksternId.id shouldBe "4"
+            }
+        }
+    }
+
+    @Test
+    fun `Should handle migrate of data from v1_behov to v2_behov`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                val behov = Behov(
+                    aktørId = "1",
+                    vedtakId = 1,
+                    beregningsDato = LocalDate.now(),
+                    harAvtjentVerneplikt = true,
+                    oppfyllerKravTilFangstOgFisk = true,
+                    bruktInntektsPeriode = InntektsPeriode(førsteMåned = YearMonth.now().minusMonths(3), sisteMåned = YearMonth.now()),
+                    antallBarn = 2,
+                    manueltGrunnlag = 124
+                )
+                insertBehovV1(behov)
+                val behov2 = behov.copy(vedtakId = 2)
+                insertBehovV1(behov2)
+                val behov3 = behov.copy(vedtakId = 3)
+                insertBehovV1(behov3)
+                val behov4 = behov.copy(vedtakId = 4)
+                insertBehovV1(behov4)
+                val internBehov = hentBehovV1TilInternBehov()
+
+                migrerBehovV1TilV2()
+
+                internBehov.forEach {
+                    behovStatus(it.behovId) shouldBe Status.Pending
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `Should handle partial migrations of data from v1_behov to v2_behov`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                val behov = Behov(
+                    aktørId = "1",
+                    vedtakId = 1,
+                    beregningsDato = LocalDate.now(),
+                    harAvtjentVerneplikt = true,
+                    oppfyllerKravTilFangstOgFisk = true,
+                    bruktInntektsPeriode = InntektsPeriode(førsteMåned = YearMonth.now().minusMonths(3), sisteMåned = YearMonth.now()),
+                    antallBarn = 2,
+                    manueltGrunnlag = 124
+                )
+                insertBehovV1(behov)
+                val behov2 = behov.copy(vedtakId = 2)
+                insertBehovV1(behov2)
+
+                migrerBehovV1TilV2()
+
+                val behov3 = behov.copy(vedtakId = 3)
+                insertBehovV1(behov3)
+                val behov4 = behov.copy(vedtakId = 4)
+                insertBehovV1(behov4)
+
+                migrerBehovV1TilV2()
+
+                val internBehov = hentBehovV1TilInternBehov()
+
+                internBehov.forEach {
+                    behovStatus(it.behovId) shouldBe Status.Pending
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `Should preserve ids from v1_behov to v2_behov`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                val behov = Behov(
+                    aktørId = "1",
+                    vedtakId = 1,
+                    beregningsDato = LocalDate.now(),
+                    harAvtjentVerneplikt = true,
+                    oppfyllerKravTilFangstOgFisk = true,
+                    bruktInntektsPeriode = InntektsPeriode(
+                        førsteMåned = YearMonth.now().minusMonths(3),
+                        sisteMåned = YearMonth.now()
+                    ),
+                    antallBarn = 2,
+                    manueltGrunnlag = 124
+                )
+                insertBehovV1(behov)
+                val behov2 = behov.copy(vedtakId = 2)
+                insertBehovV1(behov2)
+                val behov3 = behov.copy(vedtakId = 3)
+                insertBehovV1(behov3)
+                val behov4 = behov.copy(vedtakId = 4)
+                insertBehovV1(behov4)
+
+                migrerBehovV1TilV2()
+                using(sessionOf(DataSource.instance)) { s ->
+                    val v1Ids =
+                        s.run(queryOf("""SELECT id FROM v1_behov""", emptyMap()).map { r -> r.string("id") }.asList)
+                            .sorted()
+                    val v2Ids = s.run(
+                        queryOf(
+                            """SELECT id FROM v2_behov""",
+                            emptyMap()
+                        ).map { r -> r.string("id") }.asList
+                    ).sorted()
+                    v1Ids shouldBe v2Ids
+                }
             }
         }
     }

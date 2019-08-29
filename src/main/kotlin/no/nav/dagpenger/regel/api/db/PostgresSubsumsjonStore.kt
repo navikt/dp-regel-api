@@ -135,14 +135,15 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
         }
     }
 
-    fun behovV1TilV2(behovId: String, behovData: String) : InternBehov {
+    fun behovV1TilV2(behovId: String, behovData: String): InternBehov {
         val behov = Behov.fromJson(behovData)!!
-        val internBehov = InternBehov.fromBehov(behov, InternId.nyInternIdFraEksternId(EksternId(id = behov.vedtakId.toString(), kontekst = Kontekst.VEDTAK)))
+        val internId = hentKoblingTilEkstern(EksternId(id = behov.vedtakId.toString(), kontekst = Kontekst.VEDTAK))
+        val internBehov = InternBehov.fromBehov(behov, internId)
         return internBehov.copy(behovId = behovId)
     }
 
     fun hentBehovV1TilInternBehov(behovId: String? = null): List<InternBehov> {
-        val query = when(behovId) {
+        val query = when (behovId) {
             null -> queryOf("""SELECT id, data FROM v1_behov""", emptyMap())
             else -> queryOf("""SELECT id, data FROM v1_behov WHERE id = :id""", mapOf("id" to behovId))
         }.map { r ->
@@ -155,7 +156,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
 
     fun migrerBehovV1TilV2() {
         using(sessionOf(dataSource)) { session ->
-            session.forEach(queryOf("""SELECT id, data FROM v1_behov""", emptyMap())) { r ->
+            session.forEach(queryOf("""SELECT id, data FROM v1_behov WHERE id NOT IN (SELECT id FROM v2_behov as b where b.id = id)""", emptyMap())) { r ->
                 val internBehov = behovV1TilV2(r.string("id"), r.string("data"))
                 insertBehov(internBehov)
             }
