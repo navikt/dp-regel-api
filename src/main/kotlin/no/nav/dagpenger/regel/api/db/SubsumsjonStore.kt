@@ -4,7 +4,7 @@ import de.huxhorn.sulky.ulid.ULID
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InternBehov
-import no.nav.dagpenger.regel.api.models.InternId
+import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
@@ -13,14 +13,14 @@ internal interface SubsumsjonStore {
 
     fun opprettBehov(behov: Behov): InternBehov {
         val eksternId = EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)
-        val internId = hentKoblingTilEkstern(eksternId)
-        val internBehov = InternBehov.fromBehov(behov, internId)
+        val behandlingsId = hentKoblingTilEkstern(eksternId)
+        val internBehov = InternBehov.fromBehov(behov, behandlingsId)
         insertBehov(internBehov)
         return internBehov
     }
     fun insertBehov(behov: InternBehov): Int
     fun konverterBehovV1TilV2(behovId: String, behov: Behov): InternBehov
-    fun hentKoblingTilEkstern(eksternId: EksternId): InternId
+    fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId
     fun behovStatus(behovId: String): Status
     fun insertSubsumsjon(subsumsjon: Subsumsjon): Int
     fun getSubsumsjon(behovId: String): Subsumsjon

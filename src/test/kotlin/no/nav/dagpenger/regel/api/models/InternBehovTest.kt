@@ -9,13 +9,13 @@ class InternBehovTest {
 
     @Test
     fun `Mapping from BehovV2 to Packet with all fields`() {
-        val behov = InternBehov("behovId", "aktørId", InternId.nyInternIdFraEksternId(EksternId("1234", Kontekst.VEDTAK)), LocalDate.now(), true, true, InntektsPeriode(YearMonth.now(), YearMonth.now()), 1, 1)
+        val behov = InternBehov("behovId", "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("1234", Kontekst.VEDTAK)), LocalDate.now(), true, true, InntektsPeriode(YearMonth.now(), YearMonth.now()), 1, 1)
         val packet = InternBehov.toPacket(behov)
 
         packet.getStringValue(PacketKeys.BEHOV_ID) shouldBe behov.behovId
         packet.getStringValue(PacketKeys.AKTØR_ID) shouldBe behov.aktørId
-        packet.getIntValue(PacketKeys.VEDTAK_ID) shouldBe behov.internId.eksternId.id.toInt()
-        packet.getStringValue(PacketKeys.INTERN_ID) shouldBe behov.internId.id
+        packet.getIntValue(PacketKeys.VEDTAK_ID) shouldBe behov.behandlingsId.eksternId.id.toInt()
+        packet.getStringValue(PacketKeys.BEHANDLINGSID) shouldBe behov.behandlingsId.id
         packet.getLocalDate(PacketKeys.BEREGNINGS_DATO) shouldBe behov.beregningsDato
         packet.getBoolean(PacketKeys.HAR_AVTJENT_VERNE_PLIKT) shouldBe behov.harAvtjentVerneplikt
         packet.getBoolean(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK) shouldBe behov.oppfyllerKravTilFangstOgFisk
@@ -26,7 +26,7 @@ class InternBehovTest {
 
     @Test
     fun `Mapping from Behov to Packet with nullable fields`() {
-        val behov = InternBehov("behovId", "aktørId", InternId.nyInternIdFraEksternId(EksternId("1234", Kontekst.VEDTAK)), LocalDate.now())
+        val behov = InternBehov("behovId", "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("1234", Kontekst.VEDTAK)), LocalDate.now())
         val packet = InternBehov.toPacket(behov)
 
         packet.getNullableBoolean(PacketKeys.HAR_AVTJENT_VERNE_PLIKT) shouldBe null

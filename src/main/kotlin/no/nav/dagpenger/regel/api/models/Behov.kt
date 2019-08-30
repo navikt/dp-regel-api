@@ -32,7 +32,7 @@ data class Behov(
 data class InternBehov(
     val behovId: String = ulidGenerator.nextULID(),
     val aktørId: String,
-    val internId: InternId,
+    val behandlingsId: BehandlingsId,
     val beregningsDato: LocalDate,
     val harAvtjentVerneplikt: Boolean? = null,
     val oppfyllerKravTilFangstOgFisk: Boolean? = null,
@@ -53,10 +53,10 @@ data class InternBehov(
         fun toPacket(internBehov: InternBehov): Packet = Packet("{}").apply {
             this.putValue(PacketKeys.BEHOV_ID, internBehov.behovId)
             this.putValue(PacketKeys.AKTØR_ID, internBehov.aktørId)
-            when (internBehov.internId.eksternId.kontekst) {
-                Kontekst.VEDTAK -> this.putValue(PacketKeys.VEDTAK_ID, internBehov.internId.eksternId.id)
+            when (internBehov.behandlingsId.eksternId.kontekst) {
+                Kontekst.VEDTAK -> this.putValue(PacketKeys.VEDTAK_ID, internBehov.behandlingsId.eksternId.id)
             }
-            this.putValue(PacketKeys.INTERN_ID, internBehov.internId.id)
+            this.putValue(PacketKeys.BEHANDLINGSID, internBehov.behandlingsId.id)
             this.putValue(PacketKeys.BEREGNINGS_DATO, internBehov.beregningsDato)
             internBehov.harAvtjentVerneplikt?.let { this.putValue(PacketKeys.HAR_AVTJENT_VERNE_PLIKT, it) }
             internBehov.oppfyllerKravTilFangstOgFisk?.let { this.putValue(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK, it) }
@@ -65,9 +65,9 @@ data class InternBehov(
             internBehov.manueltGrunnlag?.let { this.putValue(PacketKeys.MANUELT_GRUNNLAG, it) }
         }
 
-        fun fromBehov(behov: Behov, internId: InternId): InternBehov {
+        fun fromBehov(behov: Behov, behandlingsId: BehandlingsId): InternBehov {
             return InternBehov(
-                internId = internId,
+                behandlingsId = behandlingsId,
                 aktørId = behov.aktørId,
                 harAvtjentVerneplikt = behov.harAvtjentVerneplikt,
                 oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk,

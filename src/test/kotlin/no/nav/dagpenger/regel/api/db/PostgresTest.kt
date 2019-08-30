@@ -14,7 +14,7 @@ import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
-import no.nav.dagpenger.regel.api.models.InternId
+import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
@@ -250,7 +250,7 @@ class PostgresSubsumsjonStoreTest {
                 val konvertertBehov = internBehov.first()
                 konvertertBehov.aktørId shouldBe "1"
                 konvertertBehov.behovId shouldBe behovId
-                konvertertBehov.internId.eksternId.id shouldBe "1"
+                konvertertBehov.behandlingsId.eksternId.id shouldBe "1"
                 konvertertBehov.bruktInntektsPeriode shouldBe inntektsPeriode
             }
         }
@@ -279,7 +279,7 @@ class PostgresSubsumsjonStoreTest {
                 insertBehovV1(behov4)
                 val internBehov = hentBehovV1TilInternBehov()
                 internBehov.size shouldBe 4
-                internBehov[3].internId.eksternId.id shouldBe "4"
+                internBehov[3].behandlingsId.eksternId.id shouldBe "4"
             }
         }
     }
@@ -399,8 +399,8 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val eksternId = EksternId("1234", Kontekst.VEDTAK)
-                val internId: InternId = hentKoblingTilEkstern(eksternId)
-                ULID.parseULID(internId.id)
+                val behandlingsId: BehandlingsId = hentKoblingTilEkstern(eksternId)
+                ULID.parseULID(behandlingsId.id)
             }
         }
     }
@@ -410,9 +410,9 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val eksternId = EksternId("1234", Kontekst.VEDTAK)
-                val internId1: InternId = hentKoblingTilEkstern(eksternId)
-                val internId2: InternId = hentKoblingTilEkstern(eksternId)
-                internId1 shouldBe internId2
+                val behandlingsId1: BehandlingsId = hentKoblingTilEkstern(eksternId)
+                val behandlingsId2: BehandlingsId = hentKoblingTilEkstern(eksternId)
+                behandlingsId1 shouldBe behandlingsId2
             }
         }
     }
