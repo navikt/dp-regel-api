@@ -9,6 +9,7 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
+import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
 import java.time.LocalDate
 
@@ -54,8 +55,8 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
                     tx.run(
                         queryOf(
                             """INSERT INTO v2_behov(id, behandlings_id, aktor_id, beregnings_dato, oppfyller_krav_til_fangst_og_fisk, 
-                    |                                       avtjent_verne_plikt, brukt_opptjening_forste_maned, brukt_opptjening_siste_maned, antall_barn, manuelt_grunnlag) 
-                    |                  VALUES (:id, :behandlings_id, :aktor, :beregning, :fisk, :verneplikt, :forste, :siste, :barn, :grunnlag)""".trimMargin(),
+                    |                                       avtjent_verne_plikt, brukt_opptjening_forste_maned, brukt_opptjening_siste_maned, antall_barn, manuelt_grunnlag, data) 
+                    |                  VALUES (:id, :behandlings_id, :aktor, :beregning, :fisk, :verneplikt, :forste, :siste, :barn, :grunnlag, :data)""".trimMargin(),
                             mapOf(
                                 "id" to behov.behovId,
                                 "behandlings_id" to behov.behandlingsId.id,
@@ -63,22 +64,14 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
                                 "beregning" to behov.beregningsDato,
                                 "fisk" to behov.oppfyllerKravTilFangstOgFisk,
                                 "verneplikt" to behov.harAvtjentVerneplikt,
-                                "forste" to behov.bruktInntektsPeriode?.førsteMåned?.let {
-                                    LocalDate.of(
-                                        it.year,
-                                        it.month,
-                                        1
-                                    )
-                                },
-                                "siste" to behov.bruktInntektsPeriode?.sisteMåned?.let {
-                                    LocalDate.of(
-                                        it.year,
-                                        it.month,
-                                        1
-                                    )
-                                },
+                                "forste" to behov.bruktInntektsPeriode?.førsteMåned?.atDay(1),
+                                "siste" to behov.bruktInntektsPeriode?.sisteMåned?.atDay(1),
                                 "barn" to behov.antallBarn,
-                                "grunnlag" to behov.manueltGrunnlag
+                                "grunnlag" to behov.manueltGrunnlag,
+                                "data" to PGobject().apply {
+                                    this.type = "jsonb"
+                                    this.value = behov.toJson()
+                                }
                             )
                         ).asUpdate
                     )

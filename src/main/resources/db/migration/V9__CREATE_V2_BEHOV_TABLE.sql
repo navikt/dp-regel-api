@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS V2_BEHOV
     brukt_opptjening_siste_maned      DATE                     NULL,
     antall_barn                       NUMERIC                  NULL,
     manuelt_grunnlag                  NUMERIC                  NULL,
+    data                              JSONB                    NOT NULL,
     created                           TIMESTAMP WITH TIME ZONE NOT NULL default (now() at time zone 'utc'),
     PRIMARY KEY (id),
     FOREIGN KEY (behandlings_id) REFERENCES v1_behov_behandling_mapping (id)

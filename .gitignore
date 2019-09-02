@@ -17,6 +17,9 @@
 # jqwik
 .jqwik-database
 
+.kotlintest
+
+
 # Generated files
 .idea/**/contentModel.xml
 
