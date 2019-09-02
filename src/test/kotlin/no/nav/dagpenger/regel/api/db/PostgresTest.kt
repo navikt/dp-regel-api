@@ -395,6 +395,70 @@ class PostgresSubsumsjonStoreTest {
     }
 
     @Test
+    fun `Should handle migrate of data from v1_subsumsjon to v2_subsumsjon`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                val behov = Behov(
+                        aktørId = "1",
+                        vedtakId = 1,
+                        beregningsDato = LocalDate.now(),
+                        harAvtjentVerneplikt = true,
+                        oppfyllerKravTilFangstOgFisk = true,
+                        bruktInntektsPeriode = InntektsPeriode(førsteMåned = YearMonth.now().minusMonths(3), sisteMåned = YearMonth.now()),
+                        antallBarn = 2,
+                        manueltGrunnlag = 124
+                )
+
+                val subsumsjon = Subsumsjon(
+                        behovId = "placeholder",
+                        faktum = Faktum(
+                                aktorId = behov.aktørId,
+                                vedtakId = behov.vedtakId,
+                                beregningsdato = behov.beregningsDato
+                        ),
+                        grunnlagResultat = emptyMap(),
+                        satsResultat = emptyMap(),
+                        periodeResultat = emptyMap(),
+                        minsteinntektResultat = emptyMap(),
+                        problem = null
+                )
+
+                insertBehovV1(behov)
+                val behov2 = behov.copy(vedtakId = 2)
+                insertBehovV1(behov2)
+                val behov3 = behov.copy(vedtakId = 3)
+                insertBehovV1(behov3)
+                val behov4 = behov.copy(vedtakId = 4)
+                insertBehovV1(behov4)
+
+                val internBehov = hentBehovV1TilInternBehov()
+
+                internBehov.forEach {
+                    insertSubumsjonV1(
+                            subsumsjon.copy(behovId = it.behovId)
+                    )
+                }
+
+                migrerBehovV1TilV2()
+
+                internBehov.forEach {
+                    behovStatus(it.behovId) shouldBe Status.Pending
+                }
+
+                migrerSubsumsjonV1TilV2()
+
+                internBehov.forEach {
+                    behovStatus(it.behovId) shouldBe Status.Done(it.behovId)
+                }
+
+                internBehov.forEach {
+                    getSubsumsjon(it.behovId) shouldBe subsumsjon.copy(behovId = it.behovId)
+                }
+            }
+        }
+    }
+
+    @Test
     fun `Should generate new intern id for ekstern id`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {

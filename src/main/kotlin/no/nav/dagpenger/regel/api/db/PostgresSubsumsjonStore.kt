@@ -6,14 +6,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.models.Behov
-import no.nav.dagpenger.regel.api.models.EksternId
-import no.nav.dagpenger.regel.api.models.InternBehov
-import no.nav.dagpenger.regel.api.models.InternId
-import no.nav.dagpenger.regel.api.models.Kontekst
-import no.nav.dagpenger.regel.api.models.Status
-import no.nav.dagpenger.regel.api.models.Subsumsjon
-import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
+import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PSQLException
@@ -112,6 +105,28 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
                         subsumsjon.behovId, subsumsjon.toJson()
                     ).asUpdate
                 )
+            }
+        } catch (p: PSQLException) {
+            throw StoreException(p.message!!)
+        }
+    }
+
+    fun migrerSubsumsjonV1TilV2() {
+        using(sessionOf(dataSource)) { session ->
+            session.forEach(queryOf("""SELECT behov_id, data FROM v1_subsumsjon WHERE behov_id NOT IN (SELECT behov_id FROM v2_subsumsjon as b where b.behov_id = behov_id)""".trimMargin(), emptyMap())) { r ->
+                val subsumsjon = r.string("data").let {
+                    Subsumsjon.fromJson(it) ?: throw SubsumsjonSerDerException("Unable to deserialize: $it")
+                }
+                insertSubsumsjon(subsumsjon)
+            }
+        }
+    }
+
+    fun insertSubumsjonV1(subsumsjon: Subsumsjon): Int {
+        return try {
+            using(sessionOf(dataSource)) { session ->
+                session.run(queryOf(""" INSERT INTO v1_subsumsjon VALUES (?, ?, (to_json(?::json))) """,
+                        ULID().nextULID(), subsumsjon.behovId, Subsumsjon.toJson(subsumsjon)).asUpdate)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
