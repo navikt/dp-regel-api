@@ -33,7 +33,7 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
                         call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
                         call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
                     }.also {
-                        LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.internId} med beregningsdato ${it.beregningsDato}.")
+                        LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
                     }
                 }
             }

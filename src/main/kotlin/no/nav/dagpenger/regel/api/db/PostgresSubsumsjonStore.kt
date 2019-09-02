@@ -9,7 +9,7 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InternBehov
-import no.nav.dagpenger.regel.api.models.InternId
+import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
@@ -23,35 +23,35 @@ private val LOGGER = KotlinLogging.logger {}
 
 internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : SubsumsjonStore, HealthCheck {
 
-    override fun hentKoblingTilEkstern(eksternId: EksternId): InternId {
+    override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
         val id: String? = using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "SELECT id FROM v1_behov_ekstern_mapping WHERE kontekst = :kontekst AND ekstern_id = :ekstern_id",
+                    "SELECT id FROM v1_behov_behandling_mapping WHERE kontekst = :kontekst AND ekstern_id = :ekstern_id",
                     mapOf("kontekst" to eksternId.kontekst.name, "ekstern_id" to eksternId.id)
                 ).map { row ->
                     row.string("id")
                 }.asSingle
             )
         }
-        return id?.let { InternId(it, eksternId) } ?: opprettKoblingTilEkstern(eksternId)
+        return id?.let { BehandlingsId(it, eksternId) } ?: opprettKoblingTilEkstern(eksternId)
     }
 
-    private fun opprettKoblingTilEkstern(eksternId: EksternId): InternId {
-        val internId = InternId.nyInternIdFraEksternId(eksternId)
+    private fun opprettKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
+        val behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(eksternId)
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    "INSERT INTO v1_behov_ekstern_mapping(id, ekstern_id, kontekst) VALUES (:id, :ekstern_id, :kontekst)",
+                    "INSERT INTO v1_behov_behandling_mapping(id, ekstern_id, kontekst) VALUES (:id, :ekstern_id, :kontekst)",
                     mapOf(
-                        "id" to internId.id,
-                        "ekstern_id" to internId.eksternId.id,
-                        "kontekst" to internId.eksternId.kontekst.name
+                        "id" to behandlingsId.id,
+                        "ekstern_id" to behandlingsId.eksternId.id,
+                        "kontekst" to behandlingsId.eksternId.kontekst.name
                     )
                 ).asUpdate
             )
         }
-        return internId
+        return behandlingsId
     }
 
     override fun insertBehov(behov: InternBehov): Int {
@@ -60,12 +60,12 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
                 session.transaction { tx ->
                     tx.run(
                         queryOf(
-                            """INSERT INTO v2_behov(id, intern_id, aktor_id, beregnings_dato, oppfyller_krav_til_fangst_og_fisk, 
+                            """INSERT INTO v2_behov(id, behandlings_id, aktor_id, beregnings_dato, oppfyller_krav_til_fangst_og_fisk, 
                     |                                       avtjent_verne_plikt, brukt_opptjening_forste_maned, brukt_opptjening_siste_maned, antall_barn, manuelt_grunnlag) 
-                    |                  VALUES (:id, :intern_id, :aktor, :beregning, :fisk, :verneplikt, :forste, :siste, :barn, :grunnlag)""".trimMargin(),
+                    |                  VALUES (:id, :behandlings_id, :aktor, :beregning, :fisk, :verneplikt, :forste, :siste, :barn, :grunnlag)""".trimMargin(),
                             mapOf(
                                 "id" to behov.behovId,
-                                "intern_id" to behov.internId.id,
+                                "behandlings_id" to behov.behandlingsId.id,
                                 "aktor" to behov.aktørId,
                                 "beregning" to behov.beregningsDato,
                                 "fisk" to behov.oppfyllerKravTilFangstOgFisk,
@@ -120,7 +120,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
 
     override fun konverterBehovV1TilV2(behovId: String, behov: Behov): InternBehov {
         return InternBehov
-            .fromBehov(behov, InternId.nyInternIdFraEksternId(EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)))
+            .fromBehov(behov, BehandlingsId.nyBehandlingsIdFraEksternId(EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)))
             .copy(behovId = behovId)
     }
 
@@ -137,8 +137,8 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
 
     fun behovV1TilV2(behovId: String, behovData: String): InternBehov {
         val behov = Behov.fromJson(behovData)!!
-        val internId = hentKoblingTilEkstern(EksternId(id = behov.vedtakId.toString(), kontekst = Kontekst.VEDTAK))
-        val internBehov = InternBehov.fromBehov(behov, internId)
+        val behandlingsId = hentKoblingTilEkstern(EksternId(id = behov.vedtakId.toString(), kontekst = Kontekst.VEDTAK))
+        val internBehov = InternBehov.fromBehov(behov, behandlingsId)
         return internBehov.copy(behovId = behovId)
     }
 
