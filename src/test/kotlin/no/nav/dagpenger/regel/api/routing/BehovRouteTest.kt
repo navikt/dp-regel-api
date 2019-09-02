@@ -24,7 +24,7 @@ import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.InternBehov
-import no.nav.dagpenger.regel.api.models.InternId
+import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
@@ -98,8 +98,8 @@ class BehovRouteTest {
                 TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
             }
 
-            override fun hentKoblingTilEkstern(eksternId: EksternId): InternId {
-                return InternId.nyInternIdFraEksternId(eksternId)
+            override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
+                return BehandlingsId.nyBehandlingsIdFraEksternId(eksternId)
             }
 
             override fun behovStatus(id: String): Status {
@@ -157,7 +157,7 @@ class BehovRouteTest {
         with(produceSlot.captured) {
             behovId shouldNotBe null
             aktørId shouldBe "1234"
-            internId shouldNotBe null
+            behandlingsId shouldNotBe null
             beregningsDato shouldBe LocalDate.of(2019, 1, 8)
             harAvtjentVerneplikt shouldBe true
             oppfyllerKravTilFangstOgFisk shouldBe true

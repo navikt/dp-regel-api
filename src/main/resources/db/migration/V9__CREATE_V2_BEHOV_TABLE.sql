@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS V2_BEHOV
 (
     id                                CHAR(26)                 NOT NULL, -- ULID is always 26 chars
-    intern_id                         CHAR(26)                 NOT NULL, -- ULID is always 26 chars
+    behandlings_id                     CHAR(26)                 NOT NULL, -- ULID is always 26 chars
     aktor_id                          VARCHAR(20)              NOT NULL, -- TODO: length of aktor id ?
     beregnings_dato                   DATE                     NOT NULL,
     oppfyller_krav_til_fangst_og_fisk BOOLEAN                  NULL,
@@ -12,5 +12,5 @@ CREATE TABLE IF NOT EXISTS V2_BEHOV
     manuelt_grunnlag                  NUMERIC                  NULL,
     created                           TIMESTAMP WITH TIME ZONE NOT NULL default (now() at time zone 'utc'),
     PRIMARY KEY (id),
-    FOREIGN KEY (intern_id) REFERENCES v1_behov_ekstern_mapping (id)
+    FOREIGN KEY (behandlings_id) REFERENCES v1_behov_behandling_mapping (id)
 );

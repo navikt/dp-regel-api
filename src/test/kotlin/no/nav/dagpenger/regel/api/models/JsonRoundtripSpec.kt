@@ -47,7 +47,7 @@ class InternBehovGenerator : Gen<InternBehov> {
     override fun random(): Sequence<InternBehov> = generateSequence {
         InternBehov(
             aktørId = Gen.string().random().first(),
-            internId = InternId.nyInternIdFraEksternId(EksternId(Gen.string().random().first(), Kontekst.VEDTAK)),
+            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(EksternId(Gen.string().random().first(), Kontekst.VEDTAK)),
             harAvtjentVerneplikt = Gen.bool().random().first(),
             oppfyllerKravTilFangstOgFisk = Gen.bool().random().first(),
             manueltGrunnlag = Gen.positiveIntegers().random().first(),
