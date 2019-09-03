@@ -35,7 +35,7 @@ class KafkaSubsumsjonBruktConsumerTest {
             val config = Configuration().run {
                 copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers))
             }
-            var consumer = KafkaSubsumsjonBruktConsumer.apply {
+            KafkaSubsumsjonBruktConsumer.apply {
                 create(config, storeMock)
                 listen()
             }

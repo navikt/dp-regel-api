@@ -19,13 +19,11 @@ interface SubsumsjonStore {
         return internBehov
     }
     fun insertBehov(behov: InternBehov): Int
-    fun konverterBehovV1TilV2(behovId: String, behov: Behov): InternBehov
     fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId
     fun behovStatus(behovId: String): Status
     fun insertSubsumsjon(subsumsjon: Subsumsjon): Int
     fun getSubsumsjon(behovId: String): Subsumsjon
     fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon
-    fun migrerSubsumsjonV1TilV2()
 }
 
 data class SubsumsjonId(val id: String) {

@@ -1,12 +1,16 @@
 package no.nav.dagpenger.regel.api.db
 
 import com.zaxxer.hikari.HikariDataSource
-import de.huxhorn.sulky.ulid.ULID
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.models.*
+import no.nav.dagpenger.regel.api.models.BehandlingsId
+import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PGobject
@@ -101,73 +105,6 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
-        }
-    }
-
-    override fun migrerSubsumsjonV1TilV2() {
-        using(sessionOf(dataSource)) { session ->
-            session.forEach(queryOf("""SELECT behov_id, data FROM v1_subsumsjon WHERE behov_id NOT IN (SELECT behov_id FROM v2_subsumsjon as b where b.behov_id = behov_id)""".trimMargin(), emptyMap())) { r ->
-                val subsumsjon = r.string("data").let {
-                    Subsumsjon.fromJson(it) ?: throw SubsumsjonSerDerException("Unable to deserialize: $it")
-                }
-                insertSubsumsjon(subsumsjon)
-            }
-        }
-    }
-
-    fun insertSubumsjonV1(subsumsjon: Subsumsjon): Int {
-        return try {
-            using(sessionOf(dataSource)) { session ->
-                session.run(queryOf(""" INSERT INTO v1_subsumsjon VALUES (?, ?, (to_json(?::json))) """,
-                        ULID().nextULID(), subsumsjon.behovId, Subsumsjon.toJson(subsumsjon)).asUpdate)
-            }
-        } catch (p: PSQLException) {
-            throw StoreException(p.message!!)
-        }
-    }
-
-    override fun konverterBehovV1TilV2(behovId: String, behov: Behov): InternBehov {
-        return InternBehov
-            .fromBehov(behov, BehandlingsId.nyBehandlingsIdFraEksternId(EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)))
-            .copy(behovId = behovId)
-    }
-
-    fun insertBehovV1(behov: Behov, behovId: String = ULID().nextULID()): Int {
-        return try {
-            using(sessionOf(dataSource)) { session ->
-                session.run(queryOf(""" INSERT INTO v1_behov VALUES (?, (to_json(?::json))) """,
-                    behovId, Behov.toJson(behov)).asUpdate)
-            }
-        } catch (p: PSQLException) {
-            throw StoreException(p.message!!)
-        }
-    }
-
-    fun behovV1TilV2(behovId: String, behovData: String): InternBehov {
-        val behov = Behov.fromJson(behovData)!!
-        val behandlingsId = hentKoblingTilEkstern(EksternId(id = behov.vedtakId.toString(), kontekst = Kontekst.VEDTAK))
-        val internBehov = InternBehov.fromBehov(behov, behandlingsId)
-        return internBehov.copy(behovId = behovId)
-    }
-
-    fun hentBehovV1TilInternBehov(behovId: String? = null): List<InternBehov> {
-        val query = when (behovId) {
-            null -> queryOf("""SELECT id, data FROM v1_behov""", emptyMap())
-            else -> queryOf("""SELECT id, data FROM v1_behov WHERE id = :id""", mapOf("id" to behovId))
-        }.map { r ->
-            behovV1TilV2(r.string("id"), r.string("data"))
-        }.asList
-        return using(sessionOf(dataSource)) { session ->
-            session.run(query)
-        }
-    }
-
-    fun migrerBehovV1TilV2() {
-        using(sessionOf(dataSource)) { session ->
-            session.forEach(queryOf("""SELECT id, data FROM v1_behov WHERE id NOT IN (SELECT id FROM v2_behov as b where b.id = id)""", emptyMap())) { r ->
-                val internBehov = behovV1TilV2(r.string("id"), r.string("data"))
-                insertBehov(internBehov)
-            }
         }
     }
 
