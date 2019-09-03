@@ -90,7 +90,8 @@ class BehovRouteTest {
     fun `Valid json to behov endpoint should be accepted, saved and produce an event to Kafka`() {
 
         val obj: SubsumsjonStore = object : SubsumsjonStore {
-            override fun migrerBehovV1TilV2() {
+
+            override fun migrerSubsumsjonV1TilV2() {
                 TODO("not implemented")
             }
 
