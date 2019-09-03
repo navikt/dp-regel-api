@@ -3,7 +3,7 @@ package no.nav.dagpenger.regel.api.models
 import no.nav.dagpenger.events.Packet
 import java.time.LocalDate
 
-internal data class Faktum(
+data class Faktum(
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,

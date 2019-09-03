@@ -3,9 +3,9 @@ package no.nav.dagpenger.regel.api.streams
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.APPLICATION_NAME
+import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.Topics
 import no.nav.dagpenger.streams.Topics.DAGPENGER_BEHOV_PACKET_EVENT
@@ -73,7 +73,7 @@ internal fun producerConfig(
 }
 
 internal interface DagpengerBehovProducer {
-    fun produceEvent(behov: Behov): Future<RecordMetadata>
+    fun produceEvent(behov: InternBehov): Future<RecordMetadata>
 }
 
 internal class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProducer, HealthCheck {
@@ -99,9 +99,9 @@ internal class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBe
         return HealthStatus.UP
     }
 
-    override fun produceEvent(behov: Behov): Future<RecordMetadata> {
+    override fun produceEvent(behov: InternBehov): Future<RecordMetadata> {
         return kafkaProducer.send(
-            ProducerRecord(DAGPENGER_BEHOV_PACKET_EVENT.name, behov.behovId, Behov.toPacket(behov))
+            ProducerRecord(DAGPENGER_BEHOV_PACKET_EVENT.name, behov.behovId, InternBehov.toPacket(behov)) // TODO: Use intern id as partition key instead, as it is unique per ektern id + kontekst
         ) { metadata, exception ->
             exception?.let { LOGGER.error { "Failed to produce dagpenger behov" } }
             metadata?.let { LOGGER.info { "Produced dagpenger behov on topic ${metadata.topic()} to offset ${metadata.offset()} with the key ${behov.behovId}" } }

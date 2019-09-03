@@ -14,9 +14,9 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 internal fun Route.subsumsjon(store: SubsumsjonStore) {
     authenticate {
         route("subsumsjon/") {
-            get("/{subsumsjonsid}") {
-                val subsumsjonsId = call.parameters["subsumsjonsid"] ?: throw BadRequestException()
-                store.getSubsumsjon(subsumsjonsId).toJson().let {
+            get("/{behovid}") {
+                val behovid = call.parameters["behovid"] ?: throw BadRequestException()
+                store.getSubsumsjon(behovid).toJson().let {
                     call.respond(HttpStatusCode.OK, it)
                 }
             }
