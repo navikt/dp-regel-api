@@ -285,7 +285,7 @@ class PostgresBruktSubsumsjonsStoreTest {
         withMigratedDb {
             with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
                 insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
-                insertSubsumsjonBrukt(bruktSubsumsjon.copy(eksternId = "arena")) shouldBe 0
+                insertSubsumsjonBrukt(bruktSubsumsjon.copy(eksternId = 1234L)) shouldBe 0
                 getSubsumsjonBrukt(bruktSubsumsjon.id)?.eksternId shouldBe "Arena"
             }
         }
@@ -304,5 +304,5 @@ class PostgresBruktSubsumsjonsStoreTest {
         problem = Problem(title = "problem")
     )
     private val bruktSubsumsjon =
-        SubsumsjonBrukt(subsumsjon.behovId, "Arena", exampleDate, ts = Instant.now().toEpochMilli())
+        SubsumsjonBrukt(subsumsjon.behovId, 1234L, exampleDate, ts = Instant.now().toEpochMilli())
 }

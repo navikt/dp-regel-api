@@ -13,7 +13,7 @@ interface BruktSubsumsjonStore {
 
 data class SubsumsjonBrukt(
     val id: String,
-    val eksternId: String,
+    val eksternId: Long,
     val arenaTs: ZonedDateTime,
     val ts: Long
 ) {
