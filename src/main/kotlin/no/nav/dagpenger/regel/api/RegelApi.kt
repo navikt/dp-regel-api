@@ -66,7 +66,7 @@ fun main() = runBlocking {
     val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
 
     val job = launch(Dispatchers.IO) {
-        subsumsjonStore.migrerBehovV1TilV2()
+        subsumsjonStore.migrerSubsumsjonV1TilV2()
     }
     timer("vaktmester", daemon = true, initialDelay = TimeUnit.SECONDS.toMillis(4), period = TimeUnit.SECONDS.toMillis(10)) {
         if (job.isActive) {

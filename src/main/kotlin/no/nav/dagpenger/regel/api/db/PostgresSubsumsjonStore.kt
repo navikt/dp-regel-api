@@ -104,7 +104,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
         }
     }
 
-    fun migrerSubsumsjonV1TilV2() {
+    override fun migrerSubsumsjonV1TilV2() {
         using(sessionOf(dataSource)) { session ->
             session.forEach(queryOf("""SELECT behov_id, data FROM v1_subsumsjon WHERE behov_id NOT IN (SELECT behov_id FROM v2_subsumsjon as b where b.behov_id = behov_id)""".trimMargin(), emptyMap())) { r ->
                 val subsumsjon = r.string("data").let {
@@ -162,8 +162,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
         }
     }
 
-    override fun migrerBehovV1TilV2() {
-
+    fun migrerBehovV1TilV2() {
         using(sessionOf(dataSource)) { session ->
             session.forEach(queryOf("""SELECT id, data FROM v1_behov WHERE id NOT IN (SELECT id FROM v2_behov as b where b.id = id)""", emptyMap())) { r ->
                 val internBehov = behovV1TilV2(r.string("id"), r.string("data"))

@@ -25,7 +25,7 @@ interface SubsumsjonStore {
     fun insertSubsumsjon(subsumsjon: Subsumsjon): Int
     fun getSubsumsjon(behovId: String): Subsumsjon
     fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon
-    fun migrerBehovV1TilV2()
+    fun migrerSubsumsjonV1TilV2()
 }
 
 data class SubsumsjonId(val id: String) {
