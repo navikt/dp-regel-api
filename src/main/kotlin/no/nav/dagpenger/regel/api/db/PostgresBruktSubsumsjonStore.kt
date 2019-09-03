@@ -62,7 +62,7 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
                     ).map { row ->
                         SubsumsjonBrukt(
                             id = row.string("id"),
-                            eksternId = row.string("ekstern_id"),
+                            eksternId = row.string("ekstern_id").toLong(),
                             arenaTs = row.zonedDateTime("arena_ts"),
                             ts = row.instant("created").toEpochMilli()
                         )
@@ -83,7 +83,7 @@ class PostgresBruktSubsumsjonStore(private val dataSource: HikariDataSource) : B
                     ).map { row ->
                         SubsumsjonBrukt(
                             id = row.string("id"),
-                            eksternId = row.string("ekstern_id"),
+                            eksternId = row.string("ekstern_id").toLong(),
                             arenaTs = row.zonedDateTime("arena_ts"),
                             ts = row.long("created")
                         )

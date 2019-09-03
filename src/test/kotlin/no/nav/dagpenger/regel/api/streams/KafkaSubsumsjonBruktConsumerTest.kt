@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.streams
 
+import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -49,15 +50,21 @@ class KafkaSubsumsjonBruktConsumerTest {
                 })
             val now = ZonedDateTime.now()
             val bruktSubsumsjon =
-                SubsumsjonBrukt(id = "test", eksternId = "arena_1", arenaTs = now, ts = now.toInstant().toEpochMilli())
+                SubsumsjonBrukt(id = "test", eksternId = 1234678L, arenaTs = now, ts = now.toInstant().toEpochMilli())
             val metaData = producer.send(ProducerRecord(config.subsumsjonBruktTopic, "test", bruktSubsumsjon.toJson()))
                 .get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktSubsumsjon with meta $metaData")
             assertThat(metaData.topic()).isEqualTo(config.subsumsjonBruktTopic)
             Thread.sleep(200)
             assertThat(savedToStore.isCaptured).isTrue()
-            assertThat(savedToStore.captured.eksternId).isEqualTo("arena_1")
+            assertThat(savedToStore.captured.eksternId).isEqualTo(1234678L)
             assertThat(savedToStore.captured.arenaTs).isEqualTo(now)
         }
+    }
+
+    @Test
+    fun `Should be able to convert scientific notation back to long`() {
+        val science = "1.2345678E7"
+        12345678L shouldBe science.toDouble().toLong()
     }
 }
