@@ -90,19 +90,23 @@ class BehovRouteTest {
     fun `Valid json to behov endpoint should be accepted, saved and produce an event to Kafka`() {
 
         val obj: SubsumsjonStore = object : SubsumsjonStore {
+            override fun migrerBehovV1TilV2() {
+                TODO("not implemented")
+            }
+
             override fun insertBehov(behov: InternBehov): Int {
                 return 1
             }
 
             override fun konverterBehovV1TilV2(behovId: String, behov: Behov): InternBehov {
-                TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+                TODO("not implemented")
             }
 
             override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
                 return BehandlingsId.nyBehandlingsIdFraEksternId(eksternId)
             }
 
-            override fun behovStatus(id: String): Status {
+            override fun behovStatus(behovId: String): Status {
                 TODO("not implemented")
             }
 

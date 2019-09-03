@@ -9,7 +9,7 @@ import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 
-internal interface SubsumsjonStore {
+interface SubsumsjonStore {
 
     fun opprettBehov(behov: Behov): InternBehov {
         val eksternId = EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)
@@ -25,6 +25,7 @@ internal interface SubsumsjonStore {
     fun insertSubsumsjon(subsumsjon: Subsumsjon): Int
     fun getSubsumsjon(behovId: String): Subsumsjon
     fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon
+    fun migrerBehovV1TilV2()
 }
 
 data class SubsumsjonId(val id: String) {
