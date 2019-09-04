@@ -169,7 +169,7 @@ class PostgresBruktSubsumsjonStore(
                 val v2SubsumsjonBrukt = v1TilV2(
                     SubsumsjonBrukt(
                         id = r.string("id"),
-                        eksternId = r.string("ekstern_id").toLong(),
+                        eksternId = r.string("ekstern_id").toDouble().toLong(),
                         arenaTs = r.zonedDateTime("arena_ts"),
                         ts = r.zonedDateTime("created").toInstant().toEpochMilli()
                     )
