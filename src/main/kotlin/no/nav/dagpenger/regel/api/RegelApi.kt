@@ -114,7 +114,6 @@ fun main() = runBlocking {
         app.stop(10, 60, TimeUnit.SECONDS)
     })
 }
-}
 
 internal fun Application.api(
     subsumsjonStore: SubsumsjonStore,
