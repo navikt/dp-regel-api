@@ -18,12 +18,8 @@ import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.PostgreSQLContainer
-import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
 
 private object PostgresContainer {
@@ -56,7 +52,7 @@ class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(10, migrations, "Wrong number of migrations")
+            assertEquals(11, migrations, "Wrong number of migrations")
         }
     }
 
@@ -256,53 +252,4 @@ class PostgresSubsumsjonStoreTest {
         satsResultat = emptyMap(),
         problem = Problem(title = "problem")
     )
-}
-
-class PostgresBruktSubsumsjonsStoreTest {
-    @Test
-    fun `successfully inserts BruktSubsumsjon`() {
-        withMigratedDb {
-            with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
-                insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
-            }
-        }
-    }
-
-    @Test
-    fun `successfully fetches inserted BruktSubsumsjon`() {
-        withMigratedDb {
-            with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
-                insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
-                getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
-                    secondFormatter
-                )
-            }
-        }
-    }
-
-    @Test
-    fun `trying to insert duplicate ids keeps what's already in the db`() {
-        withMigratedDb {
-            with(PostgresBruktSubsumsjonStore(DataSource.instance)) {
-                insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
-                insertSubsumsjonBrukt(bruktSubsumsjon.copy(eksternId = 1234L)) shouldBe 0
-                getSubsumsjonBrukt(bruktSubsumsjon.id)?.eksternId shouldBe "Arena"
-            }
-        }
-    }
-
-    val secondFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-    val oslo = ZoneId.of("Europe/Oslo")
-    val exampleDate = ZonedDateTime.now(oslo).minusHours(6)
-    private val subsumsjon = Subsumsjon(
-        behovId = "behovId",
-        faktum = Faktum("aktorId", 1, LocalDate.now()),
-        grunnlagResultat = emptyMap(),
-        minsteinntektResultat = emptyMap(),
-        periodeResultat = emptyMap(),
-        satsResultat = emptyMap(),
-        problem = Problem(title = "problem")
-    )
-    private val bruktSubsumsjon =
-        SubsumsjonBrukt(subsumsjon.behovId, 1234L, exampleDate, ts = Instant.now().toEpochMilli())
 }

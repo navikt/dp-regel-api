@@ -76,7 +76,7 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
                             .map { r -> SubsumsjonBrukt.fromJson(r.value()) }
                             .filterNotNull()
                             .onEach { b -> LOGGER.info("Saving $b to database") }
-                            .forEach { bruktSubsumsjonStore.insertSubsumsjonBrukt(it) }
+                            .forEach { bruktSubsumsjonStore.insertSubsumsjonBruktV2(bruktSubsumsjonStore.v1TilV2(it)) }
                     }
                 } catch (e: RetriableException) {
                     LOGGER.warn("Kafka threw a retriable exception, looping back", e)

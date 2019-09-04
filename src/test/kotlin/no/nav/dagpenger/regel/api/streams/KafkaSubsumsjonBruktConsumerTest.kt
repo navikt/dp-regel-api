@@ -9,6 +9,7 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.SubsumsjonBruktV2
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -28,10 +29,12 @@ class KafkaSubsumsjonBruktConsumerTest {
 
     @Test
     fun `should insert brukt subsumsjon`() {
+        val now = ZonedDateTime.now()
         runBlocking {
-            val savedToStore = slot<SubsumsjonBrukt>()
+            val savedToStore = slot<SubsumsjonBruktV2>()
             val storeMock = mockk<BruktSubsumsjonStore>(relaxed = false).apply {
-                every { this@apply.insertSubsumsjonBrukt(capture(savedToStore)) } returns 1
+                every { this@apply.v1TilV2(any()) } returns SubsumsjonBruktV2(id = "test", behandlingsId = "b", arenaTs = now.minusMinutes(5))
+                every { this@apply.insertSubsumsjonBruktV2(capture(savedToStore)) } returns 1
             }
             val config = Configuration().run {
                 copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers))
@@ -48,7 +51,6 @@ class KafkaSubsumsjonBruktConsumerTest {
                 ).also {
                     it[ProducerConfig.ACKS_CONFIG] = "all"
                 })
-            val now = ZonedDateTime.now()
             val bruktSubsumsjon =
                 SubsumsjonBrukt(id = "test", eksternId = 1234678L, arenaTs = now, ts = now.toInstant().toEpochMilli())
             val metaData = producer.send(ProducerRecord(config.subsumsjonBruktTopic, "test", bruktSubsumsjon.toJson()))
@@ -57,8 +59,7 @@ class KafkaSubsumsjonBruktConsumerTest {
             assertThat(metaData.topic()).isEqualTo(config.subsumsjonBruktTopic)
             Thread.sleep(200)
             assertThat(savedToStore.isCaptured).isTrue()
-            assertThat(savedToStore.captured.eksternId).isEqualTo(1234678L)
-            assertThat(savedToStore.captured.arenaTs).isEqualTo(now)
+            assertThat(savedToStore.captured.arenaTs).isEqualTo(now.minusMinutes(5L))
         }
     }
 
