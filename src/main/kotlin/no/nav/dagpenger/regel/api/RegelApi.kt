@@ -25,6 +25,7 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
@@ -51,6 +52,7 @@ import no.nav.dagpenger.regel.api.streams.producerConfig
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.timer
 
 val APPLICATION_NAME = "dp-regel-api"
 private val LOGGER = KotlinLogging.logger {}
@@ -62,6 +64,17 @@ fun main() = runBlocking {
     val dataSource = dataSourceFrom(config)
     val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
     val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource)
+    val job = launch {
+        bruktSubsumsjonStore.migrerV1TilV2()
+    }
+    timer(name = "vaktmester", daemon = true, initialDelay = TimeUnit.SECONDS.toMillis(5L), period = TimeUnit.SECONDS.toMillis(10)) {
+        if (job.isActive) {
+            LOGGER.info("Vaktmester kjører migrasjonsjobb for brukt subsumsjon")
+        } else {
+            LOGGER.info("Vaktmester er ferdig kjørt, stopper timer tråd")
+            this.cancel()
+        }
+    }
     val kafkaConsumer =
         KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
             it.start()
@@ -100,6 +113,7 @@ fun main() = runBlocking {
         bruktSubsumsjonConsumer.cancel()
         app.stop(10, 60, TimeUnit.SECONDS)
     })
+}
 }
 
 internal fun Application.api(
