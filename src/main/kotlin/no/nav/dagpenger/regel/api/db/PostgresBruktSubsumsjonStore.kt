@@ -1,6 +1,5 @@
 package no.nav.dagpenger.regel.api.db
 
-import com.zaxxer.hikari.HikariDataSource
 import io.prometheus.client.Counter
 import kotliquery.Row
 import kotliquery.queryOf
@@ -15,13 +14,15 @@ import org.postgresql.util.PSQLException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
+import javax.sql.DataSource
 
 private val LOGGER = KotlinLogging.logger {}
 
 class PostgresBruktSubsumsjonStore(
-    private val dataSource: HikariDataSource,
+    private val dataSource: DataSource,
     val subsumsjonStore: SubsumsjonStore = PostgresSubsumsjonStore(dataSource)
 ) : BruktSubsumsjonStore, HealthCheck {
+
     companion object {
         val insertCounter = Counter.build().name("subsumsjon_brukt_insert")
             .namespace("no_nav_dagpenger")

@@ -1,13 +1,15 @@
 package no.nav.dagpenger.regel.api.db
 
 import de.huxhorn.sulky.ulid.ULID
+import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InternBehov
-import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 interface SubsumsjonStore {
 
@@ -18,12 +20,15 @@ interface SubsumsjonStore {
         insertBehov(internBehov)
         return internBehov
     }
+
     fun insertBehov(behov: InternBehov): Int
     fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId
+    fun getBehov(behovId: String): InternBehov
     fun behovStatus(behovId: String): Status
-    fun insertSubsumsjon(subsumsjon: Subsumsjon): Int
+    fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))): Int
     fun getSubsumsjon(behovId: String): Subsumsjon
     fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon
+    fun delete(subsumsjon: Subsumsjon)
 }
 
 data class SubsumsjonId(val id: String) {

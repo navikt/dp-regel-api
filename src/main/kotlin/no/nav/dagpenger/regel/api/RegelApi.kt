@@ -25,6 +25,7 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
@@ -53,7 +54,7 @@ import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 
 val APPLICATION_NAME = "dp-regel-api"
-private val LOGGER = KotlinLogging.logger {}
+private val MAINLOGGER = KotlinLogging.logger {}
 
 fun main() = runBlocking {
     val config = Configuration()
@@ -62,12 +63,20 @@ fun main() = runBlocking {
     val dataSource = dataSourceFrom(config)
     val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
     val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource)
+    val vaktmester = Vaktmester(dataSource = dataSource, subsumsjonStore = subsumsjonStore)
+    launch {
+        vaktmester.markerBrukteSubsumsjoner()
+    }
     val kafkaConsumer =
         KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
             it.start()
         }
     val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer.apply {
-        create(config, bruktSubsumsjonStore)
+        create(
+            config = config,
+            bruktSubsumsjonStore = bruktSubsumsjonStore,
+            vaktmester = vaktmester
+        )
         listen()
     }
     val kafkaProducer = KafkaDagpengerBehovProducer(

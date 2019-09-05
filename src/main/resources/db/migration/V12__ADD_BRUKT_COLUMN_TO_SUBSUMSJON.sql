@@ -1,0 +1,1 @@
+ALTER TABLE v2_subsumsjon ADD COLUMN brukt BOOLEAN DEFAULT false

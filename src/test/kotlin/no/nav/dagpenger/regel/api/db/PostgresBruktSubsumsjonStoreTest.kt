@@ -1,6 +1,5 @@
 package no.nav.dagpenger.regel.api.db
 
-import com.zaxxer.hikari.HikariDataSource
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import no.nav.dagpenger.events.Problem
@@ -9,7 +8,6 @@ import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import org.junit.jupiter.api.Test
-import org.testcontainers.containers.PostgreSQLContainer
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -17,29 +15,6 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 class PostgresBruktSubsumsjonStoreTest {
-    private object PostgresContainer {
-        val instance by lazy {
-            PostgreSQLContainer<Nothing>("postgres:11.2").apply {
-                start()
-            }
-        }
-    }
-
-    private object DataSource {
-        val instance: HikariDataSource by lazy {
-            HikariDataSource().apply {
-                username = PostgresContainer.instance.username
-                password = PostgresContainer.instance.password
-                jdbcUrl = PostgresContainer.instance.jdbcUrl
-                connectionTimeout = 1000L
-            }
-        }
-    }
-
-    private fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
-
-    private fun withMigratedDb(test: () -> Unit) =
-        DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
 
     @Test
     fun `successfully inserts BruktSubsumsjon`() {
@@ -57,7 +32,8 @@ class PostgresBruktSubsumsjonStoreTest {
                 val bruktSubsumsjonV2 = SubsumsjonBruktV2(
                     id = subsumsjon.behovId,
                     behandlingsId = PostgresSubsumsjonStore(DataSource.instance).hentKoblingTilEkstern(eksternId).id,
-                    arenaTs = exampleDate)
+                    arenaTs = exampleDate
+                )
                 insertSubsumsjonBruktV2(subsumsjonBruktV2 = bruktSubsumsjonV2)
                 val savedBruktSub = getSubsumsjonBruktV2(bruktSubsumsjonV2.id)
                 savedBruktSub!!.created shouldNotBe null
@@ -144,7 +120,13 @@ class PostgresBruktSubsumsjonStoreTest {
                 migrerV1TilV2()
                 var allSubsumsjonV2 = listSubsumsjonBruktV2()
                 allSubsumsjonV2.size shouldBe 1
-                insertSubsumsjonBrukt(bruktSubsumsjon.copy(id = "behovId2", eksternId = 1232121, arenaTs = ZonedDateTime.now().minusDays(3)))
+                insertSubsumsjonBrukt(
+                    bruktSubsumsjon.copy(
+                        id = "behovId2",
+                        eksternId = 1232121,
+                        arenaTs = ZonedDateTime.now().minusDays(3)
+                    )
+                )
                 migrerV1TilV2()
                 allSubsumsjonV2 = listSubsumsjonBruktV2()
                 allSubsumsjonV2.size shouldBe 2
@@ -166,5 +148,10 @@ class PostgresBruktSubsumsjonStoreTest {
     )
     val eksternId = EksternId(id = "1234", kontekst = Kontekst.VEDTAK)
     val bruktSubsumsjon =
-        SubsumsjonBrukt(id = subsumsjon.behovId, eksternId = 1231231, arenaTs = exampleDate, ts = Instant.now().toEpochMilli())
+        SubsumsjonBrukt(
+            id = subsumsjon.behovId,
+            eksternId = 1231231,
+            arenaTs = exampleDate,
+            ts = Instant.now().toEpochMilli()
+        )
 }

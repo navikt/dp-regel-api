@@ -31,6 +31,7 @@ import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZonedDateTime
 import java.util.concurrent.Future
 
 class BehovRouteTest {
@@ -89,6 +90,17 @@ class BehovRouteTest {
     fun `Valid json to behov endpoint should be accepted, saved and produce an event to Kafka`() {
 
         val obj: SubsumsjonStore = object : SubsumsjonStore {
+            override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int {
+                TODO("not implemented")
+            }
+
+            override fun delete(subsumsjon: Subsumsjon) {
+                TODO("not implemented")
+            }
+
+            override fun getBehov(behovId: String): InternBehov {
+                TODO("not implemented")
+            }
 
             override fun insertBehov(behov: InternBehov): Int {
                 return 1
@@ -99,10 +111,6 @@ class BehovRouteTest {
             }
 
             override fun behovStatus(behovId: String): Status {
-                TODO("not implemented")
-            }
-
-            override fun insertSubsumsjon(subsumsjon: Subsumsjon): Int {
                 TODO("not implemented")
             }
 

@@ -1,13 +1,14 @@
 package no.nav.dagpenger.regel.api.db
 
-import com.zaxxer.hikari.HikariDataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
@@ -15,10 +16,14 @@ import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZonedDateTime
+import javax.sql.DataSource
 
 private val LOGGER = KotlinLogging.logger {}
 
-internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource) : SubsumsjonStore, HealthCheck {
+internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonStore, HealthCheck {
 
     override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
         val id: String? = using(sessionOf(dataSource)) { session ->
@@ -86,6 +91,60 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
         }
     }
 
+    override fun getBehov(behovId: String): InternBehov {
+        return using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    """
+                        |SELECT behov.*, ekstern_id, kontekst from v2_behov as behov, v1_behov_behandling_mapping as behandling WHERE behov.id = :id AND behov.behandlings_id = behandling.id 
+                    """.trimMargin(), mapOf("id" to behovId)
+                ).map { row ->
+                    InternBehov(
+                        behovId = row.string("id"),
+                        aktørId = row.string("aktor_id"),
+                        beregningsDato = row.localDate("beregnings_dato"),
+                        harAvtjentVerneplikt = row.boolean("avtjent_verne_plikt"),
+                        oppfyllerKravTilFangstOgFisk = row.boolean("oppfyller_krav_til_fangst_og_fisk"),
+
+                        bruktInntektsPeriode = row.localDateOrNull("brukt_opptjening_forste_maned")?.toYearMonth()?.let { førsteMåned ->
+                            row.localDateOrNull("brukt_opptjening_siste_maned")?.toYearMonth()?.let { sisteMåned ->
+                                InntektsPeriode(
+                                    førsteMåned = førsteMåned,
+                                    sisteMåned = sisteMåned
+                                )
+                            }
+                        },
+                        antallBarn = row.intOrNull("antall_barn"),
+                        manueltGrunnlag = row.intOrNull("manuelt_grunnlag"),
+                        inntektsId = row.stringOrNull("inntekts_id"),
+                        behandlingsId = BehandlingsId(
+                            row.string("behandlings_id"),
+                            EksternId(row.string("ekstern_id"), Kontekst.valueOf(row.string("kontekst")))
+                        )
+
+                    )
+                }.asSingle
+            )
+        } ?: throw BehovNotFoundException("BehovId: $behovId")
+    }
+
+    override fun delete(subsumsjon: Subsumsjon) {
+        using(sessionOf(dataSource)) { session ->
+            session.transaction { tx ->
+                tx.run(
+                    queryOf(
+                        """
+                            DELETE FROM v2_subsumsjon WHERE behov_id = :id;
+                            DELETE FROM v2_behov WHERE id = :id;
+                        """.trimIndent(), mapOf(
+                            "id" to subsumsjon.behovId
+                        )
+                    ).asUpdate
+                )
+            }
+        }
+    }
+
     override fun behovStatus(behovId: String): Status {
         return when (behovExists(behovId)) {
             true -> getSubsumsjonIdBy(behovId)?.let { Status.Done(it) } ?: Status.Pending
@@ -93,13 +152,20 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
         }
     }
 
-    override fun insertSubsumsjon(subsumsjon: Subsumsjon): Int {
+    override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int {
         return try {
             using(sessionOf(dataSource)) { session ->
                 session.run(
                     queryOf(
-                        """ INSERT INTO v2_subsumsjon VALUES (?, (to_json(?::json))) ON CONFLICT ON CONSTRAINT v2_subsumsjon_pkey DO NOTHING """,
-                        subsumsjon.behovId, subsumsjon.toJson()
+                        """ INSERT INTO v2_subsumsjon VALUES (:behovId, :data, :created) ON CONFLICT ON CONSTRAINT v2_subsumsjon_pkey DO NOTHING """,
+                        mapOf(
+                            "behovId" to subsumsjon.behovId,
+                            "created" to created,
+                            "data" to PGobject().apply {
+                                type = "jsonb"
+                                value = subsumsjon.toJson()
+                            }
+                        )
                     ).asUpdate
                 )
             }
@@ -193,3 +259,4 @@ internal class PostgresSubsumsjonStore(private val dataSource: HikariDataSource)
         }
     }
 }
+fun LocalDate.toYearMonth(): YearMonth = YearMonth.of(this.year, this.month)

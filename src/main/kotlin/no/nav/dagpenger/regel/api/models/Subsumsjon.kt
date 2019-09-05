@@ -15,7 +15,6 @@ data class Subsumsjon(
     val periodeResultat: Map<String, Any>?,
     val satsResultat: Map<String, Any>?,
     val problem: Problem?
-
 ) {
     companion object Mapper {
 
