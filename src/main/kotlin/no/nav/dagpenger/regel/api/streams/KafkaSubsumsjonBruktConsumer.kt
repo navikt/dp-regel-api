@@ -9,7 +9,7 @@ import no.nav.dagpenger.plain.consumerConfig
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.Vaktmester
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
-import no.nav.dagpenger.regel.api.db.SubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.KafkaCredential
@@ -76,13 +76,13 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
                     while (job.isActive) {
                         val records = consumer.poll(Duration.ofMillis(100))
                         records.asSequence()
-                            .map { r -> SubsumsjonBrukt.fromJson(r.value()) }
+                            .map { r -> EksternSubsumsjonBrukt.fromJson(r.value()) }
                             .filterNotNull()
                             .onEach { b -> LOGGER.info("Saving $b to database") }
                             .forEach {
-                                val bSv2 = bruktSubsumsjonStore.v1TilV2(it)
-                                bruktSubsumsjonStore.insertSubsumsjonBruktV2(bSv2)
-                                vaktmester.markerSomBrukt(bSv2)
+                                val internSubsumsjonBrukt = bruktSubsumsjonStore.internTilEksternSubsumsjonBrukt(it)
+                                bruktSubsumsjonStore.insertSubsumsjonBrukt(internSubsumsjonBrukt)
+                                vaktmester.markerSomBrukt(internSubsumsjonBrukt)
                             }
                     }
                 } catch (e: RetriableException) {

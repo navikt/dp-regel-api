@@ -9,8 +9,8 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.Vaktmester
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
-import no.nav.dagpenger.regel.api.db.SubsumsjonBrukt
-import no.nav.dagpenger.regel.api.db.SubsumsjonBruktV2
+import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -21,7 +21,7 @@ import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 val LOGGER = KotlinLogging.logger { }
-class KafkaSubsumsjonBruktConsumerTest {
+class KafkaEksternSubsumsjonBruktConsumerTest {
     private object Kafka {
         val instance by lazy {
             KafkaContainer("5.3.0").apply { this.start() }
@@ -32,11 +32,11 @@ class KafkaSubsumsjonBruktConsumerTest {
     fun `should insert brukt subsumsjon`() {
         val now = ZonedDateTime.now()
         runBlocking {
-            val lagretTilDb = slot<SubsumsjonBruktV2>()
-            val markertSomBrukt = slot<SubsumsjonBruktV2>()
+            val lagretTilDb = slot<InternSubsumsjonBrukt>()
+            val markertSomBrukt = slot<InternSubsumsjonBrukt>()
             val storeMock = mockk<BruktSubsumsjonStore>(relaxed = false).apply {
-                every { this@apply.v1TilV2(any()) } returns SubsumsjonBruktV2(id = "test", behandlingsId = "b", arenaTs = now.minusMinutes(5))
-                every { this@apply.insertSubsumsjonBruktV2(capture(lagretTilDb)) } returns 1
+                every { this@apply.internTilEksternSubsumsjonBrukt(any()) } returns InternSubsumsjonBrukt(id = "test", behandlingsId = "b", arenaTs = now.minusMinutes(5))
+                every { this@apply.insertSubsumsjonBrukt(capture(lagretTilDb)) } returns 1
             }
             val vaktmester = mockk<Vaktmester>(relaxed = true).apply {
                 every { this@apply.markerSomBrukt(capture(markertSomBrukt)) }
@@ -57,7 +57,7 @@ class KafkaSubsumsjonBruktConsumerTest {
                     it[ProducerConfig.ACKS_CONFIG] = "all"
                 })
             val bruktSubsumsjon =
-                SubsumsjonBrukt(id = "test", eksternId = 1234678L, arenaTs = now, ts = now.toInstant().toEpochMilli())
+                EksternSubsumsjonBrukt(id = "test", eksternId = 1234678L, arenaTs = now, ts = now.toInstant().toEpochMilli())
             val metaData = producer.send(ProducerRecord(config.subsumsjonBruktTopic, "test", bruktSubsumsjon.toJson()))
                 .get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktSubsumsjon with meta $metaData")

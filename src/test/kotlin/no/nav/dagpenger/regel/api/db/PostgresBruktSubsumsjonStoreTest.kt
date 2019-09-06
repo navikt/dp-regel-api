@@ -20,22 +20,22 @@ class PostgresBruktSubsumsjonStoreTest {
     fun `successfully inserts BruktSubsumsjon`() {
         withMigratedDb {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
-                insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
+                insertSubsumsjonBrukt(internTilEksternSubsumsjonBrukt(bruktSubsumsjon)) shouldBe 1
             }
         }
     }
 
     @Test
-    fun `inserting v2 also works`() {
+    fun `inserting intern subsumsjon brukt also works`() {
         withMigratedDb {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
-                val bruktSubsumsjonV2 = SubsumsjonBruktV2(
+                val internSubsumsjonBrukt = InternSubsumsjonBrukt(
                     id = subsumsjon.behovId,
                     behandlingsId = PostgresSubsumsjonStore(DataSource.instance).hentKoblingTilEkstern(eksternId).id,
                     arenaTs = exampleDate
                 )
-                insertSubsumsjonBruktV2(subsumsjonBruktV2 = bruktSubsumsjonV2)
-                val savedBruktSub = getSubsumsjonBruktV2(bruktSubsumsjonV2.id)
+                this.insertSubsumsjonBrukt(internSubsumsjonBrukt = internSubsumsjonBrukt)
+                val savedBruktSub = getSubsumsjonBrukt(internSubsumsjonBrukt.id)
                 savedBruktSub!!.created shouldNotBe null
                 savedBruktSub.created!!.toLocalDate() shouldBe LocalDate.now()
             }
@@ -46,7 +46,7 @@ class PostgresBruktSubsumsjonStoreTest {
     fun `successfully fetches inserted BruktSubsumsjon`() {
         withMigratedDb {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
-                insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
+                insertSubsumsjonBrukt(internTilEksternSubsumsjonBrukt(bruktSubsumsjon)) shouldBe 1
                 getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
                     secondFormatter
                 )
@@ -58,9 +58,9 @@ class PostgresBruktSubsumsjonStoreTest {
     fun `successfully fetches inserted BruktSubsumsjonV2`() {
         withMigratedDb {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
-                val v2Subsumsjon = v1TilV2(bruktSubsumsjon)
-                insertSubsumsjonBruktV2(v2Subsumsjon)
-                getSubsumsjonBruktV2(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
+                val internSubsumsjonBrukt = internTilEksternSubsumsjonBrukt(bruktSubsumsjon)
+                insertSubsumsjonBrukt(internSubsumsjonBrukt)
+                getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
                     secondFormatter
                 )
             }
@@ -76,60 +76,10 @@ class PostgresBruktSubsumsjonStoreTest {
                     subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
                 )
             ) {
-                insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
-                insertSubsumsjonBrukt(bruktSubsumsjon.copy(eksternId = 21312312)) shouldBe 0
-                getSubsumsjonBrukt(bruktSubsumsjon.id)?.eksternId shouldBe bruktSubsumsjon.eksternId
-            }
-        }
-    }
-
-    @Test
-    fun `migration from v1 to v2 goes ok`() {
-        withMigratedDb {
-            with(
-                PostgresBruktSubsumsjonStore(
-                    dataSource = DataSource.instance,
-                    subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
-                )
-            ) {
-                val eksternId = subsumsjonStore.hentKoblingTilEkstern(
-                    EksternId(
-                        id = bruktSubsumsjon.eksternId.toString(),
-                        kontekst = Kontekst.VEDTAK
-                    )
-                )
-                insertSubsumsjonBrukt(bruktSubsumsjon) shouldBe 1
-                migrerV1TilV2()
-                val subV2 = getSubsumsjonBruktV2(bruktSubsumsjon.id)
-                subV2 shouldNotBe null
-                subV2!!.behandlingsId shouldBe eksternId.id
-            }
-        }
-    }
-
-    @Test
-    fun `Should be able to run migration multiple times without conflicts`() {
-        withMigratedDb {
-            with(
-                PostgresBruktSubsumsjonStore(
-                    dataSource = DataSource.instance,
-                    subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
-                )
-            ) {
-                insertSubsumsjonBrukt(bruktSubsumsjon)
-                migrerV1TilV2()
-                var allSubsumsjonV2 = listSubsumsjonBruktV2()
-                allSubsumsjonV2.size shouldBe 1
-                insertSubsumsjonBrukt(
-                    bruktSubsumsjon.copy(
-                        id = "behovId2",
-                        eksternId = 1232121,
-                        arenaTs = ZonedDateTime.now().minusDays(3)
-                    )
-                )
-                migrerV1TilV2()
-                allSubsumsjonV2 = listSubsumsjonBruktV2()
-                allSubsumsjonV2.size shouldBe 2
+                val internSubsumsjonBrukt1 = internTilEksternSubsumsjonBrukt(bruktSubsumsjon)
+                insertSubsumsjonBrukt(internSubsumsjonBrukt1) shouldBe 1
+                insertSubsumsjonBrukt(internSubsumsjonBrukt1) shouldBe 0
+                getSubsumsjonBrukt(bruktSubsumsjon.id)?.behandlingsId shouldBe internSubsumsjonBrukt1.behandlingsId
             }
         }
     }
@@ -148,7 +98,7 @@ class PostgresBruktSubsumsjonStoreTest {
     )
     val eksternId = EksternId(id = "1234", kontekst = Kontekst.VEDTAK)
     val bruktSubsumsjon =
-        SubsumsjonBrukt(
+        EksternSubsumsjonBrukt(
             id = subsumsjon.behovId,
             eksternId = 1231231,
             arenaTs = exampleDate,

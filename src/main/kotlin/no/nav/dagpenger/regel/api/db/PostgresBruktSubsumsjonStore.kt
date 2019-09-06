@@ -40,61 +40,21 @@ class PostgresBruktSubsumsjonStore(
         }
     }
 
-    override fun listSubsumsjonBruktV2(): List<SubsumsjonBruktV2> {
+    override fun listSubsumsjonBrukt(): List<InternSubsumsjonBrukt> {
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """SELECT * FROM v2_subsumsjon_brukt""", emptyMap()
                 ).map { r ->
-                    extractSubsumsjonBruktV2(r)
+                    extractInternSubsumsjonBrukt(r)
                 }.asList
             )
         }
     }
 
-    fun insertSubsumsjonBrukt(subsumsjonBrukt: SubsumsjonBrukt): Int {
-        return try {
-            using(sessionOf(dataSource)) { session ->
-                session.run(
-                    queryOf(
-                        """
-                    INSERT INTO v1_subsumsjon_brukt(id, ekstern_id, kontekst, arena_ts) 
-                        VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING
-                """.trimIndent(),
-                        subsumsjonBrukt.id,
-                        subsumsjonBrukt.eksternId,
-                        "Vedtak",
-                        subsumsjonBrukt.arenaTs
-                    ).asUpdate
-                ).also {
-                    insertCounter.inc()
-                }
-            }
-        } catch (p: PSQLException) {
-            throw StoreException(p.message ?: "")
-        }
-    }
-
-    fun getSubsumsjonBrukt(subsumsjonsId: String): SubsumsjonBrukt? {
-        try {
-            return using(sessionOf(dataSource)) { session ->
-                session.run(
-                    queryOf(
-                        """SELECT * FROM v1_subsumsjon_brukt
-                        WHERE id = ?""".trimMargin(), subsumsjonsId
-                    ).map { row ->
-                        extractSubsumsjonBrukt(row)
-                    }.asSingle
-                )
-            }
-        } catch (p: PSQLException) {
-            throw StoreException(p.message ?: "")
-        }
-    }
-
-    override fun v1TilV2(v1: SubsumsjonBrukt): SubsumsjonBruktV2 {
+    override fun internTilEksternSubsumsjonBrukt(v1: EksternSubsumsjonBrukt): InternSubsumsjonBrukt {
         val behandlingsId = subsumsjonStore.hentKoblingTilEkstern(EksternId(v1.eksternId.toString(), Kontekst.VEDTAK))
-        return SubsumsjonBruktV2(
+        return InternSubsumsjonBrukt(
             id = v1.id,
             behandlingsId = behandlingsId.id,
             arenaTs = v1.arenaTs,
@@ -104,25 +64,25 @@ class PostgresBruktSubsumsjonStore(
         )
     }
 
-    override fun insertSubsumsjonBruktV2(subsumsjonBruktV2: SubsumsjonBruktV2): Int {
+    override fun insertSubsumsjonBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt): Int {
         return using(sessionOf(dataSource)) { session ->
             session.run(
-                when (subsumsjonBruktV2.created) {
+                when (internSubsumsjonBrukt.created) {
                     null -> queryOf(
                         """INSERT INTO v2_subsumsjon_brukt(id, behandlings_id, arena_ts) VALUES (:id, :behandling, :arena) ON CONFLICT DO NOTHING""",
                         mapOf(
-                            "id" to subsumsjonBruktV2.id,
-                            "behandling" to subsumsjonBruktV2.behandlingsId,
-                            "arena" to subsumsjonBruktV2.arenaTs
+                            "id" to internSubsumsjonBrukt.id,
+                            "behandling" to internSubsumsjonBrukt.behandlingsId,
+                            "arena" to internSubsumsjonBrukt.arenaTs
                         )
                     ).asUpdate
                     else -> queryOf(
                         """INSERT INTO v2_subsumsjon_brukt(id, behandlings_id, arena_ts, created) VALUES (:id, :behandling, :arena, :created) ON CONFLICT DO NOTHING""",
                         mapOf(
-                            "id" to subsumsjonBruktV2.id,
-                            "behandling" to subsumsjonBruktV2.behandlingsId,
-                            "arena" to subsumsjonBruktV2.arenaTs,
-                            "created" to subsumsjonBruktV2.created
+                            "id" to internSubsumsjonBrukt.id,
+                            "behandling" to internSubsumsjonBrukt.behandlingsId,
+                            "arena" to internSubsumsjonBrukt.arenaTs,
+                            "created" to internSubsumsjonBrukt.created
                         )
                     ).asUpdate
                 }
@@ -130,19 +90,19 @@ class PostgresBruktSubsumsjonStore(
         }
     }
 
-    override fun getSubsumsjonBruktV2(subsumsjonsId: String): SubsumsjonBruktV2? {
+    override fun getSubsumsjonBrukt(subsumsjonsId: String): InternSubsumsjonBrukt? {
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """SELECT * FROM v2_subsumsjon_brukt WHERE id = :id""",
                     mapOf("id" to subsumsjonsId)
-                ).map { r -> extractSubsumsjonBruktV2(r) }.asSingle
+                ).map { r -> extractInternSubsumsjonBrukt(r) }.asSingle
             )
         }
     }
 
-    private fun extractSubsumsjonBruktV2(r: Row): SubsumsjonBruktV2 {
-        return SubsumsjonBruktV2(
+    private fun extractInternSubsumsjonBrukt(r: Row): InternSubsumsjonBrukt {
+        return InternSubsumsjonBrukt(
             id = r.string("id"),
             behandlingsId = r.string("behandlings_id"),
             arenaTs = r.zonedDateTime("arena_ts"),
@@ -150,43 +110,13 @@ class PostgresBruktSubsumsjonStore(
         )
     }
 
-    private fun extractSubsumsjonBrukt(row: Row): SubsumsjonBrukt {
-        return SubsumsjonBrukt(
-            id = row.string("id"),
-            eksternId = row.string("ekstern_id").toLong(),
-            arenaTs = row.zonedDateTime("arena_ts"),
-            ts = row.instant("created").toEpochMilli()
-        )
-    }
-
-    override fun migrerV1TilV2() {
-        using(sessionOf(dataSource)) { session ->
-            session.forEach(
-                queryOf(
-                    "SELECT * FROM v1_subsumsjon_brukt WHERE id NOT IN (SELECT id FROM v2_subsumsjon_brukt AS v2 WHERE v2.id = id)",
-                    emptyMap()
-                )
-            ) { r ->
-                val v2SubsumsjonBrukt = v1TilV2(
-                    SubsumsjonBrukt(
-                        id = r.string("id"),
-                        eksternId = r.string("ekstern_id").toDouble().toLong(),
-                        arenaTs = r.zonedDateTime("arena_ts"),
-                        ts = r.zonedDateTime("created").toInstant().toEpochMilli()
-                    )
-                )
-                insertSubsumsjonBruktV2(v2SubsumsjonBrukt)
-            }
-        }
-    }
-
-    override fun subsumsjonBruktFraBehandlingsId(behandlingsId: String): List<SubsumsjonBruktV2> {
+    override fun subsumsjonBruktFraBehandlingsId(behandlingsId: String): List<InternSubsumsjonBrukt> {
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """SELECT * FROM v2_subsumsjon_brukt WHERE behandlings_id = :bid""",
                     mapOf("bid" to behandlingsId)
-                ).map { r -> extractSubsumsjonBruktV2(r) }.asList
+                ).map { r -> extractInternSubsumsjonBrukt(r) }.asList
             )
         }
     }
