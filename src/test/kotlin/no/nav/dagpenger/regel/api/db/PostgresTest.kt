@@ -7,11 +7,11 @@ import io.kotlintest.shouldThrow
 import io.mockk.mockk
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
+import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
-import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
@@ -22,7 +22,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import kotlin.test.assertEquals
 
-private object PostgresContainer {
+internal object PostgresContainer {
     val instance by lazy {
         PostgreSQLContainer<Nothing>("postgres:11.2").apply {
             start()
@@ -30,7 +30,7 @@ private object PostgresContainer {
     }
 }
 
-private object DataSource {
+internal object DataSource {
     val instance: HikariDataSource by lazy {
         HikariDataSource().apply {
             username = PostgresContainer.instance.username
@@ -41,18 +41,18 @@ private object DataSource {
     }
 }
 
-private fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
+internal fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
 
-private fun withMigratedDb(test: () -> Unit) =
+internal fun withMigratedDb(test: () -> Unit) =
     DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
 
-class PostgresTest {
+internal class PostgresTest {
 
     @Test
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(11, migrations, "Wrong number of migrations")
+            assertEquals(13, migrations, "Wrong number of migrations")
         }
     }
 

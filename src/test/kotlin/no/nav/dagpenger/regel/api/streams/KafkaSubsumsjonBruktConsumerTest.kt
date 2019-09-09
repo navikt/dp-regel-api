@@ -7,6 +7,7 @@ import io.mockk.slot
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Configuration
+import no.nav.dagpenger.regel.api.Vaktmester
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.SubsumsjonBruktV2
@@ -31,16 +32,20 @@ class KafkaSubsumsjonBruktConsumerTest {
     fun `should insert brukt subsumsjon`() {
         val now = ZonedDateTime.now()
         runBlocking {
-            val savedToStore = slot<SubsumsjonBruktV2>()
+            val lagretTilDb = slot<SubsumsjonBruktV2>()
+            val markertSomBrukt = slot<SubsumsjonBruktV2>()
             val storeMock = mockk<BruktSubsumsjonStore>(relaxed = false).apply {
                 every { this@apply.v1TilV2(any()) } returns SubsumsjonBruktV2(id = "test", behandlingsId = "b", arenaTs = now.minusMinutes(5))
-                every { this@apply.insertSubsumsjonBruktV2(capture(savedToStore)) } returns 1
+                every { this@apply.insertSubsumsjonBruktV2(capture(lagretTilDb)) } returns 1
+            }
+            val vaktmester = mockk<Vaktmester>(relaxed = true).apply {
+                every { this@apply.markerSomBrukt(capture(markertSomBrukt)) }
             }
             val config = Configuration().run {
                 copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers))
             }
             KafkaSubsumsjonBruktConsumer.apply {
-                create(config, storeMock)
+                create(config, storeMock, vaktmester)
                 listen()
             }
 
@@ -58,8 +63,10 @@ class KafkaSubsumsjonBruktConsumerTest {
             LOGGER.info("Producer produced $bruktSubsumsjon with meta $metaData")
             assertThat(metaData.topic()).isEqualTo(config.subsumsjonBruktTopic)
             Thread.sleep(200)
-            assertThat(savedToStore.isCaptured).isTrue()
-            assertThat(savedToStore.captured.arenaTs).isEqualTo(now.minusMinutes(5L))
+            assertThat(lagretTilDb.isCaptured).isTrue()
+            assertThat(markertSomBrukt.isCaptured).isTrue()
+            assertThat(lagretTilDb.captured.arenaTs).isEqualTo(now.minusMinutes(5L))
+            assertThat(lagretTilDb.captured).isEqualTo(markertSomBrukt.captured)
         }
     }
 

@@ -45,12 +45,12 @@ internal class PendingBehovStrategyTest {
         mockkObject(Subsumsjon.Mapper).apply {
             every { Subsumsjon.subsumsjonFrom(any()) } returns subsumsjon
         }
-        val subsumsjonStore = storeMock.apply { every { this@apply.insertSubsumsjon(subsumsjon) } returns 1 }
+        val subsumsjonStore = storeMock.apply { every { this@apply.insertSubsumsjon(subsumsjon, any()) } returns 1 }
 
         PendingBehovStrategy(subsumsjonStore).run(pendingBehov)
 
         verifyAll {
-            subsumsjonStore.insertSubsumsjon(subsumsjon)
+            subsumsjonStore.insertSubsumsjon(subsumsjon, any())
             subsumsjonStore.behovStatus(pendingBehov.behovId)
         }
 

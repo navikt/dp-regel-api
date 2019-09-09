@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import no.nav.dagpenger.plain.consumerConfig
 import no.nav.dagpenger.regel.api.Configuration
+import no.nav.dagpenger.regel.api.Vaktmester
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonBrukt
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
@@ -31,10 +32,12 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
     lateinit var config: Configuration
     lateinit var bruktSubsumsjonStore: BruktSubsumsjonStore
     lateinit var job: Job
+    lateinit var vaktmester: Vaktmester
 
-    fun create(config: Configuration, bruktSubsumsjonStore: BruktSubsumsjonStore) {
+    fun create(config: Configuration, bruktSubsumsjonStore: BruktSubsumsjonStore, vaktmester: Vaktmester) {
         this.config = config
         this.bruktSubsumsjonStore = bruktSubsumsjonStore
+        this.vaktmester = vaktmester
         this.job = Job()
     }
 
@@ -76,7 +79,11 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
                             .map { r -> SubsumsjonBrukt.fromJson(r.value()) }
                             .filterNotNull()
                             .onEach { b -> LOGGER.info("Saving $b to database") }
-                            .forEach { bruktSubsumsjonStore.insertSubsumsjonBruktV2(bruktSubsumsjonStore.v1TilV2(it)) }
+                            .forEach {
+                                val bSv2 = bruktSubsumsjonStore.v1TilV2(it)
+                                bruktSubsumsjonStore.insertSubsumsjonBruktV2(bSv2)
+                                vaktmester.markerSomBrukt(bSv2)
+                            }
                     }
                 } catch (e: RetriableException) {
                     LOGGER.warn("Kafka threw a retriable exception, looping back", e)
