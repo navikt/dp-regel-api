@@ -35,7 +35,7 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
             val lagretTilDb = slot<InternSubsumsjonBrukt>()
             val markertSomBrukt = slot<InternSubsumsjonBrukt>()
             val storeMock = mockk<BruktSubsumsjonStore>(relaxed = false).apply {
-                every { this@apply.internTilEksternSubsumsjonBrukt(any()) } returns InternSubsumsjonBrukt(id = "test", behandlingsId = "b", arenaTs = now.minusMinutes(5))
+                every { this@apply.eksternTilInternSubsumsjon(any()) } returns InternSubsumsjonBrukt(id = "test", behandlingsId = "b", arenaTs = now.minusMinutes(5))
                 every { this@apply.insertSubsumsjonBrukt(capture(lagretTilDb)) } returns 1
             }
             val vaktmester = mockk<Vaktmester>(relaxed = true).apply {

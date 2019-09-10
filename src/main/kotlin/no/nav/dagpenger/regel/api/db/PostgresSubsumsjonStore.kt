@@ -201,7 +201,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                                                   data
                                             from v2_subsumsjon
                                             where data -> 'satsResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
+                                               OR data -> 'minsteino.nav.dagpenger.regel.api.models.JsonRoundtripSpecnntektResultat' ->> 'subsumsjonsId'::text = :id
                                                OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
                                                OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id """,
                     mapOf("id" to subsumsjonId.id)

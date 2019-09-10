@@ -52,7 +52,7 @@ internal class VaktmesterTest {
             val subsumsjonStore = PostgresSubsumsjonStore(dataSource = DataSource.instance)
             val internBehov = subsumsjonStore.opprettBehov(behov)
             subsumsjonStore.insertSubsumsjon(bruktSubsumsjon.copy(behovId = internBehov.behovId))
-            val marker = bruktSubsumsjonStore.internTilEksternSubsumsjonBrukt(
+            val marker = bruktSubsumsjonStore.eksternTilInternSubsumsjon(
                 EksternSubsumsjonBrukt(
                     id = minsteinntektSubsumsjonId,
                     eksternId = behov.vedtakId.toLong(),
@@ -88,7 +88,7 @@ internal class VaktmesterTest {
             with(
                 PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
             ) {
-                val subsumsjonBruktV2 = internTilEksternSubsumsjonBrukt(
+                val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
                         eksternId = behov.vedtakId.toLong(),
@@ -132,7 +132,7 @@ internal class VaktmesterTest {
                 subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
             )
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
-                val bruktSub = internTilEksternSubsumsjonBrukt(
+                val bruktSub = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
                         eksternId = behov.vedtakId.toLong(),
@@ -175,7 +175,7 @@ internal class VaktmesterTest {
             with(
                 PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
             ) {
-                val subsumsjonBruktV2 = internTilEksternSubsumsjonBrukt(
+                val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
                         eksternId = behov.vedtakId.toLong(),
@@ -216,7 +216,7 @@ internal class VaktmesterTest {
                 with(
                     PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
                 ) {
-                    val subsumsjonBruktV2 = internTilEksternSubsumsjonBrukt(
+                    val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                         EksternSubsumsjonBrukt(
                             id = minsteinntektSubsumsjonId,
                             eksternId = behov.vedtakId.toLong(),

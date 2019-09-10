@@ -10,7 +10,7 @@ interface BruktSubsumsjonStore {
     fun getSubsumsjonBrukt(subsumsjonsId: String): InternSubsumsjonBrukt?
     fun listSubsumsjonBrukt(): List<InternSubsumsjonBrukt>
     fun subsumsjonBruktFraBehandlingsId(behandlingsId: String): List<InternSubsumsjonBrukt>
-    fun internTilEksternSubsumsjonBrukt(v1: EksternSubsumsjonBrukt): InternSubsumsjonBrukt
+    fun eksternTilInternSubsumsjon(v1: EksternSubsumsjonBrukt): InternSubsumsjonBrukt
 }
 
 data class EksternSubsumsjonBrukt(

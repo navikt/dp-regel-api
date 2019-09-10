@@ -80,7 +80,7 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
                             .filterNotNull()
                             .onEach { b -> LOGGER.info("Saving $b to database") }
                             .forEach {
-                                val internSubsumsjonBrukt = bruktSubsumsjonStore.internTilEksternSubsumsjonBrukt(it)
+                                val internSubsumsjonBrukt = bruktSubsumsjonStore.eksternTilInternSubsumsjon(it)
                                 bruktSubsumsjonStore.insertSubsumsjonBrukt(internSubsumsjonBrukt)
                                 vaktmester.markerSomBrukt(internSubsumsjonBrukt)
                             }

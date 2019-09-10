@@ -20,7 +20,7 @@ class PostgresBruktSubsumsjonStoreTest {
     fun `successfully inserts BruktSubsumsjon`() {
         withMigratedDb {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
-                insertSubsumsjonBrukt(internTilEksternSubsumsjonBrukt(bruktSubsumsjon)) shouldBe 1
+                insertSubsumsjonBrukt(eksternTilInternSubsumsjon(bruktSubsumsjon)) shouldBe 1
             }
         }
     }
@@ -46,7 +46,7 @@ class PostgresBruktSubsumsjonStoreTest {
     fun `successfully fetches inserted BruktSubsumsjon`() {
         withMigratedDb {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
-                insertSubsumsjonBrukt(internTilEksternSubsumsjonBrukt(bruktSubsumsjon)) shouldBe 1
+                insertSubsumsjonBrukt(eksternTilInternSubsumsjon(bruktSubsumsjon)) shouldBe 1
                 getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
                     secondFormatter
                 )
@@ -58,7 +58,7 @@ class PostgresBruktSubsumsjonStoreTest {
     fun `successfully fetches inserted BruktSubsumsjonV2`() {
         withMigratedDb {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
-                val internSubsumsjonBrukt = internTilEksternSubsumsjonBrukt(bruktSubsumsjon)
+                val internSubsumsjonBrukt = eksternTilInternSubsumsjon(bruktSubsumsjon)
                 insertSubsumsjonBrukt(internSubsumsjonBrukt)
                 getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
                     secondFormatter
@@ -76,7 +76,7 @@ class PostgresBruktSubsumsjonStoreTest {
                     subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
                 )
             ) {
-                val internSubsumsjonBrukt1 = internTilEksternSubsumsjonBrukt(bruktSubsumsjon)
+                val internSubsumsjonBrukt1 = eksternTilInternSubsumsjon(bruktSubsumsjon)
                 insertSubsumsjonBrukt(internSubsumsjonBrukt1) shouldBe 1
                 insertSubsumsjonBrukt(internSubsumsjonBrukt1) shouldBe 0
                 getSubsumsjonBrukt(bruktSubsumsjon.id)?.behandlingsId shouldBe internSubsumsjonBrukt1.behandlingsId

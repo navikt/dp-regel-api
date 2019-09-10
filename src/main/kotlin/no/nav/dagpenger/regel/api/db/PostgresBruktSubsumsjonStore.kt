@@ -52,7 +52,7 @@ class PostgresBruktSubsumsjonStore(
         }
     }
 
-    override fun internTilEksternSubsumsjonBrukt(v1: EksternSubsumsjonBrukt): InternSubsumsjonBrukt {
+    override fun eksternTilInternSubsumsjon(v1: EksternSubsumsjonBrukt): InternSubsumsjonBrukt {
         val behandlingsId = subsumsjonStore.hentKoblingTilEkstern(EksternId(v1.eksternId.toString(), Kontekst.VEDTAK))
         return InternSubsumsjonBrukt(
             id = v1.id,
