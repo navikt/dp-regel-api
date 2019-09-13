@@ -2,6 +2,7 @@ package no.nav.dagpenger.regel.api.db
 
 import com.zaxxer.hikari.HikariDataSource
 import de.huxhorn.sulky.ulid.ULID
+import io.kotlintest.assertSoftly
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.mockk
@@ -212,10 +213,13 @@ class PostgresSubsumsjonStoreTest {
                 )
 
                 insertSubsumsjon(subsumsjonWithResults) shouldBe 1
-                getSubsumsjonByResult(SubsumsjonId(minsteinntektId)) shouldBe subsumsjonWithResults
-                getSubsumsjonByResult(SubsumsjonId(grunnlagId)) shouldBe subsumsjonWithResults
-                getSubsumsjonByResult(SubsumsjonId(satsId)) shouldBe subsumsjonWithResults
-                getSubsumsjonByResult(SubsumsjonId(periodeId)) shouldBe subsumsjonWithResults
+
+                assertSoftly {
+                    getSubsumsjonByResult(SubsumsjonId(minsteinntektId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(SubsumsjonId(grunnlagId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(SubsumsjonId(satsId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(SubsumsjonId(periodeId)) shouldBe subsumsjonWithResults
+                }
             }
         }
     }
