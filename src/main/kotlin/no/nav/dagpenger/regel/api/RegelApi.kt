@@ -25,7 +25,6 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
@@ -52,6 +51,7 @@ import no.nav.dagpenger.regel.api.streams.producerConfig
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.fixedRateTimer
 
 val APPLICATION_NAME = "dp-regel-api"
 private val MAINLOGGER = KotlinLogging.logger {}
@@ -64,8 +64,16 @@ fun main() = runBlocking {
     val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
     val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource)
     val vaktmester = Vaktmester(dataSource = dataSource, subsumsjonStore = subsumsjonStore)
-    launch {
-        vaktmester.markerBrukteSubsumsjoner()
+    if (config.aktivVaktmester) {
+        fixedRateTimer(
+            name = "vaktmester",
+            initialDelay = TimeUnit.MINUTES.toMillis(10),
+            period = TimeUnit.HOURS.toMillis(12),
+            action = {
+                MAINLOGGER.info { "Vaktmesteren rydder" }
+                vaktmester.rydd()
+                MAINLOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
+            })
     }
     val kafkaConsumer =
         KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
