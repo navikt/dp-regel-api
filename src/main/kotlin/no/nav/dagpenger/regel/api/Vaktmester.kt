@@ -8,7 +8,7 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
-import no.nav.dagpenger.regel.api.db.SubsumsjonBruktV2
+import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import javax.sql.DataSource
@@ -40,7 +40,7 @@ class Vaktmester(
 
     suspend fun markerBrukteSubsumsjoner() {
         var run = 0
-        bruktSubsumsjonStore.listSubsumsjonBruktV2().forEach {
+        bruktSubsumsjonStore.listSubsumsjonBrukt().forEach {
             run++
             markerSomBrukt(it)
             if (run % 100 == 0) {
@@ -49,7 +49,7 @@ class Vaktmester(
         }
     }
 
-    fun markerSomBrukt(subsumsjonBrukt: SubsumsjonBruktV2) {
+    fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt) {
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
@@ -58,7 +58,7 @@ class Vaktmester(
                                                         OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
                                                         OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
                                                         OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id
-                    """.trimMargin(), mapOf("id" to subsumsjonBrukt.id)
+                    """.trimMargin(), mapOf("id" to internSubsumsjonBrukt.id)
                 ).asUpdate
             )
         }

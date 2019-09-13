@@ -194,30 +194,14 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
     }
 
     override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
-        return try {
-            getSubsumByResultV2(subsumsjonId)
-        } catch (err: SubsumsjonNotFoundException) {
-            getSubsumByResultV1(subsumsjonId)
-        }
-    }
-
-    private fun getSubsumByResultV1(subsumsjonId: SubsumsjonId): Subsumsjon {
-        return getSubsumByResult("v1", subsumsjonId)
-    }
-
-    private fun getSubsumByResultV2(subsumsjonId: SubsumsjonId): Subsumsjon {
-        return getSubsumByResult("v2", subsumsjonId)
-    }
-
-    private fun getSubsumByResult(version: String, subsumsjonId: SubsumsjonId): Subsumsjon {
         val json = using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """ select
                                                   data
-                                            from ${version}_subsumsjon
+                                            from v2_subsumsjon
                                             where data -> 'satsResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
+                                               OR data -> 'minsteino.nav.dagpenger.regel.api.models.JsonRoundtripSpecnntektResultat' ->> 'subsumsjonsId'::text = :id
                                                OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
                                                OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id """,
                     mapOf("id" to subsumsjonId.id)
@@ -259,4 +243,5 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 }
+
 fun LocalDate.toYearMonth(): YearMonth = YearMonth.of(this.year, this.month)

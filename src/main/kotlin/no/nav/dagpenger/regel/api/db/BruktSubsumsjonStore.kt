@@ -6,15 +6,14 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 interface BruktSubsumsjonStore {
-    fun insertSubsumsjonBruktV2(subsumsjonBruktV2: SubsumsjonBruktV2): Int
-    fun getSubsumsjonBruktV2(subsumsjonsId: String): SubsumsjonBruktV2?
-    fun listSubsumsjonBruktV2(): List<SubsumsjonBruktV2>
-    fun subsumsjonBruktFraBehandlingsId(behandlingsId: String): List<SubsumsjonBruktV2>
-    fun v1TilV2(v1: SubsumsjonBrukt): SubsumsjonBruktV2
-    fun migrerV1TilV2()
+    fun insertSubsumsjonBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt): Int
+    fun getSubsumsjonBrukt(subsumsjonsId: String): InternSubsumsjonBrukt?
+    fun listSubsumsjonBrukt(): List<InternSubsumsjonBrukt>
+    fun subsumsjonBruktFraBehandlingsId(behandlingsId: String): List<InternSubsumsjonBrukt>
+    fun eksternTilInternSubsumsjon(v1: EksternSubsumsjonBrukt): InternSubsumsjonBrukt
 }
 
-data class SubsumsjonBrukt(
+data class EksternSubsumsjonBrukt(
     val id: String,
     val eksternId: Long,
     val arenaTs: ZonedDateTime,
@@ -22,8 +21,8 @@ data class SubsumsjonBrukt(
 ) {
     companion object Mapper {
         private val LOGGER = KotlinLogging.logger { }
-        private val adapter = moshiInstance.adapter<SubsumsjonBrukt>(SubsumsjonBrukt::class.java)
-        fun fromJson(json: String): SubsumsjonBrukt? {
+        private val adapter = moshiInstance.adapter<EksternSubsumsjonBrukt>(EksternSubsumsjonBrukt::class.java)
+        fun fromJson(json: String): EksternSubsumsjonBrukt? {
             return runCatching { adapter.fromJson(json) }.onFailure { e -> LOGGER.warn("Failed to convert string to object", e) }.getOrNull()
         }
     }
@@ -33,11 +32,11 @@ data class SubsumsjonBrukt(
     }
 }
 
-data class SubsumsjonBruktV2(val id: String, val behandlingsId: String, val arenaTs: ZonedDateTime, val created: ZonedDateTime? = null) {
+data class InternSubsumsjonBrukt(val id: String, val behandlingsId: String, val arenaTs: ZonedDateTime, val created: ZonedDateTime? = null) {
     companion object Mapper {
         private val LOGGER = KotlinLogging.logger { }
-        private val adapter = moshiInstance.adapter<SubsumsjonBruktV2>(SubsumsjonBruktV2::class.java)
-        fun fromJson(json: String): SubsumsjonBruktV2? {
+        private val adapter = moshiInstance.adapter<InternSubsumsjonBrukt>(InternSubsumsjonBrukt::class.java)
+        fun fromJson(json: String): InternSubsumsjonBrukt? {
             return runCatching { adapter.fromJson(json) }.onFailure { e -> LOGGER.warn("Failed to convert string to object", e) }.getOrNull()
         }
     }

@@ -12,7 +12,7 @@ import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.DataSource
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
-import no.nav.dagpenger.regel.api.db.SubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.withMigratedDb
 import no.nav.dagpenger.regel.api.models.Behov
@@ -52,8 +52,8 @@ internal class VaktmesterTest {
             val subsumsjonStore = PostgresSubsumsjonStore(dataSource = DataSource.instance)
             val internBehov = subsumsjonStore.opprettBehov(behov)
             subsumsjonStore.insertSubsumsjon(bruktSubsumsjon.copy(behovId = internBehov.behovId))
-            val marker = bruktSubsumsjonStore.v1TilV2(
-                SubsumsjonBrukt(
+            val marker = bruktSubsumsjonStore.eksternTilInternSubsumsjon(
+                EksternSubsumsjonBrukt(
                     id = minsteinntektSubsumsjonId,
                     eksternId = behov.vedtakId.toLong(),
                     arenaTs = ZonedDateTime.now(),
@@ -88,8 +88,8 @@ internal class VaktmesterTest {
             with(
                 PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
             ) {
-                val subsumsjonBruktV2 = v1TilV2(
-                    SubsumsjonBrukt(
+                val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
+                    EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
                         eksternId = behov.vedtakId.toLong(),
                         arenaTs = ZonedDateTime.now(),
@@ -97,7 +97,7 @@ internal class VaktmesterTest {
 
                     )
                 )
-                insertSubsumsjonBruktV2(subsumsjonBruktV2)
+                insertSubsumsjonBrukt(subsumsjonBruktV2)
                 vaktmester.markerSomBrukt(subsumsjonBruktV2)
             }
 
@@ -132,8 +132,8 @@ internal class VaktmesterTest {
                 subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
             )
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
-                val bruktSub = v1TilV2(
-                    SubsumsjonBrukt(
+                val bruktSub = eksternTilInternSubsumsjon(
+                    EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
                         eksternId = behov.vedtakId.toLong(),
                         arenaTs = ZonedDateTime.now(),
@@ -141,7 +141,7 @@ internal class VaktmesterTest {
 
                     )
                 )
-                insertSubsumsjonBruktV2(bruktSub)
+                insertSubsumsjonBrukt(bruktSub)
                 vaktmester.markerSomBrukt(bruktSub)
             }
             vaktmester.rydd()
@@ -175,8 +175,8 @@ internal class VaktmesterTest {
             with(
                 PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
             ) {
-                val subsumsjonBruktV2 = v1TilV2(
-                    SubsumsjonBrukt(
+                val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
+                    EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
                         eksternId = behov.vedtakId.toLong(),
                         arenaTs = ZonedDateTime.now(),
@@ -184,7 +184,7 @@ internal class VaktmesterTest {
 
                     )
                 )
-                insertSubsumsjonBruktV2(subsumsjonBruktV2)
+                insertSubsumsjonBrukt(subsumsjonBruktV2)
                 vaktmester.markerSomBrukt(subsumsjonBruktV2)
             }
             vaktmester.rydd()
@@ -216,8 +216,8 @@ internal class VaktmesterTest {
                 with(
                     PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
                 ) {
-                    val subsumsjonBruktV2 = v1TilV2(
-                        SubsumsjonBrukt(
+                    val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
+                        EksternSubsumsjonBrukt(
                             id = minsteinntektSubsumsjonId,
                             eksternId = behov.vedtakId.toLong(),
                             arenaTs = ZonedDateTime.now(),
@@ -225,7 +225,7 @@ internal class VaktmesterTest {
 
                         )
                     )
-                    insertSubsumsjonBruktV2(subsumsjonBruktV2)
+                    insertSubsumsjonBrukt(subsumsjonBruktV2)
                 }
                 vaktmester.markerBrukteSubsumsjoner()
                 using(sessionOf(DataSource.instance)) { session ->
