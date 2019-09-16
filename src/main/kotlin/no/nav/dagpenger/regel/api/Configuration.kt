@@ -52,7 +52,7 @@ private val prodProperties = ConfigurationMap(
         "application.profile" to "PROD",
         "application.httpPort" to "8092",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
-        "vaktmester.aktiv" to "false"
+        "vaktmester.aktiv" to "true"
     )
 )
 
