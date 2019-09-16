@@ -64,17 +64,16 @@ fun main() = runBlocking {
     val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
     val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource)
     val vaktmester = Vaktmester(dataSource = dataSource, subsumsjonStore = subsumsjonStore)
-    if (config.aktivVaktmester) {
-        fixedRateTimer(
-            name = "vaktmester",
-            initialDelay = TimeUnit.MINUTES.toMillis(10),
-            period = TimeUnit.HOURS.toMillis(12),
-            action = {
-                MAINLOGGER.info { "Vaktmesteren rydder" }
-                vaktmester.rydd()
-                MAINLOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
-            })
-    }
+    fixedRateTimer(
+        name = "vaktmester",
+        initialDelay = TimeUnit.MINUTES.toMillis(10),
+        period = TimeUnit.HOURS.toMillis(12),
+        action = {
+            MAINLOGGER.info { "Vaktmesteren rydder" }
+            vaktmester.rydd()
+            MAINLOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
+        })
+
     val kafkaConsumer =
         KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
             it.start()

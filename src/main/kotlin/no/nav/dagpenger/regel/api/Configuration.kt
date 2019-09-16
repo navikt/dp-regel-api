@@ -4,7 +4,6 @@ import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties.Companion.systemProperties
 import com.natpryce.konfig.EnvironmentVariables
 import com.natpryce.konfig.Key
-import com.natpryce.konfig.booleanType
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.listType
 import com.natpryce.konfig.overriding
@@ -25,9 +24,8 @@ private val localProperties = ConfigurationMap(
         "application.httpPort" to "8092",
         "auth.secret" to "secret",
         "auth.allowedKeys" to "secret1, secret2",
-        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
-        "vaktmester.aktiv" to "true"
-)
+        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt"
+    )
 )
 private val devProperties = ConfigurationMap(
     mapOf(
@@ -38,8 +36,7 @@ private val devProperties = ConfigurationMap(
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "application.profile" to "DEV",
         "application.httpPort" to "8092",
-        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
-        "vaktmester.aktiv" to "true"
+        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt"
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -51,8 +48,7 @@ private val prodProperties = ConfigurationMap(
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl150.adeo.no:8443",
         "application.profile" to "PROD",
         "application.httpPort" to "8092",
-        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
-        "vaktmester.aktiv" to "false"
+        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt"
     )
 )
 
@@ -70,8 +66,7 @@ internal data class Configuration(
     val vault: Vault = Vault(),
     val kafka: Kafka = Kafka(),
     val application: Application = Application(),
-    val subsumsjonBruktTopic: String = config()[Key("kafka.subsumsjon.topic", stringType)],
-    val aktivVaktmester: Boolean = config().getOrElse(key = Key("vaktmester.aktiv", booleanType), default = false)
+    val subsumsjonBruktTopic: String = config()[Key("kafka.subsumsjon.topic", stringType)]
 ) {
 
     data class Auth(
