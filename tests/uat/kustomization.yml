@@ -4,4 +4,4 @@ namePrefix: "dp-regel-api-"
 commonLabels:
   app: dp-regel-api
 bases:
-  - github.com/navikt/dagpenger-funksjonelle-tester/kustomize/tests/base?ref=feature/Jenkins
+  - github.com/navikt/dagpenger-funksjonelle-tester/kustomize/tests/base
