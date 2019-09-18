@@ -45,7 +45,7 @@ private val prodProperties = ConfigurationMap(
         "database.port" to "5432",
         "database.name" to "dp-regel-api",
         "vault.mountpath" to "postgresql/prod-fss/",
-        "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl150.adeo.no:8443",
+        "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "application.profile" to "PROD",
         "application.httpPort" to "8092",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt"
