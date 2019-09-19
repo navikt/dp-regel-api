@@ -1,28 +1,26 @@
-#######################################
+######################################
 #!/usr/bin/env bash
-#
-# Script for setting a job running uat tests
-#
-# Requirements: 
-# - kubectl in path.
+# 
+# Run uat tests
+# Requirements:
 #######################################
 
 set -o errexit
 set -o pipefail
 [[ "${DEBUG}" == 'true' ]] && set -o xtrace
 
+# Full path of the current script
+readonly THIS=`readlink -f "${BASH_SOURCE[0]}" 2>/dev/null||echo $0`
 
-kubectl config use-context dev-fss
-
-kubectl delete -k tests/uat --ignore-not-found=true
-
-kubectl apply -k tests/uat 
+# The directory where current script resides
+readonly DIR=`dirname "${THIS}"`
 
 #Job name is based upon namePrefix set in the overlay and the resource name in the base.
-kubectl -n dagpenger-test wait --for=condition=complete --timeout=300s job/dp-regel-api-funksjonelle-tester
+readonly JOB_NAME=dp-regel-api-funksjonelle-tester
 
-#app label is set in the overlay
-kubectl -n dagpenger-test logs -l app=dp-regel-api --tail=1000
+#Path to kustomize overlay file
+readonly OVERLAY_PATH="${DIR}"
 
+. $DIR/uatJob "-j ${JOB_NAME} -p ${OVERLAY_PATH}"
 
-
+main $@
