@@ -23,32 +23,34 @@ private val LOGGER = KotlinLogging.logger {}
 
 internal fun Routing.v2behov(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
     authenticate {
-        route("/v2/behov") {
-            post {
-                call.respond(HttpStatusCode.OK, "successfully authed v2/behov")
-                /*mapRequestToV2Behov(call.receive()).apply {
-                    store.opprettBehov(this).also {
-                        producer.produceEvent(it)
-                    }.also {
-                        call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
-                        call.respond(HttpStatusCode.Accepted, V2StatusResponse("PENDING"))
-                    }.also {
-                        LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
-                    }
-                }*/
-            }
-
-            route("/v2/status") {
-                get("/{behovId}") {
-                    val behovId = call.parameters["behovid"] ?: throw BadRequestException()
-
-                    when (val status = store.behovStatus(behovId)) {
-                        is Status.Done -> {
-                            call.response.header(HttpHeaders.Location, "/subsumsjon/${status.subsumsjonsId}")
-                            call.respond(HttpStatusCode.SeeOther)
+        route("/v2") {
+            route("/behov") {
+                post {
+                    call.respond(HttpStatusCode.OK, "successfully authed v2/behov")
+                    /*mapRequestToV2Behov(call.receive()).apply {
+                        store.opprettBehov(this).also {
+                            producer.produceEvent(it)
+                        }.also {
+                            call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
+                            call.respond(HttpStatusCode.Accepted, V2StatusResponse("PENDING"))
+                        }.also {
+                            LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
                         }
-                        is Status.Pending -> {
-                            call.respond(V2StatusResponse("PENDING"))
+                    }*/
+                }
+
+                route("/status") {
+                    get("/{behovId}") {
+                        val behovId = call.parameters["behovid"] ?: throw BadRequestException()
+
+                        when (val status = store.behovStatus(behovId)) {
+                            is Status.Done -> {
+                                call.response.header(HttpHeaders.Location, "/subsumsjon/${status.subsumsjonsId}")
+                                call.respond(HttpStatusCode.SeeOther)
+                            }
+                            is Status.Pending -> {
+                                call.respond(V2StatusResponse("PENDING"))
+                            }
                         }
                     }
                 }

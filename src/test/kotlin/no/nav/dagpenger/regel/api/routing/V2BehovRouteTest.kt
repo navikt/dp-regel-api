@@ -15,8 +15,8 @@ class V2BehovRouteTest {
     fun `401 on unauthorized requests`() {
         withTestApplication(MockApi()) {
             handleRequest(HttpMethod.Get, "/v2/behov/status/id").response.status() shouldBe HttpStatusCode.Unauthorized
-            handleRequest(HttpMethod.Post, "/v2/behov/").response.status() shouldBe HttpStatusCode.Unauthorized
-            handleRequest(HttpMethod.Post, "/v2/behov/") { addHeader("X-API-KEY", "notvalid") }
+            handleRequest(HttpMethod.Post, "/v2/behov").response.status() shouldBe HttpStatusCode.Unauthorized
+            handleRequest(HttpMethod.Post, "/v2/behov") { addHeader("X-API-KEY", "notvalid") }
                     .response.status() shouldBe HttpStatusCode.Unauthorized
         }
     }
@@ -28,7 +28,7 @@ class V2BehovRouteTest {
                 subsumsjonStore = mockk()
         )) {
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/v2/behov/")
+            handleAuthenticatedRequest(HttpMethod.Post, "/v2/behov")
                     .apply {
 
                         response.status() shouldBe HttpStatusCode.OK
