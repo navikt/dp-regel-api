@@ -26,7 +26,7 @@ internal fun Routing.v2behov(store: SubsumsjonStore, producer: DagpengerBehovPro
         route("/v2") {
             route("/behov") {
                 post {
-                    // todo: fix logic
+                    // todo: fix logic, make statusreponse enum
                     call.response.header(HttpHeaders.Location, "/behov/status/yolo")
                     call.respond(HttpStatusCode.Accepted, V2StatusResponse("PENDING"))
                     /*mapRequestToV2Behov(call.receive()).apply {
