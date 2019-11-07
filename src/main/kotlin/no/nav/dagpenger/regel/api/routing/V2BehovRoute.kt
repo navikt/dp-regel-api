@@ -11,11 +11,9 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
-import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
 
@@ -41,7 +39,7 @@ internal fun Routing.v2behov(store: SubsumsjonStore, producer: DagpengerBehovPro
                     }*/
                 }
 
-                route("/status") {
+/*                route("/status") {
                     get("/{behovId}") {
                         val behovId = call.parameters["behovid"] ?: throw BadRequestException()
 
@@ -55,7 +53,7 @@ internal fun Routing.v2behov(store: SubsumsjonStore, producer: DagpengerBehovPro
                             }
                         }
                     }
-                }
+                }*/
             }
         }
     }
