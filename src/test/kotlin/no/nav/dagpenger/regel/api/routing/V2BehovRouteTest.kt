@@ -30,8 +30,7 @@ class V2BehovRouteTest {
 
             handleAuthenticatedRequest(HttpMethod.Post, "/v2/behov")
                     .apply {
-
-                        response.status() shouldBe HttpStatusCode.OK
+                        response.status() shouldBe HttpStatusCode.Accepted
                     }
         }
     }
