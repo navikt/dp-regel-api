@@ -26,7 +26,9 @@ internal fun Routing.v2behov(store: SubsumsjonStore, producer: DagpengerBehovPro
         route("/v2") {
             route("/behov") {
                 post {
-                    call.respond(HttpStatusCode.OK, "successfully authed v2/behov")
+                    // todo: fix logic
+                    call.response.header(HttpHeaders.Location, "/behov/status/yolo")
+                    call.respond(HttpStatusCode.Accepted, V2StatusResponse("successfully authed v2/behov"))
                     /*mapRequestToV2Behov(call.receive()).apply {
                         store.opprettBehov(this).also {
                             producer.produceEvent(it)
