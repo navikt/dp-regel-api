@@ -4,6 +4,7 @@ import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.request.receive
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Routing
@@ -13,9 +14,7 @@ import io.ktor.routing.route
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.Behov
-import no.nav.dagpenger.regel.api.models.InntektsPeriode
-import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
 
@@ -26,11 +25,9 @@ internal fun Routing.v2behov(store: SubsumsjonStore, producer: DagpengerBehovPro
         route("/v2") {
             route("/behov") {
                 post {
-                    // todo: fix logic
-                    call.response.header(HttpHeaders.Location, "/behov/status/yolo")
-                    call.respond(HttpStatusCode.Accepted, V2StatusResponse("successfully authed v2/behov"))
-                    /*mapRequestToV2Behov(call.receive()).apply {
-                        store.opprettBehov(this).also {
+                    // todo: fix logic, make statusreponse enum?
+                    mapRequestToBehovV2(call.receive()).apply {
+                        store.opprettBehovV2(this).also {
                             producer.produceEvent(it)
                         }.also {
                             call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
@@ -38,7 +35,7 @@ internal fun Routing.v2behov(store: SubsumsjonStore, producer: DagpengerBehovPro
                         }.also {
                             LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
                         }
-                    }*/
+                    }
                 }
 
                 route("/status") {
@@ -63,9 +60,9 @@ internal fun Routing.v2behov(store: SubsumsjonStore, producer: DagpengerBehovPro
 
 private data class V2StatusResponse(val status: String)
 
-internal fun mapRequestToV2Behov(request: V2BehovRequest): Behov = Behov(
+internal fun mapRequestToBehovV2(request: V2BehovRequest): V2Behov = V2Behov(
     aktørId = request.aktorId,
-    vedtakId = request.vedtakId,
+    eksternId = request.eksternId,
     beregningsDato = request.beregningsdato,
     harAvtjentVerneplikt = request.harAvtjentVerneplikt,
     oppfyllerKravTilFangstOgFisk = request.oppfyllerKravTilFangstOgFisk,
@@ -77,7 +74,7 @@ internal fun mapRequestToV2Behov(request: V2BehovRequest): Behov = Behov(
 
 internal data class V2BehovRequest(
     val aktorId: String,
-    val vedtakId: Int,
+    val eksternId: EksternId,
     val beregningsdato: LocalDate,
     val harAvtjentVerneplikt: Boolean?,
     val oppfyllerKravTilFangstOgFisk: Boolean?,
