@@ -1,13 +1,7 @@
 package no.nav.dagpenger.regel.api.db
 
 import de.huxhorn.sulky.ulid.ULID
-import no.nav.dagpenger.regel.api.models.BehandlingsId
-import no.nav.dagpenger.regel.api.models.Behov
-import no.nav.dagpenger.regel.api.models.EksternId
-import no.nav.dagpenger.regel.api.models.InternBehov
-import no.nav.dagpenger.regel.api.models.Kontekst
-import no.nav.dagpenger.regel.api.models.Status
-import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.*
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -17,6 +11,13 @@ interface SubsumsjonStore {
         val eksternId = EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)
         val behandlingsId = hentKoblingTilEkstern(eksternId)
         val internBehov = InternBehov.fromBehov(behov, behandlingsId)
+        insertBehov(internBehov)
+        return internBehov
+    }
+
+    fun opprettBehovV2(behov: V2Behov): InternBehov {
+        val behandlingsId = hentKoblingTilEkstern(behov.eksternId)
+        val internBehov = V2InternBehov.fromBehov(behov, behandlingsId)
         insertBehov(internBehov)
         return internBehov
     }
