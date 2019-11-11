@@ -15,7 +15,7 @@ internal fun Route.subsumsjon(store: SubsumsjonStore) {
     authenticate {
         route("subsumsjon/") {
             get("/{behovid}") {
-                val behovid = call.parameters["behovid"] ?: throw BadRequestException()
+                val behovid = call.parameters["behovid"]?.toUpperCase() ?: throw BadRequestException()
                 store.getSubsumsjon(behovid).toJson().let {
                     call.respond(HttpStatusCode.OK, it)
                 }
