@@ -40,7 +40,7 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
 
             route("/status") {
                 get("/{behovId}") {
-                    val behovId = call.parameters["behovid"] ?: throw BadRequestException()
+                    val behovId = call.parameters["behovid"]?.toUpperCase() ?: throw BadRequestException()
 
                     when (val status = store.behovStatus(behovId)) {
                         is Status.Done -> {
