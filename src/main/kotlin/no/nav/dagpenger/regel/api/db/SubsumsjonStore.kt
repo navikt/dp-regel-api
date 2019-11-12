@@ -34,7 +34,8 @@ interface SubsumsjonStore {
 data class SubsumsjonId(val id: String) {
     init {
         try {
-            ULID.parseULID(id)
+            val uppercaseId = id.toUpperCase()
+            ULID.parseULID(uppercaseId)
         } catch (e: IllegalArgumentException) {
             throw IllegalSubsumsjonIdException("Id $id is not a valid subsumsjon id")
         }
