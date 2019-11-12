@@ -4,8 +4,15 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.models.*
+import no.nav.dagpenger.regel.api.models.BehandlingsId
+import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
+import no.nav.dagpenger.regel.api.models.UlidId
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PGobject
