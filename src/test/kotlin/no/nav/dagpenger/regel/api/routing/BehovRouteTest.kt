@@ -44,7 +44,7 @@ class BehovRouteTest {
     fun `Status when behov is done, pending or not found`() {
         val storeMock = mockk<SubsumsjonStore>(relaxed = false)
         every { storeMock.behovStatus(BehovId("01DSFG6P7969DP56BPW2EDS1RN")) } returns Status.Pending
-        every { storeMock.behovStatus(BehovId("01DSFG798QNFAWXNFGZF0J2APX")) } returns Status.Done("01DSFGCKM9TEZ94X872C7H4QB4")
+        every { storeMock.behovStatus(BehovId("01DSFG798QNFAWXNFGZF0J2APX")) } returns Status.Done(BehovId("01DSFGCKM9TEZ94X872C7H4QB4"))
         every { storeMock.behovStatus(BehovId("01DSFG7JVZVVD2ZK7K7HG9SNVG")) } throws BehovNotFoundException("not found")
 
         withTestApplication(MockApi(

@@ -149,7 +149,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
 
     override fun behovStatus(behovId: BehovId): Status {
         return when (behovExists(behovId)) {
-            true -> getSubsumsjonIdBy(behovId)?.let { Status.Done(it) } ?: Status.Pending
+            true -> getBehovIdBy(behovId)?.let { Status.Done(it) } ?: Status.Pending
             false -> throw BehovNotFoundException("BehovId: $behovId")
         }
     }
@@ -230,7 +230,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    private fun getSubsumsjonIdBy(behovId: BehovId): String? {
+    private fun getBehovIdBy(behovId: BehovId): BehovId? {
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
@@ -238,7 +238,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                         """ SELECT behov_id FROM v2_subsumsjon WHERE behov_id = ? """,
                         behovId.id
                     ).map { row -> row.stringOrNull("behov_id") }.asSingle
-                )
+                )?.let { BehovId(it) }
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)

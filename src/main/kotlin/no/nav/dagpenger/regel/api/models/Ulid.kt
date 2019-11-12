@@ -1,7 +1,6 @@
 package no.nav.dagpenger.regel.api.models
 
 import de.huxhorn.sulky.ulid.ULID
-import no.nav.dagpenger.regel.api.db.IllegalSubsumsjonIdException
 
 class Ulid(private val rawId: String) {
 
@@ -11,7 +10,7 @@ class Ulid(private val rawId: String) {
         try {
             id = ULID.parseULID(rawId).toString()
         } catch (e: IllegalArgumentException) {
-            throw IllegalSubsumsjonIdException("Id $rawId is not a valid subsumsjon id")
+            throw IllegalUlidException("Id $rawId is not a valid uppercase ulid")
         }
     }
 
@@ -37,3 +36,5 @@ class Ulid(private val rawId: String) {
 
 typealias BehovId = Ulid
 typealias SubsumsjonId = Ulid
+
+class IllegalUlidException(override val message: String) : RuntimeException(message)

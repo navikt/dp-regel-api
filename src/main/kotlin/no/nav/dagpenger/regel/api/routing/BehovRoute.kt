@@ -31,7 +31,7 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
                     store.opprettBehov(this).also {
                         producer.produceEvent(it)
                     }.also {
-                        call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
+                        call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId.id}")
                         call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
                     }.also {
                         LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
@@ -45,7 +45,7 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
 
                     when (val status = store.behovStatus(behovId)) {
                         is Status.Done -> {
-                            call.response.header(HttpHeaders.Location, "/subsumsjon/${status.subsumsjonsId}")
+                            call.response.header(HttpHeaders.Location, "/subsumsjon/${status.behovId.id}")
                             call.respond(HttpStatusCode.SeeOther)
                         }
                         is Status.Pending -> {

@@ -24,8 +24,6 @@ interface SubsumsjonStore {
     fun delete(subsumsjon: Subsumsjon)
 }
 
-class IllegalSubsumsjonIdException(override val message: String) : RuntimeException(message)
-
 internal class SubsumsjonNotFoundException(override val message: String) : RuntimeException(message)
 
 internal class BehovNotFoundException(override val message: String) : RuntimeException(message)

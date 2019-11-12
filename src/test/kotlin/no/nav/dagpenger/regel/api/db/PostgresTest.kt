@@ -120,7 +120,7 @@ class PostgresSubsumsjonStoreTest {
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub)
-                behovStatus(internBehov.behovId) shouldBe Status.Done(sub.behovId.id)
+                behovStatus(internBehov.behovId) shouldBe Status.Done(sub.behovId)
             }
         }
     }

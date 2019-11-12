@@ -84,7 +84,7 @@ data class InternBehov(
 }
 
 sealed class Status {
-    data class Done(val subsumsjonsId: String) : Status() {
+    data class Done(val behovId: BehovId) : Status() {
         companion object {
             override fun toString() = "Done"
         }
