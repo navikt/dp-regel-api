@@ -18,14 +18,8 @@ import io.mockk.slot
 
 import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
-import no.nav.dagpenger.regel.api.db.SubsumsjonId
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.EksternId
-import no.nav.dagpenger.regel.api.models.InntektsPeriode
-import no.nav.dagpenger.regel.api.models.InternBehov
-import no.nav.dagpenger.regel.api.models.BehandlingsId
-import no.nav.dagpenger.regel.api.models.Status
-import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Test
@@ -49,15 +43,15 @@ class BehovRouteTest {
     @Test
     fun `Status when behov is done, pending or not found`() {
         val storeMock = mockk<SubsumsjonStore>(relaxed = false)
-        every { storeMock.behovStatus("pending") } returns Status.Pending
-        every { storeMock.behovStatus("done") } returns Status.Done("subsumsjonid")
-        every { storeMock.behovStatus("notfound") } throws BehovNotFoundException("not found")
+        every { storeMock.behovStatus(UlidId("01DSFG6P7969DP56BPW2EDS1RN")) } returns Status.Pending
+        every { storeMock.behovStatus(UlidId("01DSFG798QNFAWXNFGZF0J2APX")) } returns Status.Done("01DSFGCKM9TEZ94X872C7H4QB4")
+        every { storeMock.behovStatus(UlidId("01DSFG7JVZVVD2ZK7K7HG9SNVG")) } throws BehovNotFoundException("not found")
 
         withTestApplication(MockApi(
             subsumsjonStore = storeMock
         )) {
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/pending")
+            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG6P7969DP56BPW2EDS1RN")
                 .apply {
 
                     response.status() shouldBe HttpStatusCode.OK
@@ -66,23 +60,23 @@ class BehovRouteTest {
                     response.content shouldBe """{"status":"PENDING"}"""
                 }
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/done")
+            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG798QNFAWXNFGZF0J2APX")
                 .apply {
                     response.status() shouldBe HttpStatusCode.SeeOther
                     withClue("Response should be handled") { requestHandled shouldBe true }
                     response.headers[HttpHeaders.Location] shouldNotBe null
-                    response.headers[HttpHeaders.Location] shouldBe "/subsumsjon/subsumsjonid"
+                    response.headers[HttpHeaders.Location] shouldBe "/subsumsjon/01DSFGCKM9TEZ94X872C7H4QB4"
                 }
 
             shouldThrow<BehovNotFoundException> {
-                handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/notfound")
+                handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG7JVZVVD2ZK7K7HG9SNVG")
             }
         }
 
         verifyAll {
-            storeMock.behovStatus("pending")
-            storeMock.behovStatus("done")
-            storeMock.behovStatus("notfound")
+            storeMock.behovStatus(UlidId("01DSFG6P7969DP56BPW2EDS1RN"))
+            storeMock.behovStatus(UlidId("01DSFG798QNFAWXNFGZF0J2APX"))
+            storeMock.behovStatus(UlidId("01DSFG7JVZVVD2ZK7K7HG9SNVG"))
         }
     }
 
@@ -98,7 +92,7 @@ class BehovRouteTest {
                 TODO("not implemented")
             }
 
-            override fun getBehov(behovId: String): InternBehov {
+            override fun getBehov(behovId: UlidId): InternBehov {
                 TODO("not implemented")
             }
 
@@ -110,15 +104,15 @@ class BehovRouteTest {
                 return BehandlingsId.nyBehandlingsIdFraEksternId(eksternId)
             }
 
-            override fun behovStatus(behovId: String): Status {
+            override fun behovStatus(behovId: UlidId): Status {
                 TODO("not implemented")
             }
 
-            override fun getSubsumsjon(behovId: String): Subsumsjon {
+            override fun getSubsumsjon(behovId: UlidId): Subsumsjon {
                 TODO("not implemented")
             }
 
-            override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
+            override fun getSubsumsjonByResult(subsumsjonId: UlidId): Subsumsjon {
                 TODO("not implemented")
             }
         }

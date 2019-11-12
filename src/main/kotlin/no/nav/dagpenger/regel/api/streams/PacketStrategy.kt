@@ -7,6 +7,7 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon.Mapper.subsumsjonFrom
+import no.nav.dagpenger.regel.api.models.UlidId
 import no.nav.dagpenger.regel.api.models.behovId
 import java.time.Duration
 import java.time.LocalDateTime
@@ -55,7 +56,7 @@ internal class PendingBehovStrategy(private val subsumsjonStore: SubsumsjonStore
             }
     }
 
-    private fun behovPending(behovId: String) = runCatching { subsumsjonStore.behovStatus(behovId) }
+    private fun behovPending(behovId: UlidId) = runCatching { subsumsjonStore.behovStatus(behovId) }
         .onFailure { LOGGER.error(it) { "Failed to get status of behov: $behovId" } }
         .map { it == Status.Pending }
         .getOrDefault(false)

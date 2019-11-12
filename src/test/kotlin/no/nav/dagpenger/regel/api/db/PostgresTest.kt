@@ -8,14 +8,7 @@ import io.kotlintest.shouldThrow
 import io.mockk.mockk
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
-import no.nav.dagpenger.regel.api.models.BehandlingsId
-import no.nav.dagpenger.regel.api.models.Behov
-import no.nav.dagpenger.regel.api.models.EksternId
-import no.nav.dagpenger.regel.api.models.Faktum
-import no.nav.dagpenger.regel.api.models.InntektsPeriode
-import no.nav.dagpenger.regel.api.models.Kontekst
-import no.nav.dagpenger.regel.api.models.Status
-import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.PostgreSQLContainer
@@ -127,7 +120,7 @@ class PostgresSubsumsjonStoreTest {
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub)
-                behovStatus(internBehov.behovId) shouldBe Status.Done(sub.behovId)
+                behovStatus(UlidId(internBehov.behovId)) shouldBe Status.Done(sub.behovId)
             }
         }
     }
@@ -137,7 +130,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
-                behovStatus(internBehov.behovId) shouldBe Status.Pending
+                behovStatus(UlidId(internBehov.behovId)) shouldBe Status.Pending
             }
         }
     }
@@ -146,7 +139,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Exception if retrieving status of a non existant behov`() {
         withMigratedDb {
             shouldThrow<BehovNotFoundException> {
-                PostgresSubsumsjonStore(DataSource.instance).behovStatus("hubba")
+                PostgresSubsumsjonStore(DataSource.instance).behovStatus(UlidId("01DSFGT6XCX4W1RKDXBYTAX5QH"))
             }
         }
     }
@@ -159,7 +152,7 @@ class PostgresSubsumsjonStoreTest {
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
-                getSubsumsjon(sub.behovId) shouldBe sub
+                getSubsumsjon(UlidId(sub.behovId)) shouldBe sub
             }
         }
     }
@@ -190,7 +183,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Exception if retrieving a non existant subsumsjon`() {
         withMigratedDb {
             shouldThrow<SubsumsjonNotFoundException> {
-                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon("notfound")
+                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon(UlidId("01DSFHD74S4DGSXYD8QFQ6RY02"))
             }
         }
     }
@@ -215,10 +208,10 @@ class PostgresSubsumsjonStoreTest {
                 insertSubsumsjon(subsumsjonWithResults) shouldBe 1
 
                 assertSoftly {
-                    getSubsumsjonByResult(SubsumsjonId(minsteinntektId)) shouldBe subsumsjonWithResults
-                    getSubsumsjonByResult(SubsumsjonId(grunnlagId)) shouldBe subsumsjonWithResults
-                    getSubsumsjonByResult(SubsumsjonId(satsId)) shouldBe subsumsjonWithResults
-                    getSubsumsjonByResult(SubsumsjonId(periodeId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(UlidId(minsteinntektId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(UlidId(grunnlagId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(UlidId(satsId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(UlidId(periodeId)) shouldBe subsumsjonWithResults
                 }
             }
         }

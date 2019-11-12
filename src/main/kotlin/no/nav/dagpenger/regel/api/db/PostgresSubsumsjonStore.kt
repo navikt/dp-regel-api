@@ -4,13 +4,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.models.BehandlingsId
-import no.nav.dagpenger.regel.api.models.EksternId
-import no.nav.dagpenger.regel.api.models.InntektsPeriode
-import no.nav.dagpenger.regel.api.models.InternBehov
-import no.nav.dagpenger.regel.api.models.Kontekst
-import no.nav.dagpenger.regel.api.models.Status
-import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
@@ -91,13 +85,13 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun getBehov(behovId: String): InternBehov {
+    override fun getBehov(behovId: UlidId): InternBehov {
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """
                         |SELECT behov.*, ekstern_id, kontekst from v2_behov as behov, v1_behov_behandling_mapping as behandling WHERE behov.id = :id AND behov.behandlings_id = behandling.id 
-                    """.trimMargin(), mapOf("id" to behovId)
+                    """.trimMargin(), mapOf("id" to behovId.id)
                 ).map { row ->
                     InternBehov(
                         behovId = row.string("id"),
@@ -145,7 +139,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun behovStatus(behovId: String): Status {
+    override fun behovStatus(behovId: UlidId): Status {
         return when (behovExists(behovId)) {
             true -> getSubsumsjonIdBy(behovId)?.let { Status.Done(it) } ?: Status.Pending
             false -> throw BehovNotFoundException("BehovId: $behovId")
@@ -174,9 +168,9 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun getSubsumsjon(behovId: String): Subsumsjon {
+    override fun getSubsumsjon(behovId: UlidId): Subsumsjon {
         val json = using(sessionOf(dataSource)) { session ->
-            session.run(queryOf(""" SELECT data FROM v2_subsumsjon WHERE behov_id = ? """, behovId)
+            session.run(queryOf(""" SELECT data FROM v2_subsumsjon WHERE behov_id = ? """, behovId.id)
                 .map { row -> row.string("data") }
                 .asSingle)
         } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with behov id $behovId")
@@ -193,7 +187,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
+    override fun getSubsumsjonByResult(subsumsjonId: UlidId): Subsumsjon {
         val json = using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
@@ -213,13 +207,13 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         return Subsumsjon.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")
     }
 
-    private fun behovExists(behovId: String): Boolean {
+    private fun behovExists(behovId: UlidId): Boolean {
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
                     queryOf(
                         """ SELECT EXISTS (SELECT 1 FROM v2_behov WHERE id = ? ) AS "exists" """,
-                        behovId
+                        behovId.id
                     ).map { row -> row.boolean("exists") }.asSingle
                 )!!
             }
@@ -228,13 +222,13 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    private fun getSubsumsjonIdBy(behovId: String): String? {
+    private fun getSubsumsjonIdBy(behovId: UlidId): String? {
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
                     queryOf(
                         """ SELECT behov_id FROM v2_subsumsjon WHERE behov_id = ? """,
-                        behovId
+                        behovId.id
                     ).map { row -> row.stringOrNull("behov_id") }.asSingle
                 )
             }

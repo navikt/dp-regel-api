@@ -17,6 +17,7 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.UlidId
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
 
@@ -40,7 +41,7 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
 
             route("/status") {
                 get("/{behovId}") {
-                    val behovId = call.parameters["behovid"] ?: throw BadRequestException()
+                    val behovId = UlidId(call.parameters["behovid"] ?: throw BadRequestException())
 
                     when (val status = store.behovStatus(behovId)) {
                         is Status.Done -> {

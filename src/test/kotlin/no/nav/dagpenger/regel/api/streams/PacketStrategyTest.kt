@@ -23,12 +23,12 @@ import no.nav.dagpenger.regel.api.models.behovId
 import org.junit.jupiter.api.Test
 
 internal class PendingBehovStrategyTest {
-    private val pendingBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "behovId") }
-    private val doneBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "invalid") }
-    private val notFoundBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "notfound") }
+    private val pendingBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "01DSFGYP7GT9KYD5AEMEKY286H") }
+    private val doneBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "01DSFGZ8QX8GFDZCZAKF1T759X") }
+    private val notFoundBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "01DSFGZHPEAPY7B7Y6P4MZG6FS") }
     private val storeMock = mockk<SubsumsjonStore>().apply {
         every { this@apply.behovStatus(pendingBehov.behovId) } returns Status.Pending
-        every { this@apply.behovStatus(doneBehov.behovId) } returns Status.Done("id")
+        every { this@apply.behovStatus(doneBehov.behovId) } returns Status.Done("01DSFH2NMN315S00QVQY3C1T35")
         every { this@apply.behovStatus(notFoundBehov.behovId) } throws BehovNotFoundException("notfound")
     }
 

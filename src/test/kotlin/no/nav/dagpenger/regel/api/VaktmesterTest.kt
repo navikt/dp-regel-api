@@ -18,6 +18,7 @@ import no.nav.dagpenger.regel.api.db.withMigratedDb
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.UlidId
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
@@ -104,8 +105,8 @@ internal class VaktmesterTest {
             vaktmester.rydd()
 
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                getBehov(internBehov.behovId) shouldNotBe null
-                getSubsumsjon(internBehov.behovId) shouldNotBe null
+                getBehov(UlidId(internBehov.behovId)) shouldNotBe null
+                getSubsumsjon(UlidId(internBehov.behovId)) shouldNotBe null
             }
         }
     }
@@ -147,11 +148,11 @@ internal class VaktmesterTest {
             vaktmester.rydd()
 
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                assertThrows<BehovNotFoundException> { getBehov(ubruktInternBehov.behovId) }
-                getBehov(bruktInternBehov.behovId) shouldNotBe null
+                assertThrows<BehovNotFoundException> { getBehov(UlidId(ubruktInternBehov.behovId)) }
+                getBehov(UlidId(bruktInternBehov.behovId)) shouldNotBe null
 
-                assertThrows<SubsumsjonNotFoundException> { getSubsumsjon(ubruktInternBehov.behovId) }
-                getSubsumsjon(bruktInternBehov.behovId) shouldNotBe null
+                assertThrows<SubsumsjonNotFoundException> { getSubsumsjon(UlidId(ubruktInternBehov.behovId)) }
+                getSubsumsjon(UlidId(bruktInternBehov.behovId)) shouldNotBe null
             }
         }
     }
@@ -190,10 +191,10 @@ internal class VaktmesterTest {
             vaktmester.rydd()
 
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                getBehov(ubruktInternBehov.behovId) shouldNotBe null
-                getBehov(bruktInternBehov.behovId) shouldNotBe null
-                getSubsumsjon(ubruktInternBehov.behovId) shouldNotBe null
-                getSubsumsjon(bruktInternBehov.behovId) shouldNotBe null
+                getBehov(UlidId(ubruktInternBehov.behovId)) shouldNotBe null
+                getBehov(UlidId(bruktInternBehov.behovId)) shouldNotBe null
+                getSubsumsjon(UlidId(ubruktInternBehov.behovId)) shouldNotBe null
+                getSubsumsjon(UlidId(bruktInternBehov.behovId)) shouldNotBe null
             }
         }
     }

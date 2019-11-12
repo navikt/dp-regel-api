@@ -29,12 +29,12 @@ internal class KafkaSubsumsjonConsumerTest {
 
     @Test
     fun `Packet is handled if behovId is set on packet`() {
-        val packet = Packet().apply { this.putValue(PacketKeys.BEHOV_ID, "behovId") }
+        val packet = Packet().apply { this.putValue(PacketKeys.BEHOV_ID, "01DSFHJA5MJWPW7TV0GGCSBC54") }
         val mock = mockk<SubsumsjonPacketStrategy>().apply {
-            every { this@apply.run(match { it.behovId == "behovId" }) } just Runs
+            every { this@apply.run(match { it.behovId.id == "01DSFHJA5MJWPW7TV0GGCSBC54" }) } just Runs
         }
         runTest(listOf(mock, mock), packet) {
-            verify(exactly = 2) { mock.run(match { it.behovId == "behovId" }) }
+            verify(exactly = 2) { mock.run(match { it.behovId.id == "01DSFHJA5MJWPW7TV0GGCSBC54" }) }
         }
     }
 
