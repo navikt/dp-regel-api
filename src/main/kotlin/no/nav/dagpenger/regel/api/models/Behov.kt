@@ -30,7 +30,7 @@ data class Behov(
 }
 
 data class InternBehov(
-    val behovId: String = ulidGenerator.nextULID(),
+    val behovId: BehovId = BehovId(ulidGenerator.nextULID()),
     val aktørId: String,
     val behandlingsId: BehandlingsId,
     val beregningsDato: LocalDate,
@@ -52,7 +52,7 @@ data class InternBehov(
         fun fromJson(json: String): InternBehov? = adapter.fromJson(json)
 
         fun toPacket(internBehov: InternBehov): Packet = Packet("{}").apply {
-            this.putValue(PacketKeys.BEHOV_ID, internBehov.behovId)
+            this.putValue(PacketKeys.BEHOV_ID, internBehov.behovId.id)
             this.putValue(PacketKeys.AKTØR_ID, internBehov.aktørId)
             when (internBehov.behandlingsId.eksternId.kontekst) {
                 Kontekst.VEDTAK -> this.putValue(PacketKeys.VEDTAK_ID, internBehov.behandlingsId.eksternId.id)

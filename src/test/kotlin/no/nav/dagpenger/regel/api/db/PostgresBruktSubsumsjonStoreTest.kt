@@ -3,10 +3,12 @@ package no.nav.dagpenger.regel.api.db
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import no.nav.dagpenger.events.Problem
+import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.LocalDate
@@ -30,12 +32,12 @@ class PostgresBruktSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
                 val internSubsumsjonBrukt = InternSubsumsjonBrukt(
-                    id = subsumsjon.behovId,
+                    id = subsumsjon.behovId.id,
                     behandlingsId = PostgresSubsumsjonStore(DataSource.instance).hentKoblingTilEkstern(eksternId).id,
                     arenaTs = exampleDate
                 )
                 this.insertSubsumsjonBrukt(internSubsumsjonBrukt = internSubsumsjonBrukt)
-                val savedBruktSub = getSubsumsjonBrukt(internSubsumsjonBrukt.id)
+                val savedBruktSub = getSubsumsjonBrukt(SubsumsjonId(internSubsumsjonBrukt.id))
                 savedBruktSub!!.created shouldNotBe null
                 savedBruktSub.created!!.toLocalDate() shouldBe LocalDate.now()
             }
@@ -47,7 +49,7 @@ class PostgresBruktSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
                 insertSubsumsjonBrukt(eksternTilInternSubsumsjon(bruktSubsumsjon)) shouldBe 1
-                getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
+                getSubsumsjonBrukt(SubsumsjonId(bruktSubsumsjon.id))?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
                     secondFormatter
                 )
             }
@@ -60,7 +62,7 @@ class PostgresBruktSubsumsjonStoreTest {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
                 val internSubsumsjonBrukt = eksternTilInternSubsumsjon(bruktSubsumsjon)
                 insertSubsumsjonBrukt(internSubsumsjonBrukt)
-                getSubsumsjonBrukt(bruktSubsumsjon.id)?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
+                getSubsumsjonBrukt(SubsumsjonId(bruktSubsumsjon.id))?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
                     secondFormatter
                 )
             }
@@ -79,7 +81,7 @@ class PostgresBruktSubsumsjonStoreTest {
                 val internSubsumsjonBrukt1 = eksternTilInternSubsumsjon(bruktSubsumsjon)
                 insertSubsumsjonBrukt(internSubsumsjonBrukt1) shouldBe 1
                 insertSubsumsjonBrukt(internSubsumsjonBrukt1) shouldBe 0
-                getSubsumsjonBrukt(bruktSubsumsjon.id)?.behandlingsId shouldBe internSubsumsjonBrukt1.behandlingsId
+                getSubsumsjonBrukt(SubsumsjonId(bruktSubsumsjon.id))?.behandlingsId shouldBe internSubsumsjonBrukt1.behandlingsId
             }
         }
     }
@@ -88,7 +90,7 @@ class PostgresBruktSubsumsjonStoreTest {
     val oslo = ZoneId.of("Europe/Oslo")
     val exampleDate = ZonedDateTime.now(oslo).minusHours(6)
     val subsumsjon = Subsumsjon(
-        behovId = "behovId",
+        behovId = BehovId("01DSFT25TF56A7J8HBGDMEXAZB"),
         faktum = Faktum("aktorId", 1, LocalDate.now()),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = emptyMap(),
@@ -99,7 +101,7 @@ class PostgresBruktSubsumsjonStoreTest {
     val eksternId = EksternId(id = "1234", kontekst = Kontekst.VEDTAK)
     val bruktSubsumsjon =
         EksternSubsumsjonBrukt(
-            id = subsumsjon.behovId,
+            id = subsumsjon.behovId.id,
             eksternId = 1231231,
             arenaTs = exampleDate,
             ts = Instant.now().toEpochMilli()

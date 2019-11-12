@@ -16,11 +16,11 @@ interface SubsumsjonStore {
 
     fun insertBehov(behov: InternBehov): Int
     fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId
-    fun getBehov(behovId: UlidId): InternBehov
-    fun behovStatus(behovId: UlidId): Status
+    fun getBehov(behovId: BehovId): InternBehov
+    fun behovStatus(behovId: BehovId): Status
     fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))): Int
-    fun getSubsumsjon(behovId: UlidId): Subsumsjon
-    fun getSubsumsjonByResult(subsumsjonId: UlidId): Subsumsjon
+    fun getSubsumsjon(behovId: BehovId): Subsumsjon
+    fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon
     fun delete(subsumsjon: Subsumsjon)
 }
 

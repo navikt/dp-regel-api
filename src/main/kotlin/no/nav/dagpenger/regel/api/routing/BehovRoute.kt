@@ -15,9 +15,9 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
+import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.Status
-import no.nav.dagpenger.regel.api.models.UlidId
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
 
@@ -41,7 +41,7 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
 
             route("/status") {
                 get("/{behovId}") {
-                    val behovId = UlidId(call.parameters["behovid"] ?: throw BadRequestException())
+                    val behovId = BehovId(call.parameters["behovid"] ?: throw BadRequestException())
 
                     when (val status = store.behovStatus(behovId)) {
                         is Status.Done -> {

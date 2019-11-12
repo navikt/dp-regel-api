@@ -5,14 +5,15 @@ import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.BehandlingsId
+import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
-import no.nav.dagpenger.regel.api.models.UlidId
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PGobject
@@ -67,7 +68,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                     |                                       avtjent_verne_plikt, brukt_opptjening_forste_maned, brukt_opptjening_siste_maned, antall_barn, manuelt_grunnlag, inntekts_id, data) 
                     |                  VALUES (:id, :behandlings_id, :aktor, :beregning, :fisk, :verneplikt, :forste, :siste, :barn, :grunnlag, :inntekt, :data)""".trimMargin(),
                             mapOf(
-                                "id" to behov.behovId,
+                                "id" to behov.behovId.id,
                                 "behandlings_id" to behov.behandlingsId.id,
                                 "aktor" to behov.aktørId,
                                 "beregning" to behov.beregningsDato,
@@ -92,7 +93,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun getBehov(behovId: UlidId): InternBehov {
+    override fun getBehov(behovId: BehovId): InternBehov {
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
@@ -101,7 +102,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                     """.trimMargin(), mapOf("id" to behovId.id)
                 ).map { row ->
                     InternBehov(
-                        behovId = row.string("id"),
+                        behovId = BehovId(row.string("id")),
                         aktørId = row.string("aktor_id"),
                         beregningsDato = row.localDate("beregnings_dato"),
                         harAvtjentVerneplikt = row.boolean("avtjent_verne_plikt"),
@@ -138,7 +139,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                             DELETE FROM v2_subsumsjon WHERE behov_id = :id;
                             DELETE FROM v2_behov WHERE id = :id;
                         """.trimIndent(), mapOf(
-                            "id" to subsumsjon.behovId
+                            "id" to subsumsjon.behovId.id
                         )
                     ).asUpdate
                 )
@@ -146,7 +147,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun behovStatus(behovId: UlidId): Status {
+    override fun behovStatus(behovId: BehovId): Status {
         return when (behovExists(behovId)) {
             true -> getSubsumsjonIdBy(behovId)?.let { Status.Done(it) } ?: Status.Pending
             false -> throw BehovNotFoundException("BehovId: $behovId")
@@ -160,7 +161,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                     queryOf(
                         """ INSERT INTO v2_subsumsjon VALUES (:behovId, :data, :created) ON CONFLICT ON CONSTRAINT v2_subsumsjon_pkey DO NOTHING """,
                         mapOf(
-                            "behovId" to subsumsjon.behovId,
+                            "behovId" to subsumsjon.behovId.id,
                             "created" to created,
                             "data" to PGobject().apply {
                                 type = "jsonb"
@@ -175,7 +176,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun getSubsumsjon(behovId: UlidId): Subsumsjon {
+    override fun getSubsumsjon(behovId: BehovId): Subsumsjon {
         val json = using(sessionOf(dataSource)) { session ->
             session.run(queryOf(""" SELECT data FROM v2_subsumsjon WHERE behov_id = ? """, behovId.id)
                 .map { row -> row.string("data") }
@@ -194,7 +195,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun getSubsumsjonByResult(subsumsjonId: UlidId): Subsumsjon {
+    override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
         val json = using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
@@ -214,7 +215,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         return Subsumsjon.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")
     }
 
-    private fun behovExists(behovId: UlidId): Boolean {
+    private fun behovExists(behovId: BehovId): Boolean {
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
@@ -229,7 +230,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    private fun getSubsumsjonIdBy(behovId: UlidId): String? {
+    private fun getSubsumsjonIdBy(behovId: BehovId): String? {
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(

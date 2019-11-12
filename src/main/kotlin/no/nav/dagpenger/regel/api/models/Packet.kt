@@ -24,5 +24,5 @@ internal object PacketKeys {
     const val INNTEKTS_ID = "inntektsId"
 }
 
-internal val Packet.behovId: UlidId
-    get() = UlidId(this.getStringValue(PacketKeys.BEHOV_ID))
+internal val Packet.behovId: BehovId
+    get() = BehovId(this.getStringValue(PacketKeys.BEHOV_ID))

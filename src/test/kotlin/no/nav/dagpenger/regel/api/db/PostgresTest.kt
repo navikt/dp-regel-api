@@ -120,7 +120,7 @@ class PostgresSubsumsjonStoreTest {
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub)
-                behovStatus(UlidId(internBehov.behovId)) shouldBe Status.Done(sub.behovId)
+                behovStatus(internBehov.behovId) shouldBe Status.Done(sub.behovId.id)
             }
         }
     }
@@ -130,7 +130,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
-                behovStatus(UlidId(internBehov.behovId)) shouldBe Status.Pending
+                behovStatus(internBehov.behovId) shouldBe Status.Pending
             }
         }
     }
@@ -139,7 +139,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Exception if retrieving status of a non existant behov`() {
         withMigratedDb {
             shouldThrow<BehovNotFoundException> {
-                PostgresSubsumsjonStore(DataSource.instance).behovStatus(UlidId("01DSFGT6XCX4W1RKDXBYTAX5QH"))
+                PostgresSubsumsjonStore(DataSource.instance).behovStatus(BehovId("01DSFGT6XCX4W1RKDXBYTAX5QH"))
             }
         }
     }
@@ -152,7 +152,7 @@ class PostgresSubsumsjonStoreTest {
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
-                getSubsumsjon(UlidId(sub.behovId)) shouldBe sub
+                getSubsumsjon(SubsumsjonId(sub.behovId.id)) shouldBe sub
             }
         }
     }
@@ -183,7 +183,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Exception if retrieving a non existant subsumsjon`() {
         withMigratedDb {
             shouldThrow<SubsumsjonNotFoundException> {
-                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon(UlidId("01DSFHD74S4DGSXYD8QFQ6RY02"))
+                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon(SubsumsjonId("01DSFHD74S4DGSXYD8QFQ6RY02"))
             }
         }
     }
@@ -208,10 +208,10 @@ class PostgresSubsumsjonStoreTest {
                 insertSubsumsjon(subsumsjonWithResults) shouldBe 1
 
                 assertSoftly {
-                    getSubsumsjonByResult(UlidId(minsteinntektId)) shouldBe subsumsjonWithResults
-                    getSubsumsjonByResult(UlidId(grunnlagId)) shouldBe subsumsjonWithResults
-                    getSubsumsjonByResult(UlidId(satsId)) shouldBe subsumsjonWithResults
-                    getSubsumsjonByResult(UlidId(periodeId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(SubsumsjonId(minsteinntektId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(SubsumsjonId(grunnlagId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(SubsumsjonId(satsId)) shouldBe subsumsjonWithResults
+                    getSubsumsjonByResult(SubsumsjonId(periodeId)) shouldBe subsumsjonWithResults
                 }
             }
         }
@@ -241,7 +241,7 @@ class PostgresSubsumsjonStoreTest {
     }
 
     private val subsumsjon = Subsumsjon(
-        behovId = "behovId",
+        behovId = BehovId("01DSFST7S8HCXHRASYP9PC197W"),
         faktum = Faktum("aktorId", 1, LocalDate.now()),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = emptyMap(),

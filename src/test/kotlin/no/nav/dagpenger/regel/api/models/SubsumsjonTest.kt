@@ -12,7 +12,7 @@ internal class SubsumsjonTest {
     @Test
     fun `Map to JSON string`() {
         Subsumsjon(
-            behovId = "behovId",
+            behovId = BehovId("01DSFTA586H33ESMTYMY6QD4ZD"),
             faktum = Faktum("aktorId", 1, LocalDate.of(2019, 5, 9)),
             grunnlagResultat = emptyMap(),
             minsteinntektResultat = emptyMap(),
@@ -20,16 +20,16 @@ internal class SubsumsjonTest {
             satsResultat = emptyMap(),
             problem = Problem(title = "problem")
 
-        ).toJson() shouldBe """{"id":"not-in-use","behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}"""
+        ).toJson() shouldBe """{"id":"not-in-use","behovId":"01DSFTA586H33ESMTYMY6QD4ZD","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}"""
     }
 
     @Test
     fun `Map from JSON string to object`() {
-        val subsumsjon = Subsumsjon.fromJson("""{"behovId":"behovId","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09","inntektsId":"inntektsId","harAvtjentVerneplikt":true,"oppfyllerKravTilFangstOgFisk":true,"antallBarn":1,"manueltGrunnlag":0,"bruktInntektsPeriode":{"førsteMåned":"2019-05","sisteMåned":"2019-05"}},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}""")
+        val subsumsjon = Subsumsjon.fromJson("""{"behovId":"01DSFTA586H33ESMTYMY6QD4ZD","faktum":{"aktorId":"aktorId","vedtakId":1,"beregningsdato":"2019-05-09","inntektsId":"inntektsId","harAvtjentVerneplikt":true,"oppfyllerKravTilFangstOgFisk":true,"antallBarn":1,"manueltGrunnlag":0,"bruktInntektsPeriode":{"førsteMåned":"2019-05","sisteMåned":"2019-05"}},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}""")
         subsumsjon shouldNotBe null
 
         subsumsjon?.apply {
-            behovId shouldBe "behovId"
+            behovId shouldBe BehovId("01DSFTA586H33ESMTYMY6QD4ZD")
             grunnlagResultat shouldBe emptyMap()
             periodeResultat shouldBe emptyMap()
             minsteinntektResultat shouldBe emptyMap()

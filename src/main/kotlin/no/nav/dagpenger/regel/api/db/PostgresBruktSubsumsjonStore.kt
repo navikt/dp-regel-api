@@ -8,6 +8,7 @@ import kotliquery.using
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PSQLException
@@ -90,12 +91,12 @@ class PostgresBruktSubsumsjonStore(
         }
     }
 
-    override fun getSubsumsjonBrukt(subsumsjonsId: String): InternSubsumsjonBrukt? {
+    override fun getSubsumsjonBrukt(subsumsjonId: SubsumsjonId): InternSubsumsjonBrukt? {
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """SELECT * FROM v2_subsumsjon_brukt WHERE id = :id""",
-                    mapOf("id" to subsumsjonsId)
+                    mapOf("id" to subsumsjonId.id)
                 ).map { r -> extractInternSubsumsjonBrukt(r) }.asSingle
             )
         }
