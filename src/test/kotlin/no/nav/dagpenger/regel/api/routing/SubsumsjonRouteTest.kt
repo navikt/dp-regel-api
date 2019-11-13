@@ -45,7 +45,7 @@ internal class SubsumsjonRouteTest {
         )
 
         val storeMock = mockk<SubsumsjonStore>(relaxed = false).apply {
-            every { this@apply.getSubsumsjon(SubsumsjonId("01DSFGFVF3C1D1QQR69C7BRJT5")) } returns subsumsjon
+            every { this@apply.getSubsumsjon(BehovId("01DSFGFVF3C1D1QQR69C7BRJT5")) } returns subsumsjon
         }
 
         withTestApplication(MockApi(
@@ -63,7 +63,7 @@ internal class SubsumsjonRouteTest {
         }
 
         verifyAll {
-            storeMock.getSubsumsjon(SubsumsjonId("01DSFGFVF3C1D1QQR69C7BRJT5"))
+            storeMock.getSubsumsjon(BehovId("01DSFGFVF3C1D1QQR69C7BRJT5"))
         }
     }
 
@@ -107,7 +107,7 @@ internal class SubsumsjonRouteTest {
     fun `Throws exception if not found`() {
         val storeMock = mockk<SubsumsjonStore>(relaxed = false)
 
-        every { storeMock.getSubsumsjon(SubsumsjonId("01DSFGJBRYVBX2CNJKHJ0BB2W9")) } throws SubsumsjonNotFoundException("Not found")
+        every { storeMock.getSubsumsjon(BehovId("01DSFGJBRYVBX2CNJKHJ0BB2W9")) } throws SubsumsjonNotFoundException("Not found")
 
         withTestApplication(MockApi(
             subsumsjonStore = storeMock
@@ -118,7 +118,7 @@ internal class SubsumsjonRouteTest {
         }
 
         verifyAll {
-            storeMock.getSubsumsjon(SubsumsjonId("01DSFGJBRYVBX2CNJKHJ0BB2W9"))
+            storeMock.getSubsumsjon(BehovId("01DSFGJBRYVBX2CNJKHJ0BB2W9"))
         }
     }
 }

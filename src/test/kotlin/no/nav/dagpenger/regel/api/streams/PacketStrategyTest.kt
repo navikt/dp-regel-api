@@ -16,10 +16,10 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
-import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.models.behovId
 import org.junit.jupiter.api.Test
 
@@ -29,7 +29,7 @@ internal class PendingBehovStrategyTest {
     private val notFoundBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "01DSFGZHPEAPY7B7Y6P4MZG6FS") }
     private val storeMock = mockk<SubsumsjonStore>().apply {
         every { this@apply.behovStatus(pendingBehov.behovId) } returns Status.Pending
-        every { this@apply.behovStatus(doneBehov.behovId) } returns Status.Done(SubsumsjonId("01DSFH2NMN315S00QVQY3C1T35"))
+        every { this@apply.behovStatus(doneBehov.behovId) } returns Status.Done(BehovId("01DSFH2NMN315S00QVQY3C1T35"))
         every { this@apply.behovStatus(notFoundBehov.behovId) } throws BehovNotFoundException("notfound")
     }
 

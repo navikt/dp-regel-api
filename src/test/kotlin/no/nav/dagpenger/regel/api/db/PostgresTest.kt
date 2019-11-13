@@ -152,7 +152,7 @@ class PostgresSubsumsjonStoreTest {
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
-                getSubsumsjon(SubsumsjonId(sub.behovId.id)) shouldBe sub
+                getSubsumsjon(BehovId(sub.behovId.id)) shouldBe sub
             }
         }
     }
@@ -183,7 +183,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Exception if retrieving a non existant subsumsjon`() {
         withMigratedDb {
             shouldThrow<SubsumsjonNotFoundException> {
-                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon(SubsumsjonId("01DSFHD74S4DGSXYD8QFQ6RY02"))
+                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon(BehovId("01DSFHD74S4DGSXYD8QFQ6RY02"))
             }
         }
     }
