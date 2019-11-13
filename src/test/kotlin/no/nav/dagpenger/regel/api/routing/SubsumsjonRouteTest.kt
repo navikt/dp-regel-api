@@ -12,11 +12,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
 import no.nav.dagpenger.events.Problem
-import no.nav.dagpenger.regel.api.db.SubsumsjonId
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
@@ -34,7 +35,7 @@ internal class SubsumsjonRouteTest {
     @Test
     fun `Returns subsumsjon if found`() {
         val subsumsjon = Subsumsjon(
-            behovId = "behovId",
+            behovId = BehovId("01DSFSSNA8S577XGQ8V1R9EBJ7"),
             faktum = Faktum("aktorId", 1, LocalDate.now()),
             grunnlagResultat = emptyMap(),
             minsteinntektResultat = emptyMap(),
@@ -44,14 +45,14 @@ internal class SubsumsjonRouteTest {
         )
 
         val storeMock = mockk<SubsumsjonStore>(relaxed = false).apply {
-            every { this@apply.getSubsumsjon("subsumsjonsid") } returns subsumsjon
+            every { this@apply.getSubsumsjon(BehovId("01DSFGFVF3C1D1QQR69C7BRJT5")) } returns subsumsjon
         }
 
         withTestApplication(MockApi(
             subsumsjonStore = storeMock
         )) {
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/subsumsjonsid")
+            handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/01DSFGFVF3C1D1QQR69C7BRJT5")
                 .apply {
                     response.status() shouldBe HttpStatusCode.OK
                     response.content shouldNotBe null
@@ -62,7 +63,7 @@ internal class SubsumsjonRouteTest {
         }
 
         verifyAll {
-            storeMock.getSubsumsjon("subsumsjonsid")
+            storeMock.getSubsumsjon(BehovId("01DSFGFVF3C1D1QQR69C7BRJT5"))
         }
     }
 
@@ -70,7 +71,7 @@ internal class SubsumsjonRouteTest {
     fun `Returns subsumsjon by result id if found`() {
         val id = ULID().nextULID()
         val subsumsjon = Subsumsjon(
-            behovId = "behovId",
+            behovId = BehovId("01DSFSRMWGYP0AVHAHY282W3GN"),
             faktum = Faktum("aktorId", 1, LocalDate.now()),
             grunnlagResultat = emptyMap(),
             minsteinntektResultat = emptyMap(),
@@ -106,18 +107,18 @@ internal class SubsumsjonRouteTest {
     fun `Throws exception if not found`() {
         val storeMock = mockk<SubsumsjonStore>(relaxed = false)
 
-        every { storeMock.getSubsumsjon("notfound") } throws SubsumsjonNotFoundException("Not found")
+        every { storeMock.getSubsumsjon(BehovId("01DSFGJBRYVBX2CNJKHJ0BB2W9")) } throws SubsumsjonNotFoundException("Not found")
 
         withTestApplication(MockApi(
             subsumsjonStore = storeMock
         )) {
             shouldThrow<SubsumsjonNotFoundException> {
-                handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/notfound")
+                handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/01DSFGJBRYVBX2CNJKHJ0BB2W9")
             }
         }
 
         verifyAll {
-            storeMock.getSubsumsjon("notfound")
+            storeMock.getSubsumsjon(BehovId("01DSFGJBRYVBX2CNJKHJ0BB2W9"))
         }
     }
 }

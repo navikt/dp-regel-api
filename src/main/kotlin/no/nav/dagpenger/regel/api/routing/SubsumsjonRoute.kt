@@ -8,20 +8,21 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
 import no.nav.dagpenger.regel.api.BadRequestException
-import no.nav.dagpenger.regel.api.db.SubsumsjonId
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
 
 internal fun Route.subsumsjon(store: SubsumsjonStore) {
     authenticate {
         route("subsumsjon/") {
             get("/{behovid}") {
-                val behovid = call.parameters["behovid"] ?: throw BadRequestException()
+                val behovid = BehovId(call.parameters["behovid"] ?: throw BadRequestException())
                 store.getSubsumsjon(behovid).toJson().let {
                     call.respond(HttpStatusCode.OK, it)
                 }
             }
             get("/result/{subsumsjonsid}") {
-                val subsumsjonsId = call.parameters["subsumsjonsid"]?.let { SubsumsjonId(it) } ?: throw BadRequestException()
+                val subsumsjonsId = SubsumsjonId(call.parameters["subsumsjonsid"] ?: throw BadRequestException())
                 store.getSubsumsjonByResult(subsumsjonsId).toJson().let {
                     call.respond(HttpStatusCode.OK, it)
                 }

@@ -4,6 +4,7 @@ import io.prometheus.client.Summary
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon.Mapper.subsumsjonFrom
@@ -55,7 +56,7 @@ internal class PendingBehovStrategy(private val subsumsjonStore: SubsumsjonStore
             }
     }
 
-    private fun behovPending(behovId: String) = runCatching { subsumsjonStore.behovStatus(behovId) }
+    private fun behovPending(behovId: BehovId) = runCatching { subsumsjonStore.behovStatus(behovId) }
         .onFailure { LOGGER.error(it) { "Failed to get status of behov: $behovId" } }
         .map { it == Status.Pending }
         .getOrDefault(false)

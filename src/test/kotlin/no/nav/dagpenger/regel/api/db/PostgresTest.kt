@@ -8,14 +8,7 @@ import io.kotlintest.shouldThrow
 import io.mockk.mockk
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
-import no.nav.dagpenger.regel.api.models.BehandlingsId
-import no.nav.dagpenger.regel.api.models.Behov
-import no.nav.dagpenger.regel.api.models.EksternId
-import no.nav.dagpenger.regel.api.models.Faktum
-import no.nav.dagpenger.regel.api.models.InntektsPeriode
-import no.nav.dagpenger.regel.api.models.Kontekst
-import no.nav.dagpenger.regel.api.models.Status
-import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.PostgreSQLContainer
@@ -146,7 +139,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Exception if retrieving status of a non existant behov`() {
         withMigratedDb {
             shouldThrow<BehovNotFoundException> {
-                PostgresSubsumsjonStore(DataSource.instance).behovStatus("hubba")
+                PostgresSubsumsjonStore(DataSource.instance).behovStatus(BehovId("01DSFGT6XCX4W1RKDXBYTAX5QH"))
             }
         }
     }
@@ -159,7 +152,7 @@ class PostgresSubsumsjonStoreTest {
                 val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()))
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
-                getSubsumsjon(sub.behovId) shouldBe sub
+                getSubsumsjon(BehovId(sub.behovId.id)) shouldBe sub
             }
         }
     }
@@ -190,7 +183,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Exception if retrieving a non existant subsumsjon`() {
         withMigratedDb {
             shouldThrow<SubsumsjonNotFoundException> {
-                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon("notfound")
+                PostgresSubsumsjonStore(DataSource.instance).getSubsumsjon(BehovId("01DSFHD74S4DGSXYD8QFQ6RY02"))
             }
         }
     }
@@ -248,7 +241,7 @@ class PostgresSubsumsjonStoreTest {
     }
 
     private val subsumsjon = Subsumsjon(
-        behovId = "behovId",
+        behovId = BehovId("01DSFST7S8HCXHRASYP9PC197W"),
         faktum = Faktum("aktorId", 1, LocalDate.now()),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = emptyMap(),

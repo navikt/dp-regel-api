@@ -9,10 +9,10 @@ class InternBehovTest {
 
     @Test
     fun `Mapping from BehovV2 to Packet with all fields`() {
-        val behov = InternBehov("behovId", "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("1234", Kontekst.VEDTAK)), LocalDate.now(), true, true, InntektsPeriode(YearMonth.now(), YearMonth.now()), 1, 1)
+        val behov = InternBehov(BehovId("01DSFVQ4NQQ64SNT4Z16TJXXE7"), "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("1234", Kontekst.VEDTAK)), LocalDate.now(), true, true, InntektsPeriode(YearMonth.now(), YearMonth.now()), 1, 1)
         val packet = InternBehov.toPacket(behov)
 
-        packet.getStringValue(PacketKeys.BEHOV_ID) shouldBe behov.behovId
+        packet.getStringValue(PacketKeys.BEHOV_ID) shouldBe behov.behovId.id
         packet.getStringValue(PacketKeys.AKTØR_ID) shouldBe behov.aktørId
         packet.getIntValue(PacketKeys.VEDTAK_ID) shouldBe behov.behandlingsId.eksternId.id.toInt()
         packet.getStringValue(PacketKeys.BEHANDLINGSID) shouldBe behov.behandlingsId.id
@@ -26,7 +26,7 @@ class InternBehovTest {
 
     @Test
     fun `Mapping from Behov to Packet with nullable fields`() {
-        val behov = InternBehov("behovId", "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("1234", Kontekst.VEDTAK)), LocalDate.now())
+        val behov = InternBehov(BehovId("01DSFVQY33P2A5K7GHNC96W3JJ"), "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("1234", Kontekst.VEDTAK)), LocalDate.now())
         val packet = InternBehov.toPacket(behov)
 
         packet.getNullableBoolean(PacketKeys.HAR_AVTJENT_VERNE_PLIKT) shouldBe null

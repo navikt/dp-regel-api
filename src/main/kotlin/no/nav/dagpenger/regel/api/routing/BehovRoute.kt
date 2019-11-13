@@ -15,6 +15,7 @@ import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
+import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
@@ -30,7 +31,7 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
                     store.opprettBehov(this).also {
                         producer.produceEvent(it)
                     }.also {
-                        call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId}")
+                        call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId.id}")
                         call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
                     }.also {
                         LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
@@ -40,11 +41,11 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
 
             route("/status") {
                 get("/{behovId}") {
-                    val behovId = call.parameters["behovid"] ?: throw BadRequestException()
+                    val behovId = BehovId(call.parameters["behovid"] ?: throw BadRequestException())
 
                     when (val status = store.behovStatus(behovId)) {
                         is Status.Done -> {
-                            call.response.header(HttpHeaders.Location, "/subsumsjon/${status.subsumsjonsId}")
+                            call.response.header(HttpHeaders.Location, "/subsumsjon/${status.behovId.id}")
                             call.respond(HttpStatusCode.SeeOther)
                         }
                         is Status.Pending -> {

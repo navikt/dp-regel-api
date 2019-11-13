@@ -101,7 +101,7 @@ internal class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBe
 
     override fun produceEvent(behov: InternBehov): Future<RecordMetadata> {
         return kafkaProducer.send(
-            ProducerRecord(DAGPENGER_BEHOV_PACKET_EVENT.name, behov.behovId, InternBehov.toPacket(behov)) // TODO: Use intern id as partition key instead, as it is unique per ektern id + kontekst
+            ProducerRecord(DAGPENGER_BEHOV_PACKET_EVENT.name, behov.behovId.id, InternBehov.toPacket(behov)) // TODO: Use intern id as partition key instead, as it is unique per ektern id + kontekst
         ) { metadata, exception ->
             exception?.let { LOGGER.error { "Failed to produce dagpenger behov" } }
             metadata?.let { LOGGER.info { "Produced dagpenger behov on topic ${metadata.topic()} to offset ${metadata.offset()} with the key ${behov.behovId}" } }

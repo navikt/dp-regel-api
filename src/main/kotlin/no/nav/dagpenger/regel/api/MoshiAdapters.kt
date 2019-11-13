@@ -5,6 +5,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.ToJson
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import no.nav.dagpenger.events.URIJsonAdapter
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -13,6 +15,8 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 val moshiInstance: Moshi = Moshi.Builder()
+    .add(BehovIdJsonAdapter())
+    .add(SubsumsjonIdJsonAdapter())
     .add(YearMonthJsonAdapter())
     .add(LocalDateTimeJsonAdapter())
     .add(LocalDateJsonAdapter())
@@ -79,5 +83,28 @@ class ZonedDateTimeJsonAdapter {
     @FromJson
     fun fromJson(json: String): ZonedDateTime {
         return ZonedDateTime.parse(json)
+    }
+}
+
+class BehovIdJsonAdapter {
+    @ToJson
+    fun toJson(behovId: BehovId): String {
+        return behovId.id
+    }
+
+    @FromJson
+    fun fromJson(json: String): BehovId {
+        return BehovId(json)
+    }
+}
+class SubsumsjonIdJsonAdapter {
+    @ToJson
+    fun toJson(subsumsjonId: SubsumsjonId): String {
+        return subsumsjonId.id
+    }
+
+    @FromJson
+    fun fromJson(json: String): SubsumsjonId {
+        return SubsumsjonId(json)
     }
 }

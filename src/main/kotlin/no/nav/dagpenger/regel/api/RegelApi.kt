@@ -30,13 +30,13 @@ import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
-import no.nav.dagpenger.regel.api.db.IllegalSubsumsjonIdException
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.db.dataSourceFrom
 import no.nav.dagpenger.regel.api.db.migrate
+import no.nav.dagpenger.regel.api.models.IllegalUlidException
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.routing.*
 import no.nav.dagpenger.regel.api.routing.behov
@@ -164,7 +164,7 @@ internal fun Application.api(
         exception<SubsumsjonNotFoundException> { cause ->
             notFound(cause)
         }
-        exception<IllegalSubsumsjonIdException> { cause ->
+        exception<IllegalUlidException> { cause ->
             badRequest(cause)
         }
     }

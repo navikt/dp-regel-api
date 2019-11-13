@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.models
 
+import de.huxhorn.sulky.ulid.ULID
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.assertAll
 import io.kotlintest.specs.StringSpec
@@ -27,7 +28,7 @@ class SubsumsjonGenerator : Gen<Subsumsjon> {
     override fun constants() = emptyList<Subsumsjon>()
     override fun random(): Sequence<Subsumsjon> = generateSequence {
         Subsumsjon(
-            behovId = Gen.string().random().first(),
+            behovId = BehovId(ULID().nextULID()),
             faktum = Faktum(
                 aktorId = Gen.string().random().first(),
                 vedtakId = Gen.positiveIntegers().random().first(),
