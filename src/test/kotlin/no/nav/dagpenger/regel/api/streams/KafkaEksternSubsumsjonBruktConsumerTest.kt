@@ -14,7 +14,6 @@ import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
 import java.time.ZonedDateTime
@@ -61,12 +60,13 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
             val metaData = producer.send(ProducerRecord(config.subsumsjonBruktTopic, "test", bruktSubsumsjon.toJson()))
                 .get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktSubsumsjon with meta $metaData")
-            assertThat(metaData.topic()).isEqualTo(config.subsumsjonBruktTopic)
+            metaData.topic() shouldBe config.subsumsjonBruktTopic
             Thread.sleep(200)
-            assertThat(lagretTilDb.isCaptured).isTrue()
-            assertThat(markertSomBrukt.isCaptured).isTrue()
-            assertThat(lagretTilDb.captured.arenaTs).isEqualTo(now.minusMinutes(5L))
-            assertThat(lagretTilDb.captured).isEqualTo(markertSomBrukt.captured)
+
+            lagretTilDb.isCaptured shouldBe true
+            markertSomBrukt.isCaptured shouldBe true
+            lagretTilDb.captured.arenaTs shouldBe now.minusMinutes(5L)
+            lagretTilDb.captured shouldBe markertSomBrukt.captured
         }
     }
 

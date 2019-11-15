@@ -8,10 +8,11 @@ import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.Pond
+import no.nav.dagpenger.streams.Topics
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.kstream.Predicate
-import java.util.concurrent.TimeUnit
+import java.time.Duration
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -30,7 +31,7 @@ internal class KafkaSubsumsjonConsumer(
     fun start() = streams.start().also { LOGGER.info { "Starting up $APPLICATION_NAME kafca consumer" } }
 
     fun stop() = with(streams) {
-        close(3, TimeUnit.SECONDS)
+        close(Duration.ofSeconds(3))
         cleanUp()
     }.also {
         LOGGER.info { "Shutting down $APPLICATION_NAME kafka consumer" }
@@ -50,7 +51,7 @@ internal class KafkaSubsumsjonConsumer(
     )
 }
 
-internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacketStrategy>) : Pond() {
+internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacketStrategy>) : Pond(Topics.DAGPENGER_BEHOV_PACKET_EVENT) {
     override val SERVICE_APP_ID: String = APPLICATION_NAME
 
     override fun filterPredicates(): List<Predicate<String, Packet>> =
