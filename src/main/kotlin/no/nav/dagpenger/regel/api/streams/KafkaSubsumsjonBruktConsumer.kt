@@ -17,10 +17,11 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.RetriableException
 import org.apache.kafka.common.serialization.StringDeserializer
+import java.sql.SQLTransientConnectionException
 import java.time.Duration
 import kotlin.coroutines.CoroutineContext
 
-private val LOGGER = KotlinLogging.logger { }
+private val logger = KotlinLogging.logger { }
 
 internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
     CoroutineScope {
@@ -49,7 +50,7 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
     }
 
     fun stop() {
-        LOGGER.info { "Stopping KafkaSubsumsjonBrukt consumer" }
+        logger.info { "Stopping KafkaSubsumsjonBrukt consumer" }
         job.cancel()
     }
 
@@ -60,7 +61,7 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
                     KafkaCredential(username = u, password = p)
                 }
             }
-            LOGGER.info { "Starting KafkaSubsumsjonBruktConsumer" }
+            logger.info { "Starting KafkaSubsumsjonBruktConsumer" }
             KafkaConsumer<String, String>(
                 consumerConfig(
                     groupId = SERVICE_APP_ID,
@@ -78,17 +79,24 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
                         records.asSequence()
                             .map { r -> EksternSubsumsjonBrukt.fromJson(r.value()) }
                             .filterNotNull()
-                            .onEach { b -> LOGGER.info("Saving $b to database") }
+                            .onEach { b -> logger.info("Saving $b to database") }
                             .forEach {
                                 val internSubsumsjonBrukt = bruktSubsumsjonStore.eksternTilInternSubsumsjon(it)
                                 bruktSubsumsjonStore.insertSubsumsjonBrukt(internSubsumsjonBrukt)
                                 vaktmester.markerSomBrukt(internSubsumsjonBrukt)
                             }
                     }
-                } catch (e: RetriableException) {
-                    LOGGER.warn("Kafka threw a retriable exception, looping back", e)
                 } catch (e: Exception) {
-                    LOGGER.error("Unexpected exception while consuming messages. Stopping", e)
+                    when (e) {
+                        is RetriableException,
+                        is SQLTransientConnectionException -> {
+                            logger.warn("Retriable exception, looping back", e)
+                        }
+                        else -> {
+                            logger.error("Unexpected exception while consuming messages. Stopping", e)
+                            stop()
+                        }
+                    }
                 }
             }
         }
