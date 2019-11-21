@@ -132,7 +132,7 @@ tasks.withType<Test> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "5.5"
+    gradleVersion = "6.0.1"
 }
 
 tasks.named("shadowJar") {
