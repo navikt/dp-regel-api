@@ -99,7 +99,7 @@ object Konfig {
 }
 
 object Kotlin {
-    const val version = "1.3.50"
+    const val version = "1.3.60"
     const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib:$version"
     
     object Coroutines {
@@ -184,7 +184,7 @@ object Slf4j {
 }
 
 object Spotless {
-    const val version = "3.24.2"
+    const val version = "3.26.0"
     const val spotless = "com.diffplug.gradle.spotless"
 }
 
