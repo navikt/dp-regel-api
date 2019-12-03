@@ -53,14 +53,19 @@ class PostgresBruktSubsumsjonStore(
         }
     }
 
-    override fun eksternTilInternSubsumsjon(v1: EksternSubsumsjonBrukt): InternSubsumsjonBrukt {
-        val behandlingsId = subsumsjonStore.hentKoblingTilEkstern(EksternId(v1.eksternId.toString(), Kontekst.VEDTAK))
+    override fun eksternTilInternSubsumsjon(eksternSubsumsjonBrukt: EksternSubsumsjonBrukt): InternSubsumsjonBrukt {
+        val behandlingsId = subsumsjonStore.hentKoblingTilEkstern(
+            EksternId(
+                eksternSubsumsjonBrukt.eksternId.toString(),
+                Kontekst.VEDTAK
+            )
+        ) ?: throw SubsumsjonBruktNotFoundException("Could not find susbsumsjon based on $eksternSubsumsjonBrukt")
         return InternSubsumsjonBrukt(
-            id = v1.id,
+            id = eksternSubsumsjonBrukt.id,
             behandlingsId = behandlingsId.id,
-            arenaTs = v1.arenaTs,
+            arenaTs = eksternSubsumsjonBrukt.arenaTs,
             created = ZonedDateTime.ofInstant(
-                Instant.ofEpochMilli(v1.ts), ZoneOffset.UTC
+                Instant.ofEpochMilli(eksternSubsumsjonBrukt.ts), ZoneOffset.UTC
             )
         )
     }

@@ -2,6 +2,7 @@ package no.nav.dagpenger.regel.api.db
 
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
+import io.kotlintest.shouldThrow
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.EksternId
@@ -15,13 +16,21 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.test.assertFailsWith
 
 class PostgresBruktSubsumsjonStoreTest {
 
     @Test
     fun `successfully inserts BruktSubsumsjon`() {
         withMigratedDb {
-            with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
+            val subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+            with(
+                PostgresBruktSubsumsjonStore(
+                    dataSource = DataSource.instance,
+                    subsumsjonStore = subsumsjonStore
+                )
+            ) {
+                opprettKoblingTilEkstern(subsumsjonStore)
                 insertSubsumsjonBrukt(eksternTilInternSubsumsjon(bruktSubsumsjon)) shouldBe 1
             }
         }
@@ -33,7 +42,7 @@ class PostgresBruktSubsumsjonStoreTest {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
                 val internSubsumsjonBrukt = InternSubsumsjonBrukt(
                     id = subsumsjon.behovId.id,
-                    behandlingsId = PostgresSubsumsjonStore(DataSource.instance).hentKoblingTilEkstern(eksternId).id,
+                    behandlingsId = PostgresSubsumsjonStore(DataSource.instance).opprettKoblingTilEkstern(eksternId).id,
                     arenaTs = exampleDate
                 )
                 this.insertSubsumsjonBrukt(internSubsumsjonBrukt = internSubsumsjonBrukt)
@@ -47,7 +56,19 @@ class PostgresBruktSubsumsjonStoreTest {
     @Test
     fun `successfully fetches inserted BruktSubsumsjon`() {
         withMigratedDb {
-            with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
+            val subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+            with(
+                PostgresBruktSubsumsjonStore(
+                    dataSource = DataSource.instance,
+                    subsumsjonStore = subsumsjonStore
+                )
+            ) {
+                subsumsjonStore.opprettKoblingTilEkstern(
+                    EksternId(
+                        bruktSubsumsjon.eksternId.toString(),
+                        Kontekst.VEDTAK
+                    )
+                )
                 insertSubsumsjonBrukt(eksternTilInternSubsumsjon(bruktSubsumsjon)) shouldBe 1
                 getSubsumsjonBrukt(SubsumsjonId(bruktSubsumsjon.id))?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
                     secondFormatter
@@ -59,7 +80,14 @@ class PostgresBruktSubsumsjonStoreTest {
     @Test
     fun `successfully fetches inserted BruktSubsumsjonV2`() {
         withMigratedDb {
-            with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
+            val subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+            with(
+                PostgresBruktSubsumsjonStore(
+                    dataSource = DataSource.instance,
+                    subsumsjonStore = subsumsjonStore
+                )
+            ) {
+                opprettKoblingTilEkstern(subsumsjonStore)
                 val internSubsumsjonBrukt = eksternTilInternSubsumsjon(bruktSubsumsjon)
                 insertSubsumsjonBrukt(internSubsumsjonBrukt)
                 getSubsumsjonBrukt(SubsumsjonId(bruktSubsumsjon.id))?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
@@ -72,18 +100,50 @@ class PostgresBruktSubsumsjonStoreTest {
     @Test
     fun `trying to insert duplicate ids keeps what's already in the db`() {
         withMigratedDb {
+            val subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
             with(
                 PostgresBruktSubsumsjonStore(
                     dataSource = DataSource.instance,
-                    subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+                    subsumsjonStore = subsumsjonStore
                 )
             ) {
+                opprettKoblingTilEkstern(subsumsjonStore)
                 val internSubsumsjonBrukt1 = eksternTilInternSubsumsjon(bruktSubsumsjon)
                 insertSubsumsjonBrukt(internSubsumsjonBrukt1) shouldBe 1
                 insertSubsumsjonBrukt(internSubsumsjonBrukt1) shouldBe 0
                 getSubsumsjonBrukt(SubsumsjonId(bruktSubsumsjon.id))?.behandlingsId shouldBe internSubsumsjonBrukt1.behandlingsId
             }
         }
+    }
+
+    @Test
+    fun `trying to fetch subsumsjon to an non existing extern id should fail`() {
+        withMigratedDb {
+            val subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+            with(
+                PostgresBruktSubsumsjonStore(
+                    dataSource = DataSource.instance,
+                    subsumsjonStore = subsumsjonStore
+                )
+            ) {
+                shouldThrow<SubsumsjonBruktNotFoundException> {
+                    eksternTilInternSubsumsjon(
+                        bruktSubsumsjon.copy(
+                            eksternId = 9876
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun opprettKoblingTilEkstern(subsumsjonStore: PostgresSubsumsjonStore) {
+        subsumsjonStore.opprettKoblingTilEkstern(
+            EksternId(
+                bruktSubsumsjon.eksternId.toString(),
+                Kontekst.VEDTAK
+            )
+        )
     }
 
     val secondFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
