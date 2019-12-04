@@ -31,14 +31,13 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
         get() = Dispatchers.IO + job
 
     lateinit var config: Configuration
-    lateinit var bruktSubsumsjonStore: BruktSubsumsjonStore
+    lateinit var bruktSubsumsjonStrategy: BruktSubsumsjonStrategy
     lateinit var job: Job
-    lateinit var vaktmester: Vaktmester
 
     fun create(config: Configuration, bruktSubsumsjonStore: BruktSubsumsjonStore, vaktmester: Vaktmester) {
         this.config = config
-        this.bruktSubsumsjonStore = bruktSubsumsjonStore
-        this.vaktmester = vaktmester
+        this.bruktSubsumsjonStrategy =
+            BruktSubsumsjonStrategy(vaktmester = vaktmester, bruktSubsumsjonStore = bruktSubsumsjonStore)
         this.job = Job()
     }
 
@@ -76,15 +75,10 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
                     consumer.subscribe(listOf(config.subsumsjonBruktTopic))
                     while (job.isActive) {
                         val records = consumer.poll(Duration.ofMillis(100))
-                        records.asSequence()
-                            .map { r -> EksternSubsumsjonBrukt.fromJson(r.value()) }
-                            .filterNotNull()
-                            .onEach { b -> logger.info("Saving $b to database") }
-                            .forEach {
-                                val internSubsumsjonBrukt = bruktSubsumsjonStore.eksternTilInternSubsumsjon(it)
-                                bruktSubsumsjonStore.insertSubsumsjonBrukt(internSubsumsjonBrukt)
-                                vaktmester.markerSomBrukt(internSubsumsjonBrukt)
-                            }
+                        bruktSubsumsjonStrategy.handle(
+                            records.asSequence()
+                                .map { r -> EksternSubsumsjonBrukt.fromJson(r.value()) }
+                                .filterNotNull())
                     }
                 } catch (e: Exception) {
                     when (e) {

@@ -27,7 +27,7 @@ private val LOGGER = KotlinLogging.logger {}
 
 internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonStore, HealthCheck {
 
-    override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
+    override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId? {
         val id: String? = using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
@@ -38,10 +38,10 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                 }.asSingle
             )
         }
-        return id?.let { BehandlingsId(it, eksternId) } ?: opprettKoblingTilEkstern(eksternId)
+        return id?.let { BehandlingsId(it, eksternId) }
     }
 
-    private fun opprettKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
+    override fun opprettKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
         val behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(eksternId)
         using(sessionOf(dataSource)) { session ->
             session.run(

@@ -8,17 +8,19 @@ import java.time.format.DateTimeFormatter
 
 interface BruktSubsumsjonStore {
     fun insertSubsumsjonBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt): Int
-    fun getSubsumsjonBrukt(subsumsjonsId: SubsumsjonId): InternSubsumsjonBrukt?
+    fun getSubsumsjonBrukt(subsumsjonId: SubsumsjonId): InternSubsumsjonBrukt?
     fun listSubsumsjonBrukt(): List<InternSubsumsjonBrukt>
     fun subsumsjonBruktFraBehandlingsId(behandlingsId: String): List<InternSubsumsjonBrukt>
-    fun eksternTilInternSubsumsjon(v1: EksternSubsumsjonBrukt): InternSubsumsjonBrukt
+    fun eksternTilInternSubsumsjon(eksternSubsumsjonBrukt: EksternSubsumsjonBrukt): InternSubsumsjonBrukt
 }
 
 data class EksternSubsumsjonBrukt(
     val id: String,
     val eksternId: Long,
     val arenaTs: ZonedDateTime,
-    val ts: Long
+    val ts: Long,
+    val utfall: String? = null,
+    val vedtakStatus: String? = null
 ) {
     companion object Mapper {
         private val LOGGER = KotlinLogging.logger { }

@@ -222,7 +222,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val eksternId = EksternId("1234", Kontekst.VEDTAK)
-                val behandlingsId: BehandlingsId = hentKoblingTilEkstern(eksternId)
+                val behandlingsId: BehandlingsId = opprettKoblingTilEkstern(eksternId)
                 ULID.parseULID(behandlingsId.id)
             }
         }
@@ -233,8 +233,8 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val eksternId = EksternId("1234", Kontekst.VEDTAK)
-                val behandlingsId1: BehandlingsId = hentKoblingTilEkstern(eksternId)
-                val behandlingsId2: BehandlingsId = hentKoblingTilEkstern(eksternId)
+                val behandlingsId1: BehandlingsId? = hentKoblingTilEkstern(eksternId)
+                val behandlingsId2: BehandlingsId? = hentKoblingTilEkstern(eksternId)
                 behandlingsId1 shouldBe behandlingsId2
             }
         }

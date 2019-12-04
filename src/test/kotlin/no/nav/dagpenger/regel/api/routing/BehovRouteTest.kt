@@ -100,8 +100,12 @@ class BehovRouteTest {
                 return 1
             }
 
-            override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
+            override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId? {
                 return BehandlingsId.nyBehandlingsIdFraEksternId(eksternId)
+            }
+
+            override fun opprettKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
+                TODO("not implemented")
             }
 
             override fun behovStatus(behovId: BehovId): Status {

@@ -20,6 +20,7 @@ import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 val LOGGER = KotlinLogging.logger { }
+
 class KafkaEksternSubsumsjonBruktConsumerTest {
     private object Kafka {
         val instance by lazy {
@@ -34,7 +35,11 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
             val lagretTilDb = slot<InternSubsumsjonBrukt>()
             val markertSomBrukt = slot<InternSubsumsjonBrukt>()
             val storeMock = mockk<BruktSubsumsjonStore>(relaxed = false).apply {
-                every { this@apply.eksternTilInternSubsumsjon(any()) } returns InternSubsumsjonBrukt(id = "test", behandlingsId = "b", arenaTs = now.minusMinutes(5))
+                every { this@apply.eksternTilInternSubsumsjon(any()) } returns InternSubsumsjonBrukt(
+                    id = "test",
+                    behandlingsId = "b",
+                    arenaTs = now.minusMinutes(5)
+                )
                 every { this@apply.insertSubsumsjonBrukt(capture(lagretTilDb)) } returns 1
             }
             val vaktmester = mockk<Vaktmester>(relaxed = true).apply {
@@ -56,7 +61,12 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
                     it[ProducerConfig.ACKS_CONFIG] = "all"
                 })
             val bruktSubsumsjon =
-                EksternSubsumsjonBrukt(id = "test", eksternId = 1234678L, arenaTs = now, ts = now.toInstant().toEpochMilli())
+                EksternSubsumsjonBrukt(
+                    id = "test",
+                    eksternId = 1234678L,
+                    arenaTs = now,
+                    ts = now.toInstant().toEpochMilli()
+                )
             val metaData = producer.send(ProducerRecord(config.subsumsjonBruktTopic, "test", bruktSubsumsjon.toJson()))
                 .get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktSubsumsjon with meta $metaData")
