@@ -16,7 +16,6 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.test.assertFailsWith
 
 class PostgresBruktSubsumsjonStoreTest {
 
