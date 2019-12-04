@@ -24,7 +24,7 @@ val LOGGER = KotlinLogging.logger { }
 class KafkaEksternSubsumsjonBruktConsumerTest {
     private object Kafka {
         val instance by lazy {
-            KafkaContainer("5.3.0").apply { this.start() }
+            KafkaContainer("5.3.1").apply { this.start() }
         }
     }
 
