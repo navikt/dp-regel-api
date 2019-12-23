@@ -8,6 +8,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyAll
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.behovId
 import no.nav.dagpenger.streams.Topics
@@ -51,7 +52,7 @@ internal class KafkaSubsumsjonConsumerTest {
         }
 
         fun runTest(strategies: List<SubsumsjonPacketStrategy>, packet: Packet, testBlock: () -> Unit) {
-            SubsumsjonPond(strategies).let {
+            SubsumsjonPond(strategies, Configuration()).let {
                 TopologyTestDriver(it.buildTopology(), config).use { topologyTestDriver ->
                     topologyTestDriver.pipeInput(factory.create(packet))
                     testBlock()

@@ -2,12 +2,12 @@ package no.nav.dagpenger.regel.api.streams
 
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.regel.api.APPLICATION_NAME
+
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.KafkaCredential
-import no.nav.dagpenger.streams.Topics
+import no.nav.dagpenger.streams.Topic
 import no.nav.dagpenger.streams.Topics.DAGPENGER_BEHOV_PACKET_EVENT
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -76,13 +76,13 @@ internal interface DagpengerBehovProducer {
     fun produceEvent(behov: InternBehov): Future<RecordMetadata>
 }
 
-internal class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBehovProducer, HealthCheck {
+internal class KafkaDagpengerBehovProducer(private val kafkaProps: Properties, private val behovTopic: Topic<String, Packet>) : DagpengerBehovProducer, HealthCheck {
 
-    private val kafkaProducer = KafkaProducer<String, Packet>(kafkaProps, Topics.DAGPENGER_BEHOV_PACKET_EVENT.keySerde.serializer(), Topics.DAGPENGER_BEHOV_PACKET_EVENT.valueSerde.serializer())
+    private val kafkaProducer = KafkaProducer<String, Packet>(kafkaProps, behovTopic.keySerde.serializer(), behovTopic.valueSerde.serializer())
 
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
-            LOGGER.info("Closing $APPLICATION_NAME Kafka producer")
+            LOGGER.info("Closing dp-regel-api Kafka producer")
             kafkaProducer.flush()
             kafkaProducer.close()
             LOGGER.info("done! ")
@@ -91,9 +91,9 @@ internal class KafkaDagpengerBehovProducer(kafkaProps: Properties) : DagpengerBe
 
     override fun status(): HealthStatus {
         try {
-            kafkaProducer.partitionsFor(DAGPENGER_BEHOV_PACKET_EVENT.name)
+            kafkaProducer.partitionsFor(behovTopic.name)
         } catch (e: KafkaException) {
-            LOGGER.error(e) { "Failed Kafka health check getting partion info for ${DAGPENGER_BEHOV_PACKET_EVENT.name}" }
+            LOGGER.error(e) { "Failed Kafka health check getting partion info for ${behovTopic.name}" }
             return HealthStatus.DOWN
         }
         return HealthStatus.UP

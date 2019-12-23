@@ -2,13 +2,12 @@ package no.nav.dagpenger.regel.api.streams
 
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.regel.api.APPLICATION_NAME
+
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.Pond
-import no.nav.dagpenger.streams.Topics
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.kstream.Predicate
@@ -28,13 +27,13 @@ internal class KafkaSubsumsjonConsumer(
         }
     }
 
-    fun start() = streams.start().also { LOGGER.info { "Starting up $APPLICATION_NAME kafca consumer" } }
+    fun start() = streams.start().also { LOGGER.info { "Starting up ${config.application.id} kafka consumer" } }
 
     fun stop() = with(streams) {
         close(Duration.ofSeconds(3))
         cleanUp()
     }.also {
-        LOGGER.info { "Shutting down $APPLICATION_NAME kafka consumer" }
+        LOGGER.info { "Shutting down ${config.application.id} kafka consumer" }
     }
 
     override fun status(): HealthStatus =
@@ -45,14 +44,14 @@ internal class KafkaSubsumsjonConsumer(
         }
 
     private fun getConfig() = streamConfig(
-        appId = APPLICATION_NAME,
+        appId = config.application.id,
         bootStapServerUrl = config.kafka.brokers,
         credential = config.kafka.credential()
     )
 }
 
-internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacketStrategy>) : Pond(Topics.DAGPENGER_BEHOV_PACKET_EVENT) {
-    override val SERVICE_APP_ID: String = APPLICATION_NAME
+internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacketStrategy>, private val config: Configuration) : Pond(config.behovTopic) {
+    override val SERVICE_APP_ID: String = config.application.id
 
     override fun filterPredicates(): List<Predicate<String, Packet>> =
         listOf(Predicate { _, packet -> packet.hasField(PacketKeys.BEHOV_ID) })
