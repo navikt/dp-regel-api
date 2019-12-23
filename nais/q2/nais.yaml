@@ -10,3 +10,5 @@ spec:
       value: "privat-dagpenger-behov-v1-q2"
     - name: APPLICATION_ID
       value: "dp-regel-api-q2"
+    - name: DATABASE_NAME
+      value: "dp-regel-api-q2"
