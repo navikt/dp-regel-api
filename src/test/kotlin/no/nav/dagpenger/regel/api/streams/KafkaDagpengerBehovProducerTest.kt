@@ -9,6 +9,7 @@ import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.streams.Topics
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
 import java.time.LocalDate
@@ -25,7 +26,7 @@ internal class KafkaDagpengerBehovProducerTest {
 
     @Test
     fun `Produce packet should success`() {
-        KafkaDagpengerBehovProducer(producerConfig("APP", Kafka.instance.bootstrapServers, null)).apply {
+        KafkaDagpengerBehovProducer(producerConfig("APP", Kafka.instance.bootstrapServers, null), Topics.DAGPENGER_BEHOV_PACKET_EVENT).apply {
             val metadata = produceEvent(InternBehov.fromBehov(
                 behov = Behov(aktørId = "aktorId", vedtakId = 1, beregningsDato = LocalDate.now()),
                 behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("123", Kontekst.VEDTAK))
@@ -40,7 +41,7 @@ internal class KafkaDagpengerBehovProducerTest {
 
     @Test
     fun `Test kafka health`() {
-        KafkaDagpengerBehovProducer(producerConfig("APP", Kafka.instance.bootstrapServers, null)).apply {
+        KafkaDagpengerBehovProducer(producerConfig("APP", Kafka.instance.bootstrapServers, null), Topics.DAGPENGER_BEHOV_PACKET_EVENT).apply {
             this.status() shouldBe HealthStatus.UP
         }
     }

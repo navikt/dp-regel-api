@@ -51,8 +51,6 @@ import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.fixedRateTimer
-
-val APPLICATION_NAME = "dp-regel-api"
 private val MAINLOGGER = KotlinLogging.logger {}
 
 fun main() = runBlocking {
@@ -74,7 +72,7 @@ fun main() = runBlocking {
         })
 
     val kafkaConsumer =
-        KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore))).also {
+        KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), config)).also {
             it.start()
         }
     val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer.apply {
@@ -87,10 +85,12 @@ fun main() = runBlocking {
     }
     val kafkaProducer = KafkaDagpengerBehovProducer(
         producerConfig(
-            APPLICATION_NAME,
+            config.application.id,
             config.kafka.brokers,
             config.kafka.credential()
-        )
+        ),
+        config.behovTopic
+
     )
 
     val app = embeddedServer(Netty, port = config.application.httpPort) {

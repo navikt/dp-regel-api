@@ -8,8 +8,11 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.listType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
+import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.streams.KafkaCredential
+import no.nav.dagpenger.streams.Topic
+import no.nav.dagpenger.streams.Topics
 
 private val localProperties = ConfigurationMap(
     mapOf(
@@ -24,7 +27,8 @@ private val localProperties = ConfigurationMap(
         "application.httpPort" to "8092",
         "auth.secret" to "secret",
         "auth.allowedKeys" to "secret1, secret2",
-        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt"
+        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
+        "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
 private val devProperties = ConfigurationMap(
@@ -36,7 +40,8 @@ private val devProperties = ConfigurationMap(
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "application.profile" to "DEV",
         "application.httpPort" to "8092",
-        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt"
+        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
+        "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -48,7 +53,8 @@ private val prodProperties = ConfigurationMap(
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "application.profile" to "PROD",
         "application.httpPort" to "8092",
-        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt"
+        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
+        "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
 
@@ -66,7 +72,10 @@ internal data class Configuration(
     val vault: Vault = Vault(),
     val kafka: Kafka = Kafka(),
     val application: Application = Application(),
-    val subsumsjonBruktTopic: String = config()[Key("kafka.subsumsjon.topic", stringType)]
+    val subsumsjonBruktTopic: String = config()[Key("kafka.subsumsjon.topic", stringType)],
+    val behovTopic: Topic<String, Packet> = Topics.DAGPENGER_BEHOV_PACKET_EVENT.copy(
+        name = config()[Key("behov.topic", stringType)]
+    )
 ) {
 
     data class Auth(
@@ -101,6 +110,7 @@ internal data class Configuration(
     }
 
     data class Application(
+        val id: String = config().getOrElse(Key("application.id", stringType), "dp-regel-api"),
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
         val httpPort: Int = config()[Key("application.httpPort", intType)]
     )

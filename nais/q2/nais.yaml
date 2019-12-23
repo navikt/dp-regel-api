@@ -1,0 +1,10 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: dp-regel-api
+spec:
+  ingresses:
+    - "https://dp-regel-api-q2.nais.preprod.local"
+  env:
+    - name: BEHOV_TOPIC
+      value: "privat-dagpenger-behov-v1-q2"

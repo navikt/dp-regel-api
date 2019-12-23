@@ -46,6 +46,9 @@ pipeline {
         sh label: 'Prepare dev service contract', script: """
            kustomize build ./nais/dev -o ./nais/nais-dev-deploy.yaml &&  cat ./nais/nais-dev-deploy.yaml
         """
+        sh label: 'Prepare dev-q2 service contract', script: """
+           kustomize build ./nais/q2 -o ./nais/nais-dev-q2-deploy.yaml &&  cat ./nais/nais-dev-q2-deploy.yaml
+        """
         sh label: 'Prepare prod service contract', script: """
            kustomize build ./nais/prod -o ./nais/nais-prod-deploy.yaml &&  cat ./nais/nais-prod-deploy.yaml
         """
@@ -80,6 +83,20 @@ pipeline {
             """
 
             archiveArtifacts artifacts: 'nais/nais-dev-deploy.yaml', fingerprint: true
+          }
+        }
+        stage('Deploy to q2') {
+          when { branch 'master' }
+
+          steps {
+            sh label: 'Deploy with kubectl', script: """
+          kubectl config use-context dev-${env.ZONE}
+          kubectl apply  -f ./nais/nais-dev-q2-deploy.yaml --wait
+          kubectl rollout status -w deployment/${APPLICATION_NAME} -n q2
+        """
+
+            archiveArtifacts artifacts: 'nais/nais-dev-q2-deploy.yaml', fingerprint: true
+
           }
         }
 
