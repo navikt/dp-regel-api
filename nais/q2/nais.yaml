@@ -15,4 +15,4 @@ spec:
     - name: DATABASE_HOST
       value: "b27dbvl009.preprod.local"
     - name: KAFKA_SUBSUMSJON_TOPIC
-      value: "privat-dagpenger-subsumsjon-brukt-data-q2"
+      value: "privat-dagpenger-subsumsjon-brukt-q2"
