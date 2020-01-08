@@ -2,4 +2,5 @@ bases:
  - ../base
 patchesStrategicMerge:
 - nais.yaml
+- alerts.yaml
 namespace: q2

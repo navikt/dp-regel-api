@@ -3,13 +3,9 @@ kind: "Alert"
 metadata:
   name: dp-regel-api
 spec:
-  receivers:
-    slack:
-      channel: '#team-dagpenger-alert'
-      prependText: '<!here> | '
   alerts:
     - alert: applikasjon nede
-      expr: kube_deployment_status_replicas_unavailable{deployment="dp-regel-api",job="kubernetes-service-endpoints"} > 0 
+      expr: kube_deployment_status_replicas_unavailable{deployment="dp-regel-api",job="kubernetes-service-endpoints"} > 0
       for: 2m
       description: "{{ $labels.deployment }} har utilgjengelige podder i {{ $labels.namespace }}"
       action: "`kubectl describe pod -l app={{ $labels.deployment }} -n {{ $labels.namespace }}` for events og `kubectl get  pods -l app={{ $labels.deployment }} -n {{ $labels.namespace }}` for å se feilende podder"
