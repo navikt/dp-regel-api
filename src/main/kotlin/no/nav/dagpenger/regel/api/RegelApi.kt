@@ -38,9 +38,11 @@ import no.nav.dagpenger.regel.api.db.dataSourceFrom
 import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.models.IllegalUlidException
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
-import no.nav.dagpenger.regel.api.routing.*
 import no.nav.dagpenger.regel.api.routing.behov
+import no.nav.dagpenger.regel.api.routing.metrics
+import no.nav.dagpenger.regel.api.routing.naischecks
 import no.nav.dagpenger.regel.api.routing.subsumsjon
+import no.nav.dagpenger.regel.api.routing.v2behov
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer
@@ -50,7 +52,7 @@ import no.nav.dagpenger.regel.api.streams.producerConfig
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
-import kotlin.concurrent.fixedRateTimer
+
 private val MAINLOGGER = KotlinLogging.logger {}
 
 fun main() = runBlocking {
@@ -61,6 +63,7 @@ fun main() = runBlocking {
     val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
     val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource)
     val vaktmester = Vaktmester(dataSource = dataSource, subsumsjonStore = subsumsjonStore)
+    /*
     fixedRateTimer(
         name = "vaktmester",
         initialDelay = TimeUnit.MINUTES.toMillis(10),
@@ -70,6 +73,7 @@ fun main() = runBlocking {
             vaktmester.rydd()
             MAINLOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
         })
+       */
 
     val kafkaConsumer =
         KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), config)).also {
