@@ -42,7 +42,6 @@ import no.nav.dagpenger.regel.api.routing.behov
 import no.nav.dagpenger.regel.api.routing.metrics
 import no.nav.dagpenger.regel.api.routing.naischecks
 import no.nav.dagpenger.regel.api.routing.subsumsjon
-import no.nav.dagpenger.regel.api.routing.v2behov
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer
@@ -175,7 +174,6 @@ internal fun Application.api(
 
     routing {
         behov(subsumsjonStore, kafkaProducer)
-        v2behov(subsumsjonStore, kafkaProducer)
         subsumsjon(subsumsjonStore)
         naischecks(healthChecks)
         metrics()
