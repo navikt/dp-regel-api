@@ -63,7 +63,6 @@ fun main() = runBlocking {
     val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
     val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource)
     val vaktmester = Vaktmester(dataSource = dataSource, subsumsjonStore = subsumsjonStore)
-
     /*
     fixedRateTimer(
         name = "vaktmester",
