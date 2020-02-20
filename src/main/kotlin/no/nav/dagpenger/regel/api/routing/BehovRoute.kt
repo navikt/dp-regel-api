@@ -16,7 +16,9 @@ import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
@@ -35,6 +37,24 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
                         call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
                     }.also {
                         LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
+                    }
+                }
+            }
+
+            route("/kontekst/{verdi}") {
+                post {
+                    val kontekst = call.parameters["verdi"]?.let { Kontekst.valueOf(it) } ?: throw BadRequestException()
+                    val behovRequest: BehovRequest = call.receive()
+                    val eksternId: EksternId = EksternId(id = behovRequest.eksternId ?: behovRequest.vedtakId.toString(), kontekst = kontekst)
+                    mapRequestToBehov(behovRequest).apply {
+                        store.opprettBehov(this, eksternId).also {
+                            producer.produceEvent(it)
+                        }.also {
+                            call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId.id}")
+                            call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
+                        }.also {
+                            LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
+                        }
                     }
                 }
             }
@@ -73,6 +93,7 @@ internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
 )
 
 internal data class BehovRequest(
+    val eksternId: String? = null,
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,

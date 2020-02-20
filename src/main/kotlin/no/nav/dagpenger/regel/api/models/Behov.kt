@@ -14,7 +14,7 @@ data class Behov(
     val harAvtjentVerneplikt: Boolean? = null,
     val oppfyllerKravTilFangstOgFisk: Boolean? = null,
     val bruktInntektsPeriode: InntektsPeriode? = null,
-    val antallBarn: Int? = null,
+    val antallBarn: Int? = 0,
     val manueltGrunnlag: Int? = null,
     val inntektsId: String? = null
 ) {

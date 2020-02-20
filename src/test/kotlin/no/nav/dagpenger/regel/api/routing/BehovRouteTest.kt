@@ -83,43 +83,7 @@ class BehovRouteTest {
     @Test
     fun `Valid json to behov endpoint should be accepted, saved and produce an event to Kafka`() {
 
-        val obj: SubsumsjonStore = object : SubsumsjonStore {
-            override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int {
-                TODO("not implemented")
-            }
-
-            override fun delete(subsumsjon: Subsumsjon) {
-                TODO("not implemented")
-            }
-
-            override fun getBehov(behovId: BehovId): InternBehov {
-                TODO("not implemented")
-            }
-
-            override fun insertBehov(behov: InternBehov): Int {
-                return 1
-            }
-
-            override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId? {
-                return BehandlingsId.nyBehandlingsIdFraEksternId(eksternId)
-            }
-
-            override fun opprettKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
-                TODO("not implemented")
-            }
-
-            override fun behovStatus(behovId: BehovId): Status {
-                TODO("not implemented")
-            }
-
-            override fun getSubsumsjon(behovId: BehovId): Subsumsjon {
-                TODO("not implemented")
-            }
-
-            override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
-                TODO("not implemented")
-            }
-        }
+        val storeMock: SubsumsjonStore = subsumsjonStoreMock()
 
         val produceSlot = slot<InternBehov>()
         val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
@@ -127,7 +91,7 @@ class BehovRouteTest {
         }
 
         withTestApplication(MockApi(
-            obj,
+            storeMock,
             kafkaMock
         )) {
 
@@ -171,6 +135,107 @@ class BehovRouteTest {
         verifyAll {
             kafkaMock.produceEvent(any())
         }
+    }
+
+    @Test
+    fun `Valid json to behov kontekst endpoint should be accepted, saved and produce an event to Kafka`() {
+
+        val storeMock: SubsumsjonStore = subsumsjonStoreMock()
+
+        val produceSlot = slot<InternBehov>()
+        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
+            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+        }
+
+        withTestApplication(MockApi(
+            storeMock,
+            kafkaMock
+        )) {
+
+            handleAuthenticatedRequest(HttpMethod.Post, "/behov/kontekst/VEDTAK") {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                setBody("""
+            {
+                "eksternId": "5678",
+                "aktorId": "1234",
+                "vedtakId": 1,
+                "beregningsdato": "2019-01-08",
+                "manueltGrunnlag": 54200,
+                "harAvtjentVerneplikt": true,
+                "oppfyllerKravTilFangstOgFisk": true,
+                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
+                "antallBarn": 1
+            }
+            """.trimIndent())
+            }.apply {
+                response.status() shouldBe HttpStatusCode.Accepted
+                withClue("Response should be handled") { requestHandled shouldBe true }
+                response.headers.contains(HttpHeaders.Location) shouldBe true
+                response.headers[HttpHeaders.Location]?.let { location ->
+                    location shouldStartWith "/behov/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
+                }
+            }
+        }
+
+        with(produceSlot.captured) {
+            behovId shouldNotBe null
+            aktørId shouldBe "1234"
+            behandlingsId shouldNotBe null
+            behandlingsId.eksternId.id shouldBe "5678"
+            behandlingsId.eksternId.kontekst shouldBe Kontekst.VEDTAK
+            beregningsDato shouldBe LocalDate.of(2019, 1, 8)
+            harAvtjentVerneplikt shouldBe true
+            oppfyllerKravTilFangstOgFisk shouldBe true
+            bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7))
+            manueltGrunnlag shouldBe 54200
+            antallBarn shouldBe 1
+        }
+
+        verifyAll {
+            kafkaMock.produceEvent(any())
+        }
+    }
+
+    private fun subsumsjonStoreMock(): SubsumsjonStore {
+        val storeMock: SubsumsjonStore = object : SubsumsjonStore {
+            override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int {
+                TODO("not implemented")
+            }
+
+            override fun delete(subsumsjon: Subsumsjon) {
+                TODO("not implemented")
+            }
+
+            override fun getBehov(behovId: BehovId): InternBehov {
+                TODO("not implemented")
+            }
+
+            override fun insertBehov(behov: InternBehov): Int {
+                return 1
+            }
+
+            override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId? {
+                return BehandlingsId.nyBehandlingsIdFraEksternId(eksternId)
+            }
+
+            override fun opprettKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
+                TODO("not implemented")
+            }
+
+            override fun behovStatus(behovId: BehovId): Status {
+                TODO("not implemented")
+            }
+
+            override fun getSubsumsjon(behovId: BehovId): Subsumsjon {
+                TODO("not implemented")
+            }
+
+            override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
+                TODO("not implemented")
+            }
+        }
+        return storeMock
     }
 }
 
