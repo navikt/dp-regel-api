@@ -8,6 +8,7 @@ import java.time.LocalDate
 private val ulidGenerator = ULID()
 
 data class Behov(
+    val eksternId: EksternId? = null,
     val aktørId: String,
     val vedtakId: Int,
     val beregningsDato: LocalDate,

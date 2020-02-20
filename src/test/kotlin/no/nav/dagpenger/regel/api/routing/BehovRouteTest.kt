@@ -83,6 +83,121 @@ class BehovRouteTest {
     @Test
     fun `Valid json to behov endpoint should be accepted, saved and produce an event to Kafka`() {
 
+        val storeMock = mockedSubsumsjonStore()
+        val produceSlot = slot<InternBehov>()
+        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
+            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+        }
+
+        withTestApplication(MockApi(
+            storeMock,
+            kafkaMock
+        )) {
+
+            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                setBody("""
+            {
+                "aktorId": "1234",
+                "vedtakId": 3456,
+                "beregningsdato": "2019-01-08",
+                "manueltGrunnlag": 54200,
+                "harAvtjentVerneplikt": true,
+                "oppfyllerKravTilFangstOgFisk": true,
+                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
+                "antallBarn": 1
+            }
+            """.trimIndent())
+            }.apply {
+                response.status() shouldBe HttpStatusCode.Accepted
+                withClue("Response should be handled") { requestHandled shouldBe true }
+                response.headers.contains(HttpHeaders.Location) shouldBe true
+                response.headers[HttpHeaders.Location]?.let { location ->
+                    location shouldStartWith "/behov/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
+                }
+            }
+        }
+
+        with(produceSlot.captured) {
+            behovId shouldNotBe null
+            aktørId shouldBe "1234"
+            behandlingsId shouldNotBe null
+            behandlingsId.eksternId.id shouldBe "3456"
+            behandlingsId.eksternId.kontekst shouldBe Kontekst.VEDTAK
+            beregningsDato shouldBe LocalDate.of(2019, 1, 8)
+            harAvtjentVerneplikt shouldBe true
+            oppfyllerKravTilFangstOgFisk shouldBe true
+            bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7))
+            manueltGrunnlag shouldBe 54200
+            antallBarn shouldBe 1
+        }
+
+        verifyAll {
+            kafkaMock.produceEvent(any())
+        }
+    }
+
+    @Test
+    fun `Valid json with ekstern id to behov endpoint should be accepted, saved and produce an event to Kafka`() {
+
+        val storeMock = mockedSubsumsjonStore()
+        val produceSlot = slot<InternBehov>()
+        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
+            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+        }
+
+        withTestApplication(MockApi(
+            storeMock,
+            kafkaMock
+        )) {
+
+            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                setBody("""
+            {
+                "eksternId" : { "id": "1234", "kontekst": "VEDTAK" }, 
+                "aktorId": "1234",
+                "vedtakId": 1,
+                "beregningsdato": "2019-01-08",
+                "manueltGrunnlag": 54200,
+                "harAvtjentVerneplikt": true,
+                "oppfyllerKravTilFangstOgFisk": true,
+                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
+                "antallBarn": 1
+            }
+            """.trimIndent())
+            }.apply {
+                response.status() shouldBe HttpStatusCode.Accepted
+                withClue("Response should be handled") { requestHandled shouldBe true }
+                response.headers.contains(HttpHeaders.Location) shouldBe true
+                response.headers[HttpHeaders.Location]?.let { location ->
+                    location shouldStartWith "/behov/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
+                }
+            }
+        }
+
+        with(produceSlot.captured) {
+            behovId shouldNotBe null
+            aktørId shouldBe "1234"
+            behandlingsId shouldNotBe null
+            behandlingsId.eksternId.id shouldBe "1234"
+            behandlingsId.eksternId.kontekst shouldBe Kontekst.VEDTAK
+            beregningsDato shouldBe LocalDate.of(2019, 1, 8)
+            harAvtjentVerneplikt shouldBe true
+            oppfyllerKravTilFangstOgFisk shouldBe true
+            bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7))
+            manueltGrunnlag shouldBe 54200
+            antallBarn shouldBe 1
+        }
+
+        verifyAll {
+            kafkaMock.produceEvent(any())
+        }
+    }
+
+    private fun mockedSubsumsjonStore(): SubsumsjonStore {
         val obj: SubsumsjonStore = object : SubsumsjonStore {
             override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int {
                 TODO("not implemented")
@@ -120,57 +235,7 @@ class BehovRouteTest {
                 TODO("not implemented")
             }
         }
-
-        val produceSlot = slot<InternBehov>()
-        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
-            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
-        }
-
-        withTestApplication(MockApi(
-            obj,
-            kafkaMock
-        )) {
-
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody("""
-            {
-                "aktorId": "1234",
-                "vedtakId": 1,
-                "beregningsdato": "2019-01-08",
-                "manueltGrunnlag": 54200,
-                "harAvtjentVerneplikt": true,
-                "oppfyllerKravTilFangstOgFisk": true,
-                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
-                "antallBarn": 1
-            }
-            """.trimIndent())
-            }.apply {
-                response.status() shouldBe HttpStatusCode.Accepted
-                withClue("Response should be handled") { requestHandled shouldBe true }
-                response.headers.contains(HttpHeaders.Location) shouldBe true
-                response.headers[HttpHeaders.Location]?.let { location ->
-                    location shouldStartWith "/behov/status/"
-                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
-                }
-            }
-        }
-
-        with(produceSlot.captured) {
-            behovId shouldNotBe null
-            aktørId shouldBe "1234"
-            behandlingsId shouldNotBe null
-            beregningsDato shouldBe LocalDate.of(2019, 1, 8)
-            harAvtjentVerneplikt shouldBe true
-            oppfyllerKravTilFangstOgFisk shouldBe true
-            bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7))
-            manueltGrunnlag shouldBe 54200
-            antallBarn shouldBe 1
-        }
-
-        verifyAll {
-            kafkaMock.produceEvent(any())
-        }
+        return obj
     }
 }
 

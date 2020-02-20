@@ -16,6 +16,7 @@ import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.EksternId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
@@ -61,6 +62,7 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
 private data class StatusResponse(val status: String)
 
 internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
+    eksternId = request.eksternId,
     aktørId = request.aktorId,
     vedtakId = request.vedtakId,
     beregningsDato = request.beregningsdato,
@@ -73,6 +75,7 @@ internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
 )
 
 internal data class BehovRequest(
+    val eksternId: EksternId? = null,
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
