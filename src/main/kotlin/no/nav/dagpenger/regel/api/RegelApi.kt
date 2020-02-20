@@ -51,6 +51,7 @@ import no.nav.dagpenger.regel.api.streams.producerConfig
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.fixedRateTimer
 
 private val MAINLOGGER = KotlinLogging.logger {}
 
@@ -62,7 +63,7 @@ fun main() = runBlocking {
     val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
     val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource)
     val vaktmester = Vaktmester(dataSource = dataSource, subsumsjonStore = subsumsjonStore)
-    /*
+
     fixedRateTimer(
         name = "vaktmester",
         initialDelay = TimeUnit.MINUTES.toMillis(10),
@@ -72,7 +73,6 @@ fun main() = runBlocking {
             vaktmester.rydd()
             MAINLOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
         })
-       */
 
     val kafkaConsumer =
         KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), config)).also {
