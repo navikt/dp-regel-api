@@ -7,7 +7,7 @@ import java.time.ZonedDateTime
 interface SubsumsjonStore {
 
     fun opprettBehov(behov: Behov): InternBehov {
-        val eksternId = EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)
+        val eksternId = behov.regelkontekst?.let { EksternId(it.id, Kontekst.valueOf(it.type)) } ?: EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)
         val behandlingsId = hentKoblingTilEkstern(eksternId) ?: opprettKoblingTilEkstern(eksternId)
         val internBehov = InternBehov.fromBehov(behov, behandlingsId)
         insertBehov(internBehov)

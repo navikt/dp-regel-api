@@ -8,6 +8,7 @@ import java.time.LocalDate
 private val ulidGenerator = ULID()
 
 data class Behov(
+    val regelkontekst: RegelKontekst? = null,
     val aktørId: String,
     val vedtakId: Int,
     val beregningsDato: LocalDate,
@@ -17,17 +18,7 @@ data class Behov(
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
     val inntektsId: String? = null
-) {
-    fun toJson() = toJson(this)
-
-    companion object Mapper {
-        private val adapter = moshiInstance.adapter(Behov::class.java)
-
-        fun toJson(internBehov: Behov): String = adapter.toJson(internBehov)
-
-        fun fromJson(json: String): Behov? = adapter.fromJson(json)
-    }
-}
+)
 
 data class InternBehov(
     val behovId: BehovId = BehovId(ulidGenerator.nextULID()),
