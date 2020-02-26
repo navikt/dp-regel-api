@@ -20,7 +20,7 @@ internal class FaktumTest {
                 antallBarn = 1,
                 manueltGrunnlag = 1
             ),
-            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("1", Kontekst.VEDTAK))
+            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1", Kontekst.VEDTAK))
         ).toPacket().apply {
             this.putValue(
                 PacketKeys.INNTEKT, mapOf(

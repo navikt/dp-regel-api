@@ -7,16 +7,16 @@ import java.time.ZonedDateTime
 interface SubsumsjonStore {
 
     fun opprettBehov(behov: Behov): InternBehov {
-        val eksternId = behov.regelkontekst?.let { EksternId(it.id, Kontekst.valueOf(it.type)) } ?: EksternId(behov.vedtakId.toString(), Kontekst.VEDTAK)
-        val behandlingsId = hentKoblingTilEkstern(eksternId) ?: opprettKoblingTilEkstern(eksternId)
+        val regelkontekst = behov.regelkontekst ?: RegelKontekst(behov.vedtakId.toString(), Kontekst.VEDTAK)
+        val behandlingsId = hentKoblingTilRegelKontekst(regelkontekst) ?: opprettKoblingTilRegelkontekst(regelkontekst)
         val internBehov = InternBehov.fromBehov(behov, behandlingsId)
         insertBehov(internBehov)
         return internBehov
     }
 
     fun insertBehov(behov: InternBehov): Int
-    fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId?
-    fun opprettKoblingTilEkstern(eksternId: EksternId): BehandlingsId
+    fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId?
+    fun opprettKoblingTilRegelkontekst(regelKontekst: RegelKontekst): BehandlingsId
     fun getBehov(behovId: BehovId): InternBehov
     fun behovStatus(behovId: BehovId): Status
     fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))): Int

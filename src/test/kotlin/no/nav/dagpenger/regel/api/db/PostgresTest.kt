@@ -221,8 +221,8 @@ class PostgresSubsumsjonStoreTest {
     fun `Should generate new intern id for ekstern id`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val eksternId = EksternId("1234", Kontekst.VEDTAK)
-                val behandlingsId: BehandlingsId = opprettKoblingTilEkstern(eksternId)
+                val eksternId = RegelKontekst("1234", Kontekst.VEDTAK)
+                val behandlingsId: BehandlingsId = opprettKoblingTilRegelkontekst(eksternId)
                 ULID.parseULID(behandlingsId.id)
             }
         }
@@ -232,9 +232,9 @@ class PostgresSubsumsjonStoreTest {
     fun `Should not generate new intern id for already existing ekstern id`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val eksternId = EksternId("1234", Kontekst.VEDTAK)
-                val behandlingsId1: BehandlingsId? = hentKoblingTilEkstern(eksternId)
-                val behandlingsId2: BehandlingsId? = hentKoblingTilEkstern(eksternId)
+                val eksternId = RegelKontekst("1234", Kontekst.VEDTAK)
+                val behandlingsId1: BehandlingsId? = hentKoblingTilRegelKontekst(eksternId)
+                val behandlingsId2: BehandlingsId? = hentKoblingTilRegelKontekst(eksternId)
                 behandlingsId1 shouldBe behandlingsId2
             }
         }

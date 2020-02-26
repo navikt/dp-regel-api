@@ -5,7 +5,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.models.Behov
-import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Kontekst
@@ -29,7 +29,7 @@ internal class KafkaDagpengerBehovProducerTest {
         KafkaDagpengerBehovProducer(producerConfig("APP", Kafka.instance.bootstrapServers, null), Topics.DAGPENGER_BEHOV_PACKET_EVENT).apply {
             val metadata = produceEvent(InternBehov.fromBehov(
                 behov = Behov(aktørId = "aktorId", vedtakId = 1, beregningsDato = LocalDate.now()),
-                behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("123", Kontekst.VEDTAK))
+                behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("123", Kontekst.VEDTAK))
                 )).get(5, TimeUnit.SECONDS)
 
             metadata shouldNotBe null

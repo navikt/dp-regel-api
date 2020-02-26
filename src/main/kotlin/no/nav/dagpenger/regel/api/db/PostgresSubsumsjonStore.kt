@@ -6,7 +6,7 @@ import kotliquery.using
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.BehovId
-import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.Kontekst
@@ -27,30 +27,30 @@ private val LOGGER = KotlinLogging.logger {}
 
 internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonStore, HealthCheck {
 
-    override fun hentKoblingTilEkstern(eksternId: EksternId): BehandlingsId? {
+    override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId? {
         val id: String? = using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     "SELECT id FROM v1_behov_behandling_mapping WHERE kontekst = :kontekst AND ekstern_id = :ekstern_id",
-                    mapOf("kontekst" to eksternId.kontekst.name, "ekstern_id" to eksternId.id)
+                    mapOf("kontekst" to regelKontekst.type.name, "ekstern_id" to regelKontekst.id)
                 ).map { row ->
                     row.string("id")
                 }.asSingle
             )
         }
-        return id?.let { BehandlingsId(it, eksternId) }
+        return id?.let { BehandlingsId(it, regelKontekst) }
     }
 
-    override fun opprettKoblingTilEkstern(eksternId: EksternId): BehandlingsId {
-        val behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(eksternId)
+    override fun opprettKoblingTilRegelkontekst(regelKontekst: RegelKontekst): BehandlingsId {
+        val behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(regelKontekst)
         using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     "INSERT INTO v1_behov_behandling_mapping(id, ekstern_id, kontekst) VALUES (:id, :ekstern_id, :kontekst)",
                     mapOf(
                         "id" to behandlingsId.id,
-                        "ekstern_id" to behandlingsId.eksternId.id,
-                        "kontekst" to behandlingsId.eksternId.kontekst.name
+                        "ekstern_id" to behandlingsId.regelKontekst.id,
+                        "kontekst" to behandlingsId.regelKontekst.type.name
                     )
                 ).asUpdate
             )
@@ -121,7 +121,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                         inntektsId = row.stringOrNull("inntekts_id"),
                         behandlingsId = BehandlingsId(
                             row.string("behandlings_id"),
-                            EksternId(row.string("ekstern_id"), Kontekst.valueOf(row.string("kontekst")))
+                            RegelKontekst(row.string("ekstern_id"), Kontekst.valueOf(row.string("kontekst")))
                         )
 
                     )
