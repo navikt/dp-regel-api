@@ -54,6 +54,13 @@ vault login -method=oidc
 
 ```
 
+
+Hvis du får noe à la `connection refused`, må du før `vault login -method=oidc` legge til:
+```
+export HTTPS_PROXY="socks5://localhost:14122" 
+export NO_PROXY=".microsoftonline.com,.terraform.io,.hashicorp.com"
+```
+
 Preprod credentials:
 
 ```
