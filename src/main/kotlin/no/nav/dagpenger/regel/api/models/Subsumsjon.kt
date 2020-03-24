@@ -6,8 +6,6 @@ import no.nav.dagpenger.regel.api.models.Faktum.Mapper.faktumFrom
 import no.nav.dagpenger.regel.api.moshiInstance
 
 data class Subsumsjon(
-    @Deprecated("Id is deprecated ", replaceWith = ReplaceWith("Subsumsjon.behovId"))
-    val id: String = "not-in-use",
     val behovId: BehovId,
     val faktum: Faktum,
     val grunnlagResultat: Map<String, Any>?,
