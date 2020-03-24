@@ -39,7 +39,8 @@ data class InternBehov(
     val bruktInntektsPeriode: InntektsPeriode? = null,
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
-    val inntektsId: String? = null
+    val inntektsId: String? = null,
+    val koronaToggle: Boolean = false
 
 ) {
     fun toJson() = toJson(this)
@@ -67,7 +68,7 @@ data class InternBehov(
             internBehov.inntektsId?.let { this.putValue(PacketKeys.INNTEKTS_ID, it) }
         }
 
-        fun fromBehov(behov: Behov, behandlingsId: BehandlingsId): InternBehov {
+        fun fromBehov(behov: Behov, behandlingsId: BehandlingsId, koronaToggle: Boolean = false): InternBehov {
             return InternBehov(
                 behandlingsId = behandlingsId,
                 aktørId = behov.aktørId,
@@ -77,7 +78,8 @@ data class InternBehov(
                 beregningsDato = behov.beregningsDato,
                 bruktInntektsPeriode = behov.bruktInntektsPeriode,
                 antallBarn = behov.antallBarn,
-                inntektsId = behov.inntektsId
+                inntektsId = behov.inntektsId,
+                koronaToggle = koronaToggle
             )
         }
     }

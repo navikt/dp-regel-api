@@ -28,6 +28,7 @@ private val localProperties = ConfigurationMap(
         "auth.secret" to "secret",
         "auth.allowedKeys" to "secret1, secret2",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
+        "unleash.url" to "https://localhost",
         "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
@@ -41,6 +42,7 @@ private val devProperties = ConfigurationMap(
         "application.profile" to "DEV",
         "application.httpPort" to "8092",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
+        "unleash.url" to "https://unleash.nais.preprod.local/api/",
         "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
@@ -54,6 +56,7 @@ private val prodProperties = ConfigurationMap(
         "application.profile" to "PROD",
         "application.httpPort" to "8092",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
+        "unleash.url" to "https://unleash.nais.adeo.no/api/",
         "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
@@ -112,7 +115,8 @@ internal data class Configuration(
     data class Application(
         val id: String = config().getOrElse(Key("application.id", stringType), "dp-regel-api"),
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
-        val httpPort: Int = config()[Key("application.httpPort", intType)]
+        val httpPort: Int = config()[Key("application.httpPort", intType)],
+        val unleashUrl: String = config()[Key("unleash.url", stringType)]
     )
 }
 

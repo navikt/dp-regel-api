@@ -27,6 +27,7 @@ import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import no.finn.unleash.Unleash
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
@@ -93,10 +94,13 @@ fun main() = runBlocking {
 
     )
 
+    val unleash = setupUnleash(config.application.unleashUrl)
+
     val app = embeddedServer(Netty, port = config.application.httpPort) {
         api(
             subsumsjonStore,
             kafkaProducer,
+            unleash,
             config.auth.authApiKeyVerifier,
             listOf(
                 subsumsjonStore as HealthCheck,
@@ -120,6 +124,7 @@ fun main() = runBlocking {
 internal fun Application.api(
     subsumsjonStore: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer,
+    unleash: Unleash,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     healthChecks: List<HealthCheck>
 ) {
@@ -170,7 +175,7 @@ internal fun Application.api(
     }
 
     routing {
-        behov(subsumsjonStore, kafkaProducer)
+        behov(subsumsjonStore, kafkaProducer, unleash)
         v2behov(subsumsjonStore, kafkaProducer)
         subsumsjon(subsumsjonStore)
         naischecks(healthChecks)
