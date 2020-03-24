@@ -60,6 +60,7 @@ data class InternBehov(
             }
             this.putValue(PacketKeys.BEHANDLINGSID, internBehov.behandlingsId.id)
             this.putValue(PacketKeys.BEREGNINGS_DATO, internBehov.beregningsDato)
+            this.putValue(PacketKeys.KORONA_TOGGLE, internBehov.koronaToggle)
             internBehov.harAvtjentVerneplikt?.let { this.putValue(PacketKeys.HAR_AVTJENT_VERNE_PLIKT, it) }
             internBehov.oppfyllerKravTilFangstOgFisk?.let { this.putValue(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK, it) }
             internBehov.bruktInntektsPeriode?.let { this.putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, it.toJson()) }

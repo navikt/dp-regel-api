@@ -1,11 +1,15 @@
 package no.nav.dagpenger.regel.api
 
+import io.kotlintest.shouldBe
 import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
@@ -16,6 +20,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZonedDateTime
 
 class KoronaBehovToggleTest {
@@ -104,5 +109,14 @@ class KoronaBehovToggleTest {
 
         assertNotNull(internbehov.koronaToggle)
         assertFalse(internbehov.koronaToggle)
+    }
+
+    @Test
+    fun `Packet skal ha koronatoggle fra internbehov`() {
+        val behov = InternBehov(BehovId("01DSFVQ4NQQ64SNT4Z16TJXXE7"), "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(EksternId("1234", Kontekst.VEDTAK)), LocalDate.now(), true, true, InntektsPeriode(
+            YearMonth.now(), YearMonth.now()), 1, 1, koronaToggle = false)
+        val packet = InternBehov.toPacket(behov)
+
+        packet.getBoolean(PacketKeys.KORONA_TOGGLE) shouldBe behov.koronaToggle
     }
 }
