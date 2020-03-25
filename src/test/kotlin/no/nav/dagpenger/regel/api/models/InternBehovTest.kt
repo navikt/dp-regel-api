@@ -16,6 +16,7 @@ class InternBehovTest {
         packet.getStringValue(PacketKeys.AKTØR_ID) shouldBe behov.aktørId
         packet.getIntValue(PacketKeys.VEDTAK_ID) shouldBe behov.behandlingsId.regelKontekst.id.toInt()
         packet.kontekst shouldBe behov.behandlingsId.regelKontekst.type
+        packet.kontekstId shouldBe behov.behandlingsId.regelKontekst.id
         packet.getStringValue(PacketKeys.BEHANDLINGSID) shouldBe behov.behandlingsId.id
         packet.getLocalDate(PacketKeys.BEREGNINGS_DATO) shouldBe behov.beregningsDato
         packet.getBoolean(PacketKeys.HAR_AVTJENT_VERNE_PLIKT) shouldBe behov.harAvtjentVerneplikt
