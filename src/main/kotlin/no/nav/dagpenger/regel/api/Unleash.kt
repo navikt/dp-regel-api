@@ -4,7 +4,7 @@ import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.util.UnleashConfig
 
 fun setupUnleash(unleashApiUrl: String): DefaultUnleash {
-    val appName = "dp-datalaster-inntekt"
+    val appName = "dp-regel-api"
     val unleashconfig = UnleashConfig.builder()
         .appName(appName)
         .instanceId(appName)
