@@ -2,6 +2,7 @@ package no.nav.dagpenger.regel.api.routing
 
 import io.ktor.application.Application
 import io.mockk.mockk
+import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.regel.api.api
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
@@ -18,6 +19,7 @@ internal fun MockApi(
         api(
             subsumsjonStore,
             kafkaDagpengerBehovProducer,
+            FakeUnleash(),
             authVerifier,
             healthChecks
         )

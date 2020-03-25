@@ -1,15 +1,20 @@
 package no.nav.dagpenger.regel.api.db
 
+import no.finn.unleash.Unleash
 import no.nav.dagpenger.regel.api.models.*
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
 interface SubsumsjonStore {
 
-    fun opprettBehov(behov: Behov): InternBehov {
+    fun opprettBehov(behov: Behov, unleash: Unleash): InternBehov {
         val regelkontekst = behov.regelkontekst ?: RegelKontekst(behov.vedtakId.toString(), Kontekst.VEDTAK)
         val behandlingsId = hentKoblingTilRegelKontekst(regelkontekst) ?: opprettKoblingTilRegelkontekst(regelkontekst)
-        val internBehov = InternBehov.fromBehov(behov, behandlingsId)
+        val internBehov = InternBehov.fromBehov(
+            behov = behov,
+            behandlingsId = behandlingsId,
+            koronaToggle = unleash.isEnabled("dp.korona", false)
+        )
         insertBehov(internBehov)
         return internBehov
     }
