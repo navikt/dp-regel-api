@@ -150,7 +150,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
-                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),FakeUnleash())
+                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
                 getSubsumsjon(BehovId(sub.behovId.id)) shouldBe sub
@@ -162,7 +162,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Do nothing if a subsumsjon already exist`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),FakeUnleash())
+                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
 
                 insertSubsumsjon(sub) shouldBe 1
@@ -197,7 +197,7 @@ class PostgresSubsumsjonStoreTest {
                 val satsId = ULID().nextULID()
                 val grunnlagId = ULID().nextULID()
                 val periodeId = ULID().nextULID()
-                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())i, FakeUnleash())
+                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
                 val subsumsjonWithResults = subsumsjon.copy(
                     behovId = internBehov.behovId,
                     minsteinntektResultat = mapOf("subsumsjonsId" to minsteinntektId),
