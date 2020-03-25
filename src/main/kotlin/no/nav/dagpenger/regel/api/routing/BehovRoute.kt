@@ -12,6 +12,7 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import mu.KotlinLogging
+import no.finn.unleash.Unleash
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
@@ -24,12 +25,12 @@ import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
-internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
+internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProducer, unleash: Unleash) {
     authenticate {
         route("/behov") {
             post {
                 mapRequestToBehov(call.receive()).apply {
-                    store.opprettBehov(this).also {
+                    store.opprettBehov(this, unleash).also {
                         producer.produceEvent(it)
                     }.also {
                         call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId.id}")
