@@ -9,6 +9,7 @@ internal object PacketKeys {
     const val HAR_AVTJENT_VERNE_PLIKT = "harAvtjentVerneplikt"
     const val BEREGNINGS_DATO = "beregningsDato"
     const val VEDTAK_ID = "vedtakId"
+    const val CORONA_ID = "coronaId"
     const val AKTØR_ID = "aktørId"
     const val BEHOV_ID = "behovId"
     const val GRUNNLAG_RESULTAT = "grunnlagResultat"

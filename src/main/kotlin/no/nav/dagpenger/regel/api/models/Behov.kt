@@ -47,6 +47,7 @@ data class InternBehov(
             this.putValue(PacketKeys.AKTØR_ID, internBehov.aktørId)
             when (internBehov.behandlingsId.regelKontekst.type) {
                 Kontekst.VEDTAK -> this.putValue(PacketKeys.VEDTAK_ID, internBehov.behandlingsId.regelKontekst.id)
+                Kontekst.CORONA -> this.putValue(PacketKeys.CORONA_ID, internBehov.behandlingsId.regelKontekst.id)
             }
             this.putValue(PacketKeys.BEHANDLINGSID, internBehov.behandlingsId.id)
             this.putValue(PacketKeys.BEREGNINGS_DATO, internBehov.beregningsDato)
