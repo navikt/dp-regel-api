@@ -3,24 +3,13 @@ package no.nav.dagpenger.regel.api.streams
 import io.kotlintest.matchers.doubles.shouldBeGreaterThan
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
-import io.mockk.Called
-import io.mockk.Runs
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkAll
-import io.mockk.verifyAll
+import io.mockk.*
 import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.BehovId
-import no.nav.dagpenger.regel.api.models.PacketKeys
-import no.nav.dagpenger.regel.api.models.Status
-import no.nav.dagpenger.regel.api.models.Subsumsjon
-import no.nav.dagpenger.regel.api.models.behovId
+import no.nav.dagpenger.regel.api.models.*
 import org.junit.jupiter.api.Test
 
 internal class PendingBehovStrategyTest {
@@ -91,7 +80,9 @@ internal class PendingBehovStrategyTest {
 internal class SuccessStrategyTest {
     @Test
     fun `Should delegate to PendingBehovStrategy if criterias are matched`() {
-        val packet = Packet()
+        val packet = Packet().apply {
+            this.putValue(PacketKeys.KONTEKST_TYPE, Kontekst.VEDTAK.name)
+        }
 
         val pendingBehovStrategy = mockk<PendingBehovStrategy>().apply {
             every { this@apply.handle(packet) } just Runs
@@ -107,11 +98,23 @@ internal class SuccessStrategyTest {
     }
 
     @Test
-    fun `Do nothing if criterias are not met`() {
+    fun `Do nothing if Packet has problem`() {
         val problemPacket = Packet().apply { addProblem(Problem(title = "problem")) }
         val pendingBehovStrategy = mockk<PendingBehovStrategy>()
 
         SuccessStrategy(pendingBehovStrategy).run(problemPacket)
+
+        verifyAll { pendingBehovStrategy wasNot Called }
+    }
+
+    @Test
+    fun `Stratgy should onle trigger for required context `() {
+        val packet = Packet().apply {
+            this.putValue(PacketKeys.KONTEKST_TYPE, Kontekst.CORONA)
+        }
+        val pendingBehovStrategy = mockk<PendingBehovStrategy>()
+
+        SuccessStrategy(pendingBehovStrategy, Kontekst.VEDTAK).run(packet)
 
         verifyAll { pendingBehovStrategy wasNot Called }
     }
