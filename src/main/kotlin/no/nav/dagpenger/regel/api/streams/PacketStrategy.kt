@@ -4,8 +4,13 @@ import io.prometheus.client.Summary
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.*
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.PacketKeys
+import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon.Mapper.subsumsjonFrom
+import no.nav.dagpenger.regel.api.models.behovId
+import no.nav.dagpenger.regel.api.models.kontekst
 import java.time.Duration
 import java.time.LocalDateTime
 
