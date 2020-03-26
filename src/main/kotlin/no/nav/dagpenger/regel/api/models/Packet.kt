@@ -31,7 +31,15 @@ internal val Packet.behovId: BehovId
     get() = BehovId(this.getStringValue(PacketKeys.BEHOV_ID))
 
 internal val Packet.kontekst: Kontekst
-    get() = Kontekst.valueOf(this.getStringValue(PacketKeys.KONTEKST_TYPE))
+    get() {
+        return this.getNullableStringValue(PacketKeys.KONTEKST_TYPE).let {
+            if (it != null) {
+                Kontekst.valueOf(it)
+            } else {
+                Kontekst.VEDTAK
+            }
+        }
+    }
 
 internal val Packet.kontekstId: String
     get() = this.getStringValue(PacketKeys.KONTEKST_ID)
