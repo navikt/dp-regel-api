@@ -5,7 +5,7 @@ import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.models.BehovId
-import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
@@ -41,7 +41,7 @@ class PostgresBruktSubsumsjonStoreTest {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
                 val internSubsumsjonBrukt = InternSubsumsjonBrukt(
                     id = subsumsjon.behovId.id,
-                    behandlingsId = PostgresSubsumsjonStore(DataSource.instance).opprettKoblingTilEkstern(eksternId).id,
+                    behandlingsId = PostgresSubsumsjonStore(DataSource.instance).opprettKoblingTilRegelkontekst(eksternId).id,
                     arenaTs = exampleDate
                 )
                 this.insertSubsumsjonBrukt(internSubsumsjonBrukt = internSubsumsjonBrukt)
@@ -62,8 +62,8 @@ class PostgresBruktSubsumsjonStoreTest {
                     subsumsjonStore = subsumsjonStore
                 )
             ) {
-                subsumsjonStore.opprettKoblingTilEkstern(
-                    EksternId(
+                subsumsjonStore.opprettKoblingTilRegelkontekst(
+                    RegelKontekst(
                         bruktSubsumsjon.eksternId.toString(),
                         Kontekst.VEDTAK
                     )
@@ -137,8 +137,8 @@ class PostgresBruktSubsumsjonStoreTest {
     }
 
     private fun opprettKoblingTilEkstern(subsumsjonStore: PostgresSubsumsjonStore) {
-        subsumsjonStore.opprettKoblingTilEkstern(
-            EksternId(
+        subsumsjonStore.opprettKoblingTilRegelkontekst(
+            RegelKontekst(
                 bruktSubsumsjon.eksternId.toString(),
                 Kontekst.VEDTAK
             )
@@ -157,7 +157,7 @@ class PostgresBruktSubsumsjonStoreTest {
         satsResultat = emptyMap(),
         problem = Problem(title = "problem")
     )
-    val eksternId = EksternId(id = "1234", kontekst = Kontekst.VEDTAK)
+    val eksternId = RegelKontekst(id = "1234", type = Kontekst.VEDTAK)
     val bruktSubsumsjon =
         EksternSubsumsjonBrukt(
             id = subsumsjon.behovId.id,

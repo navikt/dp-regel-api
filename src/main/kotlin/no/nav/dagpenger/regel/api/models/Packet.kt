@@ -10,6 +10,8 @@ internal object PacketKeys {
     const val HAR_AVTJENT_VERNE_PLIKT = "harAvtjentVerneplikt"
     const val BEREGNINGS_DATO = "beregningsDato"
     const val VEDTAK_ID = "vedtakId"
+    const val KONTEKST_TYPE = "kontekstType"
+    const val KONTEKST_ID = "kontekstId"
     const val AKTØR_ID = "aktørId"
     const val BEHOV_ID = "behovId"
     const val GRUNNLAG_RESULTAT = "grunnlagResultat"
@@ -27,3 +29,9 @@ internal object PacketKeys {
 
 internal val Packet.behovId: BehovId
     get() = BehovId(this.getStringValue(PacketKeys.BEHOV_ID))
+
+internal val Packet.kontekst: Kontekst
+    get() = Kontekst.valueOf(this.getStringValue(PacketKeys.KONTEKST_TYPE))
+
+internal val Packet.kontekstId: String
+    get() = this.getStringValue(PacketKeys.KONTEKST_ID)

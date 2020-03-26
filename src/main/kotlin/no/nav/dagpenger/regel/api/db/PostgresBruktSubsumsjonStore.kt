@@ -6,7 +6,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.models.EksternId
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
@@ -54,8 +54,8 @@ class PostgresBruktSubsumsjonStore(
     }
 
     override fun eksternTilInternSubsumsjon(eksternSubsumsjonBrukt: EksternSubsumsjonBrukt): InternSubsumsjonBrukt {
-        val behandlingsId = subsumsjonStore.hentKoblingTilEkstern(
-            EksternId(
+        val behandlingsId = subsumsjonStore.hentKoblingTilRegelKontekst(
+            RegelKontekst(
                 eksternSubsumsjonBrukt.eksternId.toString(),
                 Kontekst.VEDTAK
             )

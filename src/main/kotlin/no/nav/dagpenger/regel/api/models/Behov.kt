@@ -8,6 +8,7 @@ import java.time.LocalDate
 private val ulidGenerator = ULID()
 
 data class Behov(
+    val regelkontekst: RegelKontekst? = null,
     val aktørId: String,
     val vedtakId: Int,
     val beregningsDato: LocalDate,
@@ -17,17 +18,7 @@ data class Behov(
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
     val inntektsId: String? = null
-) {
-    fun toJson() = toJson(this)
-
-    companion object Mapper {
-        private val adapter = moshiInstance.adapter(Behov::class.java)
-
-        fun toJson(internBehov: Behov): String = adapter.toJson(internBehov)
-
-        fun fromJson(json: String): Behov? = adapter.fromJson(json)
-    }
-}
+)
 
 data class InternBehov(
     val behovId: BehovId = BehovId(ulidGenerator.nextULID()),
@@ -55,9 +46,11 @@ data class InternBehov(
         fun toPacket(internBehov: InternBehov): Packet = Packet("{}").apply {
             this.putValue(PacketKeys.BEHOV_ID, internBehov.behovId.id)
             this.putValue(PacketKeys.AKTØR_ID, internBehov.aktørId)
-            when (internBehov.behandlingsId.eksternId.kontekst) {
-                Kontekst.VEDTAK -> this.putValue(PacketKeys.VEDTAK_ID, internBehov.behandlingsId.eksternId.id)
+            when (internBehov.behandlingsId.regelKontekst.type) {
+                Kontekst.VEDTAK -> this.putValue(PacketKeys.VEDTAK_ID, internBehov.behandlingsId.regelKontekst.id)
             }
+            this.putValue(PacketKeys.KONTEKST_ID, internBehov.behandlingsId.regelKontekst.id)
+            this.putValue(PacketKeys.KONTEKST_TYPE, internBehov.behandlingsId.regelKontekst.type.name)
             this.putValue(PacketKeys.BEHANDLINGSID, internBehov.behandlingsId.id)
             this.putValue(PacketKeys.BEREGNINGS_DATO, internBehov.beregningsDato)
             this.putValue(PacketKeys.KORONA_TOGGLE, internBehov.koronaToggle)

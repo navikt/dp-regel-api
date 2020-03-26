@@ -5,10 +5,12 @@ import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon.Mapper.subsumsjonFrom
 import no.nav.dagpenger.regel.api.models.behovId
+import no.nav.dagpenger.regel.api.models.kontekst
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -62,10 +64,11 @@ internal class PendingBehovStrategy(private val subsumsjonStore: SubsumsjonStore
         .getOrDefault(false)
 }
 
-internal class SuccessStrategy(private val delegate: PendingBehovStrategy) : SubsumsjonPacketStrategy {
+internal class SuccessStrategy(private val delegate: PendingBehovStrategy, private val requiredKontekst: Kontekst = Kontekst.VEDTAK) : SubsumsjonPacketStrategy {
     override fun handle(packet: Packet) = delegate.handle(packet)
 
-    override fun shouldHandle(packet: Packet): Boolean = !packet.hasProblem() && delegate.shouldHandle(packet)
+    override fun shouldHandle(packet: Packet): Boolean =
+        !packet.hasProblem() && packet.kontekst == requiredKontekst && delegate.shouldHandle(packet)
 }
 
 internal class CompleteResultStrategy(private val delegate: SuccessStrategy) : SubsumsjonPacketStrategy {

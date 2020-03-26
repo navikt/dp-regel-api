@@ -17,6 +17,7 @@ import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
@@ -91,7 +92,9 @@ internal class PendingBehovStrategyTest {
 internal class SuccessStrategyTest {
     @Test
     fun `Should delegate to PendingBehovStrategy if criterias are matched`() {
-        val packet = Packet()
+        val packet = Packet().apply {
+            this.putValue(PacketKeys.KONTEKST_TYPE, Kontekst.VEDTAK.name)
+        }
 
         val pendingBehovStrategy = mockk<PendingBehovStrategy>().apply {
             every { this@apply.handle(packet) } just Runs
@@ -107,11 +110,23 @@ internal class SuccessStrategyTest {
     }
 
     @Test
-    fun `Do nothing if criterias are not met`() {
+    fun `Do nothing if Packet has problem`() {
         val problemPacket = Packet().apply { addProblem(Problem(title = "problem")) }
         val pendingBehovStrategy = mockk<PendingBehovStrategy>()
 
         SuccessStrategy(pendingBehovStrategy).run(problemPacket)
+
+        verifyAll { pendingBehovStrategy wasNot Called }
+    }
+
+    @Test
+    fun `Stratgy should onle trigger for required context `() {
+        val packet = Packet().apply {
+            this.putValue(PacketKeys.KONTEKST_TYPE, Kontekst.CORONA)
+        }
+        val pendingBehovStrategy = mockk<PendingBehovStrategy>()
+
+        SuccessStrategy(pendingBehovStrategy, Kontekst.VEDTAK).run(packet)
 
         verifyAll { pendingBehovStrategy wasNot Called }
     }

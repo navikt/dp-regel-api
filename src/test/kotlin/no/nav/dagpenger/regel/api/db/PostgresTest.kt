@@ -118,7 +118,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
-                val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()), FakeUnleash())
+                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub)
                 behovStatus(internBehov.behovId) shouldBe Status.Done(sub.behovId)
@@ -130,7 +130,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Status of behov is pending if the behov exists but no subsumsjon for the behov exists `() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()), FakeUnleash())
+                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
                 behovStatus(internBehov.behovId) shouldBe Status.Pending
             }
         }
@@ -150,7 +150,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
-                val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()), FakeUnleash())
+                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
                 getSubsumsjon(BehovId(sub.behovId.id)) shouldBe sub
@@ -162,7 +162,7 @@ class PostgresSubsumsjonStoreTest {
     fun `Do nothing if a subsumsjon already exist`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()), FakeUnleash())
+                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
 
                 insertSubsumsjon(sub) shouldBe 1
@@ -197,7 +197,7 @@ class PostgresSubsumsjonStoreTest {
                 val satsId = ULID().nextULID()
                 val grunnlagId = ULID().nextULID()
                 val periodeId = ULID().nextULID()
-                val internBehov = opprettBehov(Behov("aktorid", 1, LocalDate.now()), FakeUnleash())
+                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
                 val subsumsjonWithResults = subsumsjon.copy(
                     behovId = internBehov.behovId,
                     minsteinntektResultat = mapOf("subsumsjonsId" to minsteinntektId),
@@ -222,8 +222,8 @@ class PostgresSubsumsjonStoreTest {
     fun `Should generate new intern id for ekstern id`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val eksternId = EksternId("1234", Kontekst.VEDTAK)
-                val behandlingsId: BehandlingsId = opprettKoblingTilEkstern(eksternId)
+                val eksternId = RegelKontekst("1234", Kontekst.VEDTAK)
+                val behandlingsId: BehandlingsId = opprettKoblingTilRegelkontekst(eksternId)
                 ULID.parseULID(behandlingsId.id)
             }
         }
@@ -233,9 +233,9 @@ class PostgresSubsumsjonStoreTest {
     fun `Should not generate new intern id for already existing ekstern id`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val eksternId = EksternId("1234", Kontekst.VEDTAK)
-                val behandlingsId1: BehandlingsId? = hentKoblingTilEkstern(eksternId)
-                val behandlingsId2: BehandlingsId? = hentKoblingTilEkstern(eksternId)
+                val eksternId = RegelKontekst("1234", Kontekst.VEDTAK)
+                val behandlingsId1: BehandlingsId? = hentKoblingTilRegelKontekst(eksternId)
+                val behandlingsId2: BehandlingsId? = hentKoblingTilRegelKontekst(eksternId)
                 behandlingsId1 shouldBe behandlingsId2
             }
         }

@@ -18,6 +18,7 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
@@ -62,6 +63,7 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
 private data class StatusResponse(val status: String)
 
 internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
+    regelkontekst = request.regelkontekst,
     aktørId = request.aktorId,
     vedtakId = request.vedtakId,
     beregningsDato = request.beregningsdato,
@@ -74,6 +76,7 @@ internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
 )
 
 internal data class BehovRequest(
+    val regelkontekst: RegelKontekst? = null,
     val aktorId: String,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
