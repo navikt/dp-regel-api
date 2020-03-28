@@ -13,6 +13,8 @@ import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.streams.KafkaCredential
 import no.nav.dagpenger.streams.Topic
 import no.nav.dagpenger.streams.Topics
+import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler
+import org.apache.kafka.streams.errors.LogAndFailExceptionHandler
 
 private val localProperties = ConfigurationMap(
     mapOf(
@@ -29,6 +31,7 @@ private val localProperties = ConfigurationMap(
         "auth.allowedKeys" to "secret1, secret2",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
         "unleash.url" to "https://localhost",
+        "kafka.deserialization.exception.handler" to LogAndFailExceptionHandler::class.java.name,
         "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
@@ -43,6 +46,7 @@ private val devProperties = ConfigurationMap(
         "application.httpPort" to "8092",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
         "unleash.url" to "https://unleash.nais.preprod.local/api/",
+        "kafka.deserialization.exception.handler" to LogAndContinueExceptionHandler::class.java.name,
         "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
@@ -57,6 +61,7 @@ private val prodProperties = ConfigurationMap(
         "application.httpPort" to "8092",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
         "unleash.url" to "https://unleash.nais.adeo.no/api/",
+        "kafka.deserialization.exception.handler" to LogAndFailExceptionHandler::class.java.name,
         "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
@@ -102,6 +107,7 @@ internal data class Configuration(
 
     data class Kafka(
         val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)],
+        val deserializationExceptionHandler: String = config()[Key("kafka.deserialization.exception.handler", stringType)],
         val user: String? = config().getOrNull(Key("srvdp.regel.api.username", stringType)),
         val password: String? = config().getOrNull(Key("srvdp.regel.api.password", stringType))
     ) {

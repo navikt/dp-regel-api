@@ -10,6 +10,7 @@ import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.kstream.Predicate
 import java.time.Duration
 
@@ -47,7 +48,10 @@ internal class KafkaSubsumsjonConsumer(
         appId = config.application.id,
         bootStapServerUrl = config.kafka.brokers,
         credential = config.kafka.credential()
-    )
+    ).apply {
+        this[StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG] =
+            config.kafka.deserializationExceptionHandler
+    }
 }
 
 internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacketStrategy>, private val config: Configuration) : Pond(config.behovTopic) {
