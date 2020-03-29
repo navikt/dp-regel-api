@@ -13,7 +13,7 @@ interface SubsumsjonStore {
         val internBehov = InternBehov.fromBehov(
             behov = behov,
             behandlingsId = behandlingsId,
-            koronaToggle = unleash.isEnabled("dp.korona", false)
+            koronaToggle = unleash.isEnabled("dp.korona", true)
         )
         insertBehov(internBehov)
         return internBehov
