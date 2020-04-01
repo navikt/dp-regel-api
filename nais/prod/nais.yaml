@@ -3,6 +3,13 @@ kind: "Application"
 metadata:
   name: dp-regel-api
 spec:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2024Mi
+    requests:
+      cpu: 800m
+      memory: 1024Mi
   ingresses:
     - "https://dp-regel-api.nais.adeo.no"
 
