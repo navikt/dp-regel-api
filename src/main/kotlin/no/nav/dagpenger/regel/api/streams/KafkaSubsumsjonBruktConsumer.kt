@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.streams
 
+import io.prometheus.client.Summary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,9 +24,15 @@ import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger { }
 
+private val summary: Summary = Summary.Builder()
+    .name("subsumsjon_brukt_consumer_timer")
+    .help("Tid brukt til å consumere  privat-dagpenger-subsumsjon-brukt topic")
+    .register()
+
 internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
     CoroutineScope {
-    val SERVICE_APP_ID = "dp-regel-api-sub-brukt"
+
+    const val SERVICE_APP_ID = "dp-regel-api-sub-brukt"
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
@@ -74,11 +81,16 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
                 try {
                     consumer.subscribe(listOf(config.subsumsjonBruktTopic))
                     while (job.isActive) {
+
                         val records = consumer.poll(Duration.ofMillis(100))
-                        bruktSubsumsjonStrategy.handle(
-                            records.asSequence()
-                                .map { r -> EksternSubsumsjonBrukt.fromJson(r.value()) }
-                                .filterNotNull())
+                        if (!records.isEmpty) {
+                            val timer = summary.startTimer()
+                            bruktSubsumsjonStrategy.handle(
+                                records.asSequence()
+                                    .map { r -> EksternSubsumsjonBrukt.fromJson(r.value()) }
+                                    .filterNotNull())
+                            logger.info { " Brukte  ${timer.observeDuration()} sekunder på ${records.count()} events" }
+                        }
                     }
                 } catch (e: Exception) {
                     when (e) {
