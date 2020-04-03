@@ -60,7 +60,7 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
         job.cancel()
     }
 
-    suspend fun listen() {
+    fun listen() {
         launch {
             val creds = config.kafka.user?.let { u ->
                 config.kafka.password?.let { p ->
