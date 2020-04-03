@@ -34,6 +34,16 @@ services:
     image: postgres:11
     ports:
       - "5432:5432"
+    volumes:
+      - ./src/main/resources/db/migration:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=dp-regel-api
+  psql:
+    image: postgres:11
+    command: psql
+    environment:
+      - PGHOST=postgres
+      - PGUSER=postgres
+      - PGPASSWORD=postgres
+      - PGDATABASE=dp-regel-api

@@ -25,7 +25,6 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
@@ -55,7 +54,7 @@ import kotlin.concurrent.fixedRateTimer
 
 private val MAINLOGGER = KotlinLogging.logger {}
 
-fun main() = runBlocking {
+fun main() {
     val config = Configuration()
 
     migrate(config)

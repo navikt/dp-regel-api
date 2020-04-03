@@ -71,7 +71,7 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
                 .get(5, TimeUnit.SECONDS)
             LOGGER.info("Producer produced $bruktSubsumsjon with meta $metaData")
             metaData.topic() shouldBe config.subsumsjonBruktTopic
-            Thread.sleep(200)
+            Thread.sleep(2000L)
 
             lagretTilDb.isCaptured shouldBe true
             markertSomBrukt.isCaptured shouldBe true

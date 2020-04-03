@@ -108,14 +108,15 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                         harAvtjentVerneplikt = row.boolean("avtjent_verne_plikt"),
                         oppfyllerKravTilFangstOgFisk = row.boolean("oppfyller_krav_til_fangst_og_fisk"),
 
-                        bruktInntektsPeriode = row.localDateOrNull("brukt_opptjening_forste_maned")?.toYearMonth()?.let { førsteMåned ->
-                            row.localDateOrNull("brukt_opptjening_siste_maned")?.toYearMonth()?.let { sisteMåned ->
-                                InntektsPeriode(
-                                    førsteMåned = førsteMåned,
-                                    sisteMåned = sisteMåned
-                                )
-                            }
-                        },
+                        bruktInntektsPeriode = row.localDateOrNull("brukt_opptjening_forste_maned")?.toYearMonth()
+                            ?.let { førsteMåned ->
+                                row.localDateOrNull("brukt_opptjening_siste_maned")?.toYearMonth()?.let { sisteMåned ->
+                                    InntektsPeriode(
+                                        førsteMåned = førsteMåned,
+                                        sisteMåned = sisteMåned
+                                    )
+                                }
+                            },
                         antallBarn = row.intOrNull("antall_barn"),
                         manueltGrunnlag = row.intOrNull("manuelt_grunnlag"),
                         inntektsId = row.stringOrNull("inntekts_id"),
@@ -199,13 +200,37 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         val json = using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    """ select
-                                                  data
-                                            from v2_subsumsjon
-                                            where data -> 'satsResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id """,
+                    """ select data
+                                    from v2_subsumsjon
+                                    where data -> 'satsResultat' ->> 'subsumsjonsId'::text = :id
+                                       OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
+                                       OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
+                                       OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id """,
+select data from v2_subsumsjon
+where data -> 'satsResultat' ->> 'subsumsjonsId' = '123'
+OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId' = '123'
+OR data -> 'grunnlagResultat' ->> 'subsumsjonsId' = '123'
+OR data -> 'periodeResultat' ->> 'subsumsjonsId' = '123'
+
+
+            CREATE INDEX iddxssginp ON v2_subsumsjon (
+                (data->'minsteInntektResultat' ->> 'subsumsjonsId'),
+            (data->'periodeResultat' ->> 'subsumsjonsId'),
+            (data->'satsResultat' ->> 'subsumsjonsId'),
+            (data->'grunnlagResultat' ->> 'subsumsjonsId')
+            );
+
+            CREATE INDEX dsiddoxssginp ON v2_subsumsjon using gin (
+                (data -> 'satsResultat' ->> 'subsumsjonsId' ),
+            (data -> 'minsteinntektResultat' ->> 'subsumsjonsId' ),
+            (data -> 'periodeResultat' ->> 'subsumsjonsId' ),
+            (data -> 'grunnlagResultat' ->> 'subsumsjonsId' )
+            )
+            select data from v2_subsumsjon
+                where data -> 'satsResultat' ->> 'subsumsjonsId' = '123'
+            OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId' = '123'
+            OR data -> 'periodeResultat' ->> 'subsumsjonsId' = '123'
+            OR data -> 'grunnlagResultat' ->> 'subsumsjonsId' = '123'
                     mapOf("id" to subsumsjonId.id)
                 )
                     .map { row -> row.string("data") }.asSingle
