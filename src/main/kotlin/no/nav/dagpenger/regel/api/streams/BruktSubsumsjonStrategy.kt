@@ -10,15 +10,15 @@ internal class BruktSubsumsjonStrategy(private val vaktmester: Vaktmester, priva
 
     fun handle(brukteSubsumsjoner: Sequence<EksternSubsumsjonBrukt>) {
         brukteSubsumsjoner
-            .onEach { b -> logger.info("Received $b ") }
             .filterNot { vedtak ->
                 "AVSLU" == vedtak.vedtakStatus && "AVBRUTT" == vedtak.utfall
             }
-            .onEach { b -> logger.info("Saving $b to database") }
             .forEach {
+                logger.info("Received $it ")
                 val internSubsumsjonBrukt = bruktSubsumsjonStore.eksternTilInternSubsumsjon(it)
                 bruktSubsumsjonStore.insertSubsumsjonBrukt(internSubsumsjonBrukt)
                 vaktmester.markerSomBrukt(internSubsumsjonBrukt)
+                logger.info("Saved $it to database")
             }
     }
 }
