@@ -3,11 +3,16 @@ package no.nav.dagpenger.regel.api.db
 import com.zaxxer.hikari.HikariDataSource
 import de.huxhorn.sulky.ulid.ULID
 import io.kotlintest.assertSoftly
+import io.kotlintest.matchers.string.shouldNotContain
+import io.kotlintest.matchers.withClue
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
+import kotliquery.queryOf
+import kotliquery.sessionOf
+import kotliquery.using
 import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
@@ -247,7 +252,34 @@ class PostgresSubsumsjonStoreTest {
         }
     }
 
-    private fun shouldBeTimed() {
+    @Test
+    fun `hits indexes for fetching results by subsumsjonsId`() {
+
+        val kjenteResultatNøkler =
+            setOf("satsResultat", "minsteinntektResultat", "periodeResultat", "grunnlagResultat")
+
+        withMigratedDb {
+            using(sessionOf(DataSource.instance)) { session ->
+                assertSoftly {
+                    kjenteResultatNøkler.forEach {
+                        session.run(
+                            queryOf(
+                                """EXPLAIN SELECT data FROM v2_subsumsjon
+                                            WHERE data->'$it' ->> 'subsumsjonsId' = 'id' """,
+                                emptyMap()
+                            ).map { r ->
+                                withClue("Seq scan for resultatnøkkel  '$it'") { r.string(1).shouldNotContain("Seq Scan") }
+
+                            }.asSingle
+                        )
+                    }
+                }
+
+            }
+        }
+    }
+
+        private fun shouldBeTimed() {
         CollectorRegistry.defaultRegistry.metricFamilySamples().asSequence().find { it.name == "subsumsjonstore_latency" }
             ?.let { metric ->
                 metric.samples[0].name shouldNotBe null
