@@ -159,6 +159,10 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
+    override fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt)  = withTimer<Unit>("markerSomBrukt") {
+        return resultatNøkler.forEach { markerSomBrukt(it, internSubsumsjonBrukt) }
+    }
+
     override fun behovStatus(behovId: BehovId): Status = withTimer<Status>("behovStatus") {
         return when (behovExists(behovId)) {
             true -> getBehovIdBy(behovId)?.let { Status.Done(it) } ?: Status.Pending
@@ -228,6 +232,18 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
+    private fun markerSomBrukt(resultatNøkkel: String, internSubsumsjonBrukt: InternSubsumsjonBrukt) {
+        using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    """
+                        UPDATE v2_subsumsjon SET brukt = true WHERE data -> '$resultatNøkkel' ->> 'subsumsjonsId'::text = :id
+                    """.trimMargin(), mapOf("id" to internSubsumsjonBrukt.id)
+                ).asUpdate
+            )
+        }
+    }
+
     private fun behovExists(behovId: BehovId): Boolean = withTimer<Boolean>("behovExists") {
         try {
             return using(sessionOf(dataSource)) { session ->
@@ -260,7 +276,11 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
 
     private inline fun <reified R : Any?> withTimer(metric: String, block: () -> R): R {
         val timer = subsumsjonStoreLatency.labels(metric).startTimer()
-        return block().also { timer.observeDuration() }
+        try {
+            return block()
+        } finally {
+            timer.observeDuration()
+        }
     }
 }
 

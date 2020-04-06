@@ -18,6 +18,7 @@ import io.mockk.slot
 
 import io.mockk.verifyAll
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
+import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
@@ -206,6 +207,10 @@ class BehovRouteTest {
             }
 
             override fun delete(subsumsjon: Subsumsjon) {
+                TODO("not implemented")
+            }
+
+            override fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt) {
                 TODO("not implemented")
             }
 
