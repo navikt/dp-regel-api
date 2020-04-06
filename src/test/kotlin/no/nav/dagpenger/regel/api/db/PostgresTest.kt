@@ -3,8 +3,6 @@ package no.nav.dagpenger.regel.api.db
 import com.zaxxer.hikari.HikariDataSource
 import de.huxhorn.sulky.ulid.ULID
 import io.kotlintest.assertSoftly
-import io.kotlintest.matchers.collections.shouldContain
-import io.kotlintest.matchers.doubles.shouldBeGreaterThan
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
@@ -237,18 +235,14 @@ class PostgresSubsumsjonStoreTest {
 
                 insertSubsumsjon(subsumsjonWithResults) shouldBe 1
 
-
-
                 assertSoftly {
                     getSubsumsjonByResult(SubsumsjonId(minsteinntektId)) shouldBe subsumsjonWithResults
                     getSubsumsjonByResult(SubsumsjonId(grunnlagId)) shouldBe subsumsjonWithResults
                     getSubsumsjonByResult(SubsumsjonId(satsId)) shouldBe subsumsjonWithResults
                     getSubsumsjonByResult(SubsumsjonId(periodeId)) shouldBe subsumsjonWithResults
 
-                    shouldBeTimed("getSubsumsjonByResult")
+                    shouldBeTimed()
                 }
-
-
             }
         }
     }
@@ -259,7 +253,6 @@ class PostgresSubsumsjonStoreTest {
                 metric.samples[0].name shouldNotBe null
             }
     }
-
 
     @Test
     fun ` Should throw not found exception if we not are able to get subsumsjon based on specific subsumsjon result id`() {

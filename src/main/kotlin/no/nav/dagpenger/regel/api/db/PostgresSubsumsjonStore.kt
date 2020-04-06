@@ -159,7 +159,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt)  = withTimer<Unit>("markerSomBrukt") {
+    override fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt) = withTimer<Unit>("markerSomBrukt") {
         return resultatNøkler.forEach { markerSomBrukt(it, internSubsumsjonBrukt) }
     }
 
