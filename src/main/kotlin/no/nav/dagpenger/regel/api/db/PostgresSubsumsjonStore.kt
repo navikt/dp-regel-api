@@ -168,7 +168,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                     transaction.run(
                         queryOf(
                             """
-                                UPDATE v2_subsumsjon SET brukt = true WHERE data -> '$resultatNøkkel' ->> 'subsumsjonsId'::text = :id
+                                UPDATE v2_subsumsjon SET brukt = true WHERE data -> '$resultatNøkkel' ->> 'subsumsjonsId' = :id
                             """.trimMargin(), mapOf("id" to internSubsumsjonBrukt.id)
                         ).asUpdate
                     )
@@ -241,7 +241,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                     """ select
                                                   data
                                             from v2_subsumsjon
-                                            where data -> '$resultatNøkkel' ->> 'subsumsjonsId'::text = :id""",
+                                            where data -> '$resultatNøkkel' ->> 'subsumsjonsId' = :id""",
                     mapOf("id" to subsumsjonId.id)
                 )
                     .map { row -> row.string("data") }.asSingle
