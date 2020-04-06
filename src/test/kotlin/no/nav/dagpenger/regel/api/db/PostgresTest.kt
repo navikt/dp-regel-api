@@ -269,18 +269,17 @@ class PostgresSubsumsjonStoreTest {
                                 emptyMap()
                             ).map { r ->
                                 withClue("Seq scan for resultatnøkkel  '$it'") { r.string(1).shouldNotContain("Seq Scan") }
-
                             }.asSingle
                         )
                     }
                 }
-
             }
         }
     }
 
-        private fun shouldBeTimed() {
-        CollectorRegistry.defaultRegistry.metricFamilySamples().asSequence().find { it.name == "subsumsjonstore_latency" }
+    private fun shouldBeTimed() {
+        CollectorRegistry.defaultRegistry.metricFamilySamples().asSequence()
+            .find { it.name == "subsumsjonstore_latency" }
             ?.let { metric ->
                 metric.samples[0].name shouldNotBe null
             }
