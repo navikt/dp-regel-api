@@ -9,9 +9,19 @@ import io.mockk.mockk
 import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
-import no.nav.dagpenger.regel.api.models.*
+import no.nav.dagpenger.regel.api.models.BehandlingsId
+import no.nav.dagpenger.regel.api.models.Behov
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.Faktum
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
+import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
 import java.time.YearMonth
@@ -118,7 +128,10 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
-                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
+                val internBehov = opprettBehov(
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
+                    FakeUnleash()
+                )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub)
                 behovStatus(internBehov.behovId) shouldBe Status.Done(sub.behovId)
@@ -130,7 +143,10 @@ class PostgresSubsumsjonStoreTest {
     fun `Status of behov is pending if the behov exists but no subsumsjon for the behov exists `() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
+                val internBehov = opprettBehov(
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
+                    FakeUnleash()
+                )
                 behovStatus(internBehov.behovId) shouldBe Status.Pending
             }
         }
@@ -150,7 +166,10 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
-                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
+                val internBehov = opprettBehov(
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
+                    FakeUnleash()
+                )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
                 getSubsumsjon(BehovId(sub.behovId.id)) shouldBe sub
@@ -162,7 +181,10 @@ class PostgresSubsumsjonStoreTest {
     fun `Do nothing if a subsumsjon already exist`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
+                val internBehov = opprettBehov(
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
+                    FakeUnleash()
+                )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
 
                 insertSubsumsjon(sub) shouldBe 1
@@ -197,7 +219,10 @@ class PostgresSubsumsjonStoreTest {
                 val satsId = ULID().nextULID()
                 val grunnlagId = ULID().nextULID()
                 val periodeId = ULID().nextULID()
-                val internBehov = opprettBehov(Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()), FakeUnleash())
+                val internBehov = opprettBehov(
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
+                    FakeUnleash()
+                )
                 val subsumsjonWithResults = subsumsjon.copy(
                     behovId = internBehov.behovId,
                     minsteinntektResultat = mapOf("subsumsjonsId" to minsteinntektId),
@@ -214,6 +239,29 @@ class PostgresSubsumsjonStoreTest {
                     getSubsumsjonByResult(SubsumsjonId(satsId)) shouldBe subsumsjonWithResults
                     getSubsumsjonByResult(SubsumsjonId(periodeId)) shouldBe subsumsjonWithResults
                 }
+            }
+        }
+    }
+
+    @Test
+    fun ` Should throw not found exception if we not are able to get subsumsjon based on specific subsumsjon result id`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                val internBehov = opprettBehov(
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
+                    FakeUnleash()
+                )
+                val subsumsjonWithResults = subsumsjon.copy(
+                    behovId = internBehov.behovId,
+                    minsteinntektResultat = mapOf("subsumsjonsId" to ULID().nextULID()),
+                    satsResultat = mapOf("subsumsjonsId" to ULID().nextULID()),
+                    grunnlagResultat = mapOf("subsumsjonsId" to ULID().nextULID()),
+                    periodeResultat = mapOf("subsumsjonsId" to ULID().nextULID())
+                )
+
+                insertSubsumsjon(subsumsjonWithResults) shouldBe 1
+
+                assertThrows<SubsumsjonNotFoundException> { getSubsumsjonByResult(SubsumsjonId(ULID().nextULID())) }
             }
         }
     }

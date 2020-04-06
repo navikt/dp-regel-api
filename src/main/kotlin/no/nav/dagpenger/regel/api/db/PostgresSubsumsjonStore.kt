@@ -6,10 +6,10 @@ import kotliquery.using
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.BehovId
-import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
@@ -26,6 +26,12 @@ import javax.sql.DataSource
 private val LOGGER = KotlinLogging.logger {}
 
 internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonStore, HealthCheck {
+
+    companion object {
+
+        val resultatNøkler =
+            setOf<String>("satsResultat", "minsteinntektResultat", "periodeResultat", "grunnlagResultat")
+    }
 
     override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId? {
         val id: String? = using(sessionOf(dataSource)) { session ->
@@ -196,23 +202,24 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
     }
 
     override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
-        val json = using(sessionOf(dataSource)) { session ->
+        return resultatNøkler.mapNotNull { getSubsumsjonByResult(it, subsumsjonId) }.map {
+                Subsumsjon.fromJson(it)
+            }.firstOrNull() ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
+    }
+
+    private fun getSubsumsjonByResult(resultatNøkkel: String, subsumsjonId: SubsumsjonId): String? {
+        return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """ select
                                                   data
                                             from v2_subsumsjon
-                                            where data -> 'satsResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id """,
+                                            where data -> '$resultatNøkkel' ->> 'subsumsjonsId'::text = :id""",
                     mapOf("id" to subsumsjonId.id)
                 )
                     .map { row -> row.string("data") }.asSingle
             )
-        } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
-
-        return Subsumsjon.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")
+        }
     }
 
     private fun behovExists(behovId: BehovId): Boolean {
