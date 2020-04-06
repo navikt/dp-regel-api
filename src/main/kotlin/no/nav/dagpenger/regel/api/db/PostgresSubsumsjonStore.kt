@@ -1,15 +1,16 @@
 package no.nav.dagpenger.regel.api.db
 
+import io.prometheus.client.Histogram
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.BehovId
-import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
@@ -19,15 +20,26 @@ import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
 import java.time.LocalDate
+
 import java.time.YearMonth
 import java.time.ZonedDateTime
 import javax.sql.DataSource
 
 private val LOGGER = KotlinLogging.logger {}
 
+private val subsumsjonStoreLatency: Histogram = Histogram.build()
+    .name("subsumsjonstore_latency")
+    .labelNames("method")
+    .help("Subsumsjonstore latency in seconds.").register()
+
 internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonStore, HealthCheck {
 
-    override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId? {
+    companion object {
+        private val resultatNøkler =
+            setOf<String>("satsResultat", "minsteinntektResultat", "periodeResultat", "grunnlagResultat")
+    }
+
+    override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId? = withTimer<BehandlingsId?>("hentKoblingTilRegelKontekst") {
         val id: String? = using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
@@ -41,7 +53,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         return id?.let { BehandlingsId(it, regelKontekst) }
     }
 
-    override fun opprettKoblingTilRegelkontekst(regelKontekst: RegelKontekst): BehandlingsId {
+    override fun opprettKoblingTilRegelkontekst(regelKontekst: RegelKontekst): BehandlingsId = withTimer<BehandlingsId>("opprettKoblingTilRegelkontekst") {
         val behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(regelKontekst)
         using(sessionOf(dataSource)) { session ->
             session.run(
@@ -58,7 +70,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         return behandlingsId
     }
 
-    override fun insertBehov(behov: InternBehov): Int {
+    override fun insertBehov(behov: InternBehov): Int = withTimer<Int>("insertBehov") {
         return try {
             using(sessionOf(dataSource)) { session ->
                 session.transaction { tx ->
@@ -93,7 +105,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun getBehov(behovId: BehovId): InternBehov {
+    override fun getBehov(behovId: BehovId): InternBehov = withTimer<InternBehov>("getBehov") {
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
@@ -130,7 +142,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         } ?: throw BehovNotFoundException("BehovId: $behovId")
     }
 
-    override fun delete(subsumsjon: Subsumsjon) {
+    override fun delete(subsumsjon: Subsumsjon) = withTimer<Unit>("delete") {
         using(sessionOf(dataSource)) { session ->
             session.transaction { tx ->
                 tx.run(
@@ -147,14 +159,14 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun behovStatus(behovId: BehovId): Status {
+    override fun behovStatus(behovId: BehovId): Status = withTimer<Status>("behovStatus") {
         return when (behovExists(behovId)) {
             true -> getBehovIdBy(behovId)?.let { Status.Done(it) } ?: Status.Pending
             false -> throw BehovNotFoundException("BehovId: $behovId")
         }
     }
 
-    override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int {
+    override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int = withTimer<Int>("insertSubsumsjon") {
         return try {
             using(sessionOf(dataSource)) { session ->
                 session.run(
@@ -176,7 +188,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun getSubsumsjon(behovId: BehovId): Subsumsjon {
+    override fun getSubsumsjon(behovId: BehovId): Subsumsjon = withTimer<Subsumsjon>("getSubsumsjon") {
         val json = using(sessionOf(dataSource)) { session ->
             session.run(queryOf(""" SELECT data FROM v2_subsumsjon WHERE behov_id = ? """, behovId.id)
                 .map { row -> row.string("data") }
@@ -195,27 +207,28 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
-        val json = using(sessionOf(dataSource)) { session ->
+    override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon = withTimer<Subsumsjon>("getSubsumsjonByResult") {
+        return resultatNøkler.mapNotNull { getSubsumsjonByResult(it, subsumsjonId) }.map {
+                Subsumsjon.fromJson(it)
+            }.firstOrNull() ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
+    }
+
+    private fun getSubsumsjonByResult(resultatNøkkel: String, subsumsjonId: SubsumsjonId): String? {
+        return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """ select
                                                   data
                                             from v2_subsumsjon
-                                            where data -> 'satsResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
-                                               OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id """,
+                                            where data -> '$resultatNøkkel' ->> 'subsumsjonsId'::text = :id""",
                     mapOf("id" to subsumsjonId.id)
                 )
                     .map { row -> row.string("data") }.asSingle
             )
-        } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
-
-        return Subsumsjon.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")
+        }
     }
 
-    private fun behovExists(behovId: BehovId): Boolean {
+    private fun behovExists(behovId: BehovId): Boolean = withTimer<Boolean>("behovExists") {
         try {
             return using(sessionOf(dataSource)) { session ->
                 session.run(
@@ -243,6 +256,11 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)
         }
+    }
+
+    private inline fun <reified R : Any?> withTimer(metric: String, block: () -> R): R {
+        val timer = subsumsjonStoreLatency.labels(metric).startTimer()
+        return block().also { timer.observeDuration() }
     }
 }
 
