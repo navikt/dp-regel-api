@@ -159,6 +159,10 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
+    override fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt)  = withTimer<Unit>("markerSomBrukt") {
+        return resultatNøkler.forEach { markerSomBrukt(it, internSubsumsjonBrukt) }
+    }
+
     override fun behovStatus(behovId: BehovId): Status = withTimer<Status>("behovStatus") {
         return when (behovExists(behovId)) {
             true -> getBehovIdBy(behovId)?.let { Status.Done(it) } ?: Status.Pending
@@ -224,6 +228,18 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                     mapOf("id" to subsumsjonId.id)
                 )
                     .map { row -> row.string("data") }.asSingle
+            )
+        }
+    }
+
+    private fun markerSomBrukt(resultatNøkkel: String, internSubsumsjonBrukt: InternSubsumsjonBrukt) {
+        using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    """
+                        UPDATE v2_subsumsjon SET brukt = true WHERE data -> '$resultatNøkkel' ->> 'subsumsjonsId'::text = :id
+                    """.trimMargin(), mapOf("id" to internSubsumsjonBrukt.id)
+                ).asUpdate
             )
         }
     }
