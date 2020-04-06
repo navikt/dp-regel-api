@@ -2,6 +2,7 @@ package no.nav.dagpenger.regel.api
 
 import io.kotlintest.shouldBe
 import no.finn.unleash.FakeUnleash
+import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.routing.BehovRequest
@@ -22,6 +23,10 @@ class KoronaBehovToggleTest {
         }
 
         override fun delete(subsumsjon: Subsumsjon) {
+            TODO("not implemented")
+        }
+
+        override fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt) {
             TODO("not implemented")
         }
 

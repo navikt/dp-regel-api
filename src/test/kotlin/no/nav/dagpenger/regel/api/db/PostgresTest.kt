@@ -4,8 +4,10 @@ import com.zaxxer.hikari.HikariDataSource
 import de.huxhorn.sulky.ulid.ULID
 import io.kotlintest.assertSoftly
 import io.kotlintest.shouldBe
+import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
 import io.mockk.mockk
+import io.prometheus.client.CollectorRegistry
 import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
@@ -238,9 +240,18 @@ class PostgresSubsumsjonStoreTest {
                     getSubsumsjonByResult(SubsumsjonId(grunnlagId)) shouldBe subsumsjonWithResults
                     getSubsumsjonByResult(SubsumsjonId(satsId)) shouldBe subsumsjonWithResults
                     getSubsumsjonByResult(SubsumsjonId(periodeId)) shouldBe subsumsjonWithResults
+
+                    shouldBeTimed()
                 }
             }
         }
+    }
+
+    private fun shouldBeTimed() {
+        CollectorRegistry.defaultRegistry.metricFamilySamples().asSequence().find { it.name == "subsumsjonstore_latency" }
+            ?.let { metric ->
+                metric.samples[0].name shouldNotBe null
+            }
     }
 
     @Test

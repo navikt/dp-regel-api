@@ -39,36 +39,38 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
             setOf<String>("satsResultat", "minsteinntektResultat", "periodeResultat", "grunnlagResultat")
     }
 
-    override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId? = withTimer<BehandlingsId?>("hentKoblingTilRegelKontekst") {
-        val id: String? = using(sessionOf(dataSource)) { session ->
-            session.run(
-                queryOf(
-                    "SELECT id FROM v1_behov_behandling_mapping WHERE kontekst = :kontekst AND ekstern_id = :ekstern_id",
-                    mapOf("kontekst" to regelKontekst.type.name, "ekstern_id" to regelKontekst.id)
-                ).map { row ->
-                    row.string("id")
-                }.asSingle
-            )
+    override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId? =
+        withTimer<BehandlingsId?>("hentKoblingTilRegelKontekst") {
+            val id: String? = using(sessionOf(dataSource)) { session ->
+                session.run(
+                    queryOf(
+                        "SELECT id FROM v1_behov_behandling_mapping WHERE kontekst = :kontekst AND ekstern_id = :ekstern_id",
+                        mapOf("kontekst" to regelKontekst.type.name, "ekstern_id" to regelKontekst.id)
+                    ).map { row ->
+                        row.string("id")
+                    }.asSingle
+                )
+            }
+            return id?.let { BehandlingsId(it, regelKontekst) }
         }
-        return id?.let { BehandlingsId(it, regelKontekst) }
-    }
 
-    override fun opprettKoblingTilRegelkontekst(regelKontekst: RegelKontekst): BehandlingsId = withTimer<BehandlingsId>("opprettKoblingTilRegelkontekst") {
-        val behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(regelKontekst)
-        using(sessionOf(dataSource)) { session ->
-            session.run(
-                queryOf(
-                    "INSERT INTO v1_behov_behandling_mapping(id, ekstern_id, kontekst) VALUES (:id, :ekstern_id, :kontekst)",
-                    mapOf(
-                        "id" to behandlingsId.id,
-                        "ekstern_id" to behandlingsId.regelKontekst.id,
-                        "kontekst" to behandlingsId.regelKontekst.type.name
-                    )
-                ).asUpdate
-            )
+    override fun opprettKoblingTilRegelkontekst(regelKontekst: RegelKontekst): BehandlingsId =
+        withTimer<BehandlingsId>("opprettKoblingTilRegelkontekst") {
+            val behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(regelKontekst)
+            using(sessionOf(dataSource)) { session ->
+                session.run(
+                    queryOf(
+                        "INSERT INTO v1_behov_behandling_mapping(id, ekstern_id, kontekst) VALUES (:id, :ekstern_id, :kontekst)",
+                        mapOf(
+                            "id" to behandlingsId.id,
+                            "ekstern_id" to behandlingsId.regelKontekst.id,
+                            "kontekst" to behandlingsId.regelKontekst.type.name
+                        )
+                    ).asUpdate
+                )
+            }
+            return behandlingsId
         }
-        return behandlingsId
-    }
 
     override fun insertBehov(behov: InternBehov): Int = withTimer<Int>("insertBehov") {
         return try {
@@ -159,6 +161,22 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
+    override fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt) = withTimer("markerSomBrukt") {
+        using(sessionOf(dataSource)) { session ->
+            session.transaction { transaction ->
+                resultatNøkler.forEach { resultatNøkkel ->
+                    transaction.run(
+                        queryOf(
+                            """
+                                UPDATE v2_subsumsjon SET brukt = true WHERE data -> '$resultatNøkkel' ->> 'subsumsjonsId'::text = :id
+                            """.trimMargin(), mapOf("id" to internSubsumsjonBrukt.id)
+                        ).asUpdate
+                    )
+                }
+            }
+        }
+    }
+
     override fun behovStatus(behovId: BehovId): Status = withTimer<Status>("behovStatus") {
         return when (behovExists(behovId)) {
             true -> getBehovIdBy(behovId)?.let { Status.Done(it) } ?: Status.Pending
@@ -166,27 +184,28 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int = withTimer<Int>("insertSubsumsjon") {
-        return try {
-            using(sessionOf(dataSource)) { session ->
-                session.run(
-                    queryOf(
-                        """ INSERT INTO v2_subsumsjon VALUES (:behovId, :data, :created) ON CONFLICT ON CONSTRAINT v2_subsumsjon_pkey DO NOTHING """,
-                        mapOf(
-                            "behovId" to subsumsjon.behovId.id,
-                            "created" to created,
-                            "data" to PGobject().apply {
-                                type = "jsonb"
-                                value = subsumsjon.toJson()
-                            }
-                        )
-                    ).asUpdate
-                )
+    override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int =
+        withTimer<Int>("insertSubsumsjon") {
+            return try {
+                using(sessionOf(dataSource)) { session ->
+                    session.run(
+                        queryOf(
+                            """ INSERT INTO v2_subsumsjon VALUES (:behovId, :data, :created) ON CONFLICT ON CONSTRAINT v2_subsumsjon_pkey DO NOTHING """,
+                            mapOf(
+                                "behovId" to subsumsjon.behovId.id,
+                                "created" to created,
+                                "data" to PGobject().apply {
+                                    type = "jsonb"
+                                    value = subsumsjon.toJson()
+                                }
+                            )
+                        ).asUpdate
+                    )
+                }
+            } catch (p: PSQLException) {
+                throw StoreException(p.message!!)
             }
-        } catch (p: PSQLException) {
-            throw StoreException(p.message!!)
         }
-    }
 
     override fun getSubsumsjon(behovId: BehovId): Subsumsjon = withTimer<Subsumsjon>("getSubsumsjon") {
         val json = using(sessionOf(dataSource)) { session ->
@@ -207,11 +226,13 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         }
     }
 
-    override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon = withTimer<Subsumsjon>("getSubsumsjonByResult") {
-        return resultatNøkler.mapNotNull { getSubsumsjonByResult(it, subsumsjonId) }.map {
+    override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon =
+        withTimer<Subsumsjon>("getSubsumsjonByResult") {
+            return resultatNøkler.mapNotNull { getSubsumsjonByResult(it, subsumsjonId) }.map {
                 Subsumsjon.fromJson(it)
-            }.firstOrNull() ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
-    }
+            }.firstOrNull()
+                ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
+        }
 
     private fun getSubsumsjonByResult(resultatNøkkel: String, subsumsjonId: SubsumsjonId): String? {
         return using(sessionOf(dataSource)) { session ->
@@ -260,7 +281,11 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
 
     private inline fun <reified R : Any?> withTimer(metric: String, block: () -> R): R {
         val timer = subsumsjonStoreLatency.labels(metric).startTimer()
-        return block().also { timer.observeDuration() }
+        try {
+            return block()
+        } finally {
+            timer.observeDuration()
+        }
     }
 }
 
