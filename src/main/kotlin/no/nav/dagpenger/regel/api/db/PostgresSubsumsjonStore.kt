@@ -276,7 +276,11 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
 
     private inline fun <reified R : Any?> withTimer(metric: String, block: () -> R): R {
         val timer = subsumsjonStoreLatency.labels(metric).startTimer()
-        return block().also { timer.observeDuration() }
+        try {
+            return block()
+        } finally {
+            timer.observeDuration()
+        }
     }
 }
 
