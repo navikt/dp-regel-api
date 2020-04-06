@@ -53,6 +53,17 @@ class Vaktmester(
     }
 
     fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt) {
-        subsumsjonStore.markerSomBrukt(internSubsumsjonBrukt)
+        using(sessionOf(dataSource)) { session ->
+            session.run(
+                queryOf(
+                    """
+                        UPDATE v2_subsumsjon SET brukt = true WHERE data -> 'satsResultat' ->> 'subsumsjonsId'::text = :id
+                                                        OR data -> 'minsteinntektResultat' ->> 'subsumsjonsId'::text = :id
+                                                        OR data -> 'periodeResultat' ->> 'subsumsjonsId'::text = :id
+                                                        OR data -> 'grunnlagResultat' ->> 'subsumsjonsId'::text = :id
+                    """.trimMargin(), mapOf("id" to internSubsumsjonBrukt.id)
+                ).asUpdate
+            )
+        }
     }
 }

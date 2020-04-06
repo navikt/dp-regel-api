@@ -28,7 +28,6 @@ interface SubsumsjonStore {
     fun getSubsumsjon(behovId: BehovId): Subsumsjon
     fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon
     fun delete(subsumsjon: Subsumsjon)
-    fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt)
 }
 
 internal class SubsumsjonNotFoundException(override val message: String) : RuntimeException(message)
