@@ -24,6 +24,7 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
+import kotlinx.coroutines.cancel
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
@@ -43,6 +44,7 @@ import no.nav.dagpenger.regel.api.routing.naischecks
 import no.nav.dagpenger.regel.api.routing.subsumsjon
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
+import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer
 import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonConsumer
 import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
 import no.nav.dagpenger.regel.api.streams.producerConfig
@@ -76,6 +78,14 @@ fun main() {
             it.start()
         }
 
+    val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer.apply {
+        create(
+            config = config,
+            bruktSubsumsjonStore = bruktSubsumsjonStore,
+            vaktmester = vaktmester
+        )
+        listen()
+    }
     val kafkaProducer = KafkaDagpengerBehovProducer(
         producerConfig(
             config.application.id,
@@ -98,7 +108,8 @@ fun main() {
                 subsumsjonStore as HealthCheck,
                 bruktSubsumsjonStore as HealthCheck,
                 kafkaConsumer as HealthCheck,
-                kafkaProducer as HealthCheck
+                kafkaProducer as HealthCheck,
+                bruktSubsumsjonConsumer as HealthCheck
             )
         )
     }.also {
@@ -107,6 +118,7 @@ fun main() {
 
     Runtime.getRuntime().addShutdownHook(Thread {
         kafkaConsumer.stop()
+        bruktSubsumsjonConsumer.cancel()
         app.stop(10, 60, TimeUnit.SECONDS)
     })
 }
@@ -132,8 +144,8 @@ internal fun Application.api(
 
         filter { call ->
             !call.request.path().startsWith("/isAlive") &&
-                !call.request.path().startsWith("/isReady") &&
-                !call.request.path().startsWith("/metrics")
+                    !call.request.path().startsWith("/isReady") &&
+                    !call.request.path().startsWith("/metrics")
         }
     }
 
