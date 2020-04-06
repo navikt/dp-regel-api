@@ -31,7 +31,7 @@ internal fun dataSourceFrom(config: Configuration): HikariDataSource = when (con
 internal fun hikariConfigFrom(config: Configuration) =
     HikariConfig().apply {
         jdbcUrl = "jdbc:postgresql://${config.database.host}:${config.database.port}/${config.database.name}"
-        maximumPoolSize = 3
+        maximumPoolSize = 5
         minimumIdle = 1
         idleTimeout = 10001
         connectionTimeout = 1000
