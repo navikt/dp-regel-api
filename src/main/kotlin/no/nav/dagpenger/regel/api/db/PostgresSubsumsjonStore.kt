@@ -28,8 +28,7 @@ private val LOGGER = KotlinLogging.logger {}
 internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonStore, HealthCheck {
 
     companion object {
-
-        val resultatNøkler =
+        private val resultatNøkler =
             setOf<String>("satsResultat", "minsteinntektResultat", "periodeResultat", "grunnlagResultat")
     }
 
