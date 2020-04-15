@@ -258,7 +258,7 @@ internal class BehovRequestMappingTest {
             oppfyllerKravTilFangstOgFisk = null,
             bruktInntektsPeriode = null,
             manueltGrunnlag = null,
-                sikringsordningLærling = null,
+            sikringsordningLærling = null,
             antallBarn = null
         ))
         behov.antallBarn shouldBe 0
@@ -274,6 +274,7 @@ internal class BehovRequestMappingTest {
             oppfyllerKravTilFangstOgFisk = null,
             bruktInntektsPeriode = null,
             manueltGrunnlag = null,
+            sikringsordningLærling = null,
             antallBarn = null
         ))
         behov.inntektsId shouldBe null

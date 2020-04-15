@@ -62,6 +62,7 @@ data class InternBehov(
             internBehov.antallBarn?.let { this.putValue(PacketKeys.ANTALL_BARN, it) }
             internBehov.manueltGrunnlag?.let { this.putValue(PacketKeys.MANUELT_GRUNNLAG, it) }
             internBehov.inntektsId?.let { this.putValue(PacketKeys.INNTEKTS_ID, it) }
+            internBehov.sikringsordningLærling?.let { this.putValue(PacketKeys.SIKRINGSORDNING_LÆRLING, it) }
         }
 
         fun fromBehov(behov: Behov, behandlingsId: BehandlingsId, koronaToggle: Boolean = false): InternBehov {
@@ -75,6 +76,7 @@ data class InternBehov(
                 bruktInntektsPeriode = behov.bruktInntektsPeriode,
                 antallBarn = behov.antallBarn,
                 inntektsId = behov.inntektsId,
+                sikringsordningLærling = behov.sikringsordningLærling,
                 koronaToggle = koronaToggle
             )
         }
