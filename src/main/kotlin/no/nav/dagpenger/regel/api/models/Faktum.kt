@@ -14,6 +14,7 @@ data class Faktum(
     val oppfyllerKravTilFangstOgFisk: Boolean? = null,
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
+    val lærling: Boolean? = null,
     val bruktInntektsPeriode: InntektsPeriode? = null
 ) {
     companion object Mapper {
@@ -30,6 +31,7 @@ data class Faktum(
                 oppfyllerKravTilFangstOgFisk = packet.getNullableBoolean(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK),
                 antallBarn = packet.getNullableIntValue(PacketKeys.ANTALL_BARN),
                 manueltGrunnlag = packet.getNullableIntValue(PacketKeys.MANUELT_GRUNNLAG),
+                lærling = packet.getNullableBoolean(PacketKeys.LÆRLING),
                 bruktInntektsPeriode = InntektsPeriode.fromPacket(packet)
             )
         }

@@ -9,7 +9,7 @@ class InternBehovTest {
 
     @Test
     fun `Mapping from BehovV2 to Packet with all fields`() {
-        val behov = InternBehov(BehovId("01DSFVQ4NQQ64SNT4Z16TJXXE7"), "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1234", Kontekst.VEDTAK)), LocalDate.now(), true, true, InntektsPeriode(YearMonth.now(), YearMonth.now()), 1, 1)
+        val behov = InternBehov(BehovId("01DSFVQ4NQQ64SNT4Z16TJXXE7"), "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1234", Kontekst.VEDTAK)), LocalDate.now(), true, true, InntektsPeriode(YearMonth.now(), YearMonth.now()), 1, 1, lærling = false)
         val packet = InternBehov.toPacket(behov)
 
         packet.getStringValue(PacketKeys.BEHOV_ID) shouldBe behov.behovId.id
@@ -24,6 +24,7 @@ class InternBehovTest {
         InntektsPeriode.fromPacket(packet) shouldBe behov.bruktInntektsPeriode
         packet.getIntValue(PacketKeys.ANTALL_BARN) shouldBe behov.antallBarn
         packet.getIntValue(PacketKeys.MANUELT_GRUNNLAG) shouldBe behov.manueltGrunnlag
+        packet.getBoolean(PacketKeys.LÆRLING) shouldBe behov.lærling
     }
 
     @Test
@@ -36,5 +37,6 @@ class InternBehovTest {
         InntektsPeriode.fromPacket(packet) shouldBe behov.bruktInntektsPeriode
         packet.getNullableIntValue(PacketKeys.ANTALL_BARN) shouldBe null
         packet.getNullableIntValue(PacketKeys.MANUELT_GRUNNLAG) shouldBe null
+        packet.getNullableBoolean(PacketKeys.LÆRLING) shouldBe null
     }
 }
