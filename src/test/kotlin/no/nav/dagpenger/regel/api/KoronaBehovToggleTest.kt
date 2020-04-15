@@ -7,9 +7,7 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.routing.BehovRequest
 import no.nav.dagpenger.regel.api.routing.mapRequestToBehov
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.YearMonth
@@ -65,16 +63,17 @@ class KoronaBehovToggleTest {
         unleash.enable("dp.korona")
 
         val behov = mapRequestToBehov(
-            BehovRequest(
-                aktorId = "aktorId",
-                vedtakId = 1,
-                beregningsdato = LocalDate.of(2019, 11, 7),
-                harAvtjentVerneplikt = null,
-                oppfyllerKravTilFangstOgFisk = null,
-                bruktInntektsPeriode = null,
-                manueltGrunnlag = null,
-                antallBarn = null
-            )
+                BehovRequest(
+                        aktorId = "aktorId",
+                        vedtakId = 1,
+                        beregningsdato = LocalDate.of(2019, 11, 7),
+                        harAvtjentVerneplikt = null,
+                        oppfyllerKravTilFangstOgFisk = null,
+                        bruktInntektsPeriode = null,
+                        manueltGrunnlag = null,
+                        antallBarn = null,
+                        sikringsordningLærling = null
+                )
         )
 
         val internbehov = subsumsjonStore.opprettBehov(behov, unleash)
@@ -89,16 +88,18 @@ class KoronaBehovToggleTest {
         unleash.disable("dp.korona")
 
         val behov = mapRequestToBehov(
-            BehovRequest(
-                aktorId = "aktorId",
-                vedtakId = 1,
-                beregningsdato = LocalDate.of(2019, 11, 7),
-                harAvtjentVerneplikt = null,
-                oppfyllerKravTilFangstOgFisk = null,
-                bruktInntektsPeriode = null,
-                manueltGrunnlag = null,
-                antallBarn = null
-            )
+                BehovRequest(
+                        aktorId = "aktorId",
+                        vedtakId = 1,
+                        beregningsdato = LocalDate.of(2019, 11, 7),
+                        harAvtjentVerneplikt = null,
+                        oppfyllerKravTilFangstOgFisk = null,
+                        bruktInntektsPeriode = null,
+                        manueltGrunnlag = null,
+                        antallBarn = null,
+                        sikringsordningLærling = null
+
+                )
         )
 
         val internbehov = subsumsjonStore.opprettBehov(behov, unleash)
@@ -110,7 +111,7 @@ class KoronaBehovToggleTest {
     @Test
     fun `Packet skal ha koronatoggle fra internbehov`() {
         val behov = InternBehov(BehovId("01DSFVQ4NQQ64SNT4Z16TJXXE7"), "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1234", Kontekst.VEDTAK)), LocalDate.now(), true, true, InntektsPeriode(
-            YearMonth.now(), YearMonth.now()), 1, 1, koronaToggle = false)
+                YearMonth.now(), YearMonth.now()), 1, 1, koronaToggle = false)
         val packet = InternBehov.toPacket(behov)
 
         packet.getBoolean(PacketKeys.KORONA_TOGGLE) shouldBe behov.koronaToggle

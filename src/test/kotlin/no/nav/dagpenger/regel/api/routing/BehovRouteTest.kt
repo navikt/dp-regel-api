@@ -107,7 +107,8 @@ class BehovRouteTest {
                 "harAvtjentVerneplikt": true,
                 "oppfyllerKravTilFangstOgFisk": true,
                 "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
-                "antallBarn": 1
+                "antallBarn": 1,
+                "sikringsordningLærling": false
             }
             """.trimIndent())
             }.apply {
@@ -133,6 +134,7 @@ class BehovRouteTest {
             bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7))
             manueltGrunnlag shouldBe 54200
             antallBarn shouldBe 1
+            sikringsordningLærling shouldNotBe null
         }
 
         verifyAll {
@@ -256,6 +258,7 @@ internal class BehovRequestMappingTest {
             oppfyllerKravTilFangstOgFisk = null,
             bruktInntektsPeriode = null,
             manueltGrunnlag = null,
+                sikringsordningLærling = null,
             antallBarn = null
         ))
         behov.antallBarn shouldBe 0

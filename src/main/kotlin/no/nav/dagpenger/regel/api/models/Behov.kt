@@ -17,7 +17,8 @@ data class Behov(
     val bruktInntektsPeriode: InntektsPeriode? = null,
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
-    val inntektsId: String? = null
+    val inntektsId: String? = null,
+    val sikringsordningLærling: Boolean? = null
 )
 
 data class InternBehov(
@@ -31,6 +32,7 @@ data class InternBehov(
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
     val inntektsId: String? = null,
+    val sikringsordningLærling: Boolean? = null,
     val koronaToggle: Boolean = false
 
 ) {

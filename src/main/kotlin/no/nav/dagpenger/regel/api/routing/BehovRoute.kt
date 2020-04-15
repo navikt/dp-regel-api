@@ -15,11 +15,7 @@ import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.Behov
-import no.nav.dagpenger.regel.api.models.BehovId
-import no.nav.dagpenger.regel.api.models.InntektsPeriode
-import no.nav.dagpenger.regel.api.models.RegelKontekst
-import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.*
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
 
@@ -63,16 +59,17 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
 private data class StatusResponse(val status: String)
 
 internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
-    regelkontekst = request.regelkontekst,
-    aktørId = request.aktorId,
-    vedtakId = request.vedtakId,
-    beregningsDato = request.beregningsdato,
-    harAvtjentVerneplikt = request.harAvtjentVerneplikt,
-    oppfyllerKravTilFangstOgFisk = request.oppfyllerKravTilFangstOgFisk,
-    bruktInntektsPeriode = request.bruktInntektsPeriode,
-    manueltGrunnlag = request.manueltGrunnlag,
-    antallBarn = request.antallBarn ?: 0,
-    inntektsId = request.inntektsId
+        regelkontekst = request.regelkontekst,
+        aktørId = request.aktorId,
+        vedtakId = request.vedtakId,
+        beregningsDato = request.beregningsdato,
+        harAvtjentVerneplikt = request.harAvtjentVerneplikt,
+        oppfyllerKravTilFangstOgFisk = request.oppfyllerKravTilFangstOgFisk,
+        bruktInntektsPeriode = request.bruktInntektsPeriode,
+        manueltGrunnlag = request.manueltGrunnlag,
+        antallBarn = request.antallBarn ?: 0,
+        inntektsId = request.inntektsId,
+        sikringsordningLærling = request.sikringsordningLærling
 )
 
 internal data class BehovRequest(
@@ -85,5 +82,6 @@ internal data class BehovRequest(
     val bruktInntektsPeriode: InntektsPeriode?,
     val manueltGrunnlag: Int?,
     val antallBarn: Int?,
-    val inntektsId: String? = null
+    val inntektsId: String? = null,
+    val sikringsordningLærling: Boolean?
 )
