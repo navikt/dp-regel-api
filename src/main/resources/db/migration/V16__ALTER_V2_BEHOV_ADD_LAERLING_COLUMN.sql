@@ -1,1 +1,1 @@
-ALTER TABLE v2_behov ADD COLUMN sikringsordning_laerling BOOLEAN DEFAULT null
+ALTER TABLE v2_behov ADD COLUMN laerling BOOLEAN DEFAULT null

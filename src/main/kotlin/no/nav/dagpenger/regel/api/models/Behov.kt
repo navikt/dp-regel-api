@@ -18,7 +18,7 @@ data class Behov(
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
     val inntektsId: String? = null,
-    val sikringsordningLærling: Boolean? = null
+    val lærling: Boolean? = null
 )
 
 data class InternBehov(
@@ -32,7 +32,7 @@ data class InternBehov(
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
     val inntektsId: String? = null,
-    val sikringsordningLærling: Boolean? = null,
+    val lærling: Boolean? = null,
     val koronaToggle: Boolean = false
 
 ) {
@@ -62,7 +62,7 @@ data class InternBehov(
             internBehov.antallBarn?.let { this.putValue(PacketKeys.ANTALL_BARN, it) }
             internBehov.manueltGrunnlag?.let { this.putValue(PacketKeys.MANUELT_GRUNNLAG, it) }
             internBehov.inntektsId?.let { this.putValue(PacketKeys.INNTEKTS_ID, it) }
-            internBehov.sikringsordningLærling?.let { this.putValue(PacketKeys.SIKRINGSORDNING_LÆRLING, it) }
+            internBehov.lærling?.let { this.putValue(PacketKeys.LÆRLING, it) }
         }
 
         fun fromBehov(behov: Behov, behandlingsId: BehandlingsId, koronaToggle: Boolean = false): InternBehov {
@@ -76,7 +76,7 @@ data class InternBehov(
                 bruktInntektsPeriode = behov.bruktInntektsPeriode,
                 antallBarn = behov.antallBarn,
                 inntektsId = behov.inntektsId,
-                sikringsordningLærling = behov.sikringsordningLærling,
+                lærling = behov.lærling,
                 koronaToggle = koronaToggle
             )
         }

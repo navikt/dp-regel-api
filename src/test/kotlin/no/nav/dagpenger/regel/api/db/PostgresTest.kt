@@ -99,7 +99,7 @@ class PostgresSubsumsjonStoreTest {
                     antallBarn = 1,
                     manueltGrunnlag = 11,
                     harAvtjentVerneplikt = false,
-                    sikringsordningLærling = false,
+                    lærling = false,
                     bruktInntektsPeriode = InntektsPeriode(
                         YearMonth.now().minusMonths(12),
                         YearMonth.now()

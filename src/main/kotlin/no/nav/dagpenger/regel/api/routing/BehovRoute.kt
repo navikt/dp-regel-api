@@ -69,7 +69,7 @@ internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
         manueltGrunnlag = request.manueltGrunnlag,
         antallBarn = request.antallBarn ?: 0,
         inntektsId = request.inntektsId,
-        sikringsordningLærling = request.sikringsordningLærling
+        lærling = request.lærling
 )
 
 internal data class BehovRequest(
@@ -83,5 +83,5 @@ internal data class BehovRequest(
     val manueltGrunnlag: Int?,
     val antallBarn: Int?,
     val inntektsId: String? = null,
-    val sikringsordningLærling: Boolean?
+    val lærling: Boolean?
 )

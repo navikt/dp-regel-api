@@ -72,7 +72,7 @@ class KoronaBehovToggleTest {
                         bruktInntektsPeriode = null,
                         manueltGrunnlag = null,
                         antallBarn = null,
-                        sikringsordningLærling = null
+                        lærling = null
                 )
         )
 
@@ -97,7 +97,7 @@ class KoronaBehovToggleTest {
                         bruktInntektsPeriode = null,
                         manueltGrunnlag = null,
                         antallBarn = null,
-                        sikringsordningLærling = null
+                        lærling = null
 
                 )
         )

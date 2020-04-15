@@ -17,7 +17,7 @@ internal class FaktumTest {
                 oppfyllerKravTilFangstOgFisk = true,
                 bruktInntektsPeriode = InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7)),
                 antallBarn = 1,
-                sikringsordningLærling = false,
+                lærling = false,
                 manueltGrunnlag = 1
             ),
             behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1", Kontekst.VEDTAK))
@@ -42,7 +42,7 @@ internal class FaktumTest {
             it.antallBarn shouldBe 1
             it.manueltGrunnlag shouldBe 1
             it.bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7))
-            it.sikringsordningLærling shouldBe false
+            it.lærling shouldBe false
         }
     }
 }
