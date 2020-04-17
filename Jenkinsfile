@@ -17,7 +17,7 @@ pipeline {
 
       steps {
         sh label: 'Install dependencies', script: """
-          ./gradlew assemble
+          ./gradlew clean assemble
         """
 
         // Should run a set of tests like: unit, functional, component,
@@ -41,7 +41,7 @@ pipeline {
         }
 
         sh label: 'Set image version on base overlay', script: """
-          sed -i 's/latest/${VERSION}/' ./nais/base/nais.yaml 
+          sed -i 's/latest/${VERSION}/' ./nais/base/nais.yaml
         """
         sh label: 'Prepare dev service contract', script: """
            kustomize build ./nais/dev -o ./nais/nais-dev-deploy.yaml &&  cat ./nais/nais-dev-deploy.yaml
