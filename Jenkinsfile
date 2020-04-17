@@ -17,7 +17,7 @@ pipeline {
 
       steps {
         sh label: 'Install dependencies', script: """
-          ./gradlew clean assemble
+          ./gradlew assemble
         """
 
         // Should run a set of tests like: unit, functional, component,
