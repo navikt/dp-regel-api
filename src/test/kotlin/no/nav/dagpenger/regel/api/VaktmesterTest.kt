@@ -7,7 +7,6 @@ import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.DataSource
@@ -52,7 +51,7 @@ internal class VaktmesterTest {
         withMigratedDb {
             val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
             val subsumsjonStore = PostgresSubsumsjonStore(dataSource = DataSource.instance)
-            val internBehov = subsumsjonStore.opprettBehov(behov, FakeUnleash())
+            val internBehov = subsumsjonStore.opprettBehov(behov)
             subsumsjonStore.insertSubsumsjon(bruktSubsumsjon.copy(behovId = internBehov.behovId))
             val marker = bruktSubsumsjonStore.eksternTilInternSubsumsjon(
                 EksternSubsumsjonBrukt(
@@ -83,7 +82,7 @@ internal class VaktmesterTest {
         withMigratedDb {
             val vaktmester = Vaktmester(dataSource = DataSource.instance)
             val internBehov = with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val internBehov = opprettBehov(behov, FakeUnleash())
+                val internBehov = opprettBehov(behov)
                 insertSubsumsjon(bruktSubsumsjon.copy(behovId = internBehov.behovId))
                 return@with internBehov
             }
@@ -116,8 +115,8 @@ internal class VaktmesterTest {
     fun `Skal slette ubrukte subsumsjoner eldre enn 3 måneder`() {
         withMigratedDb {
             val (ubruktInternBehov, bruktInternBehov) = with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val ubruktInternBehov = opprettBehov(behov, FakeUnleash())
-                val bruktInternBehov = opprettBehov(behov, FakeUnleash())
+                val ubruktInternBehov = opprettBehov(behov)
+                val bruktInternBehov = opprettBehov(behov)
 
                 insertSubsumsjon(
                     ubruktSubsumsjon.copy(behovId = ubruktInternBehov.behovId),
@@ -167,8 +166,8 @@ internal class VaktmesterTest {
                 subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
             )
             val (ubruktInternBehov, bruktInternBehov) = with(PostgresSubsumsjonStore(DataSource.instance)) {
-                val ubruktInternBehov = opprettBehov(behov, FakeUnleash())
-                val bruktInternBehov = opprettBehov(behov, FakeUnleash())
+                val ubruktInternBehov = opprettBehov(behov)
+                val bruktInternBehov = opprettBehov(behov)
 
                 insertSubsumsjon(ubruktSubsumsjon.copy(behovId = ubruktInternBehov.behovId))
                 insertSubsumsjon(bruktSubsumsjon.copy(behovId = bruktInternBehov.behovId))
@@ -209,8 +208,8 @@ internal class VaktmesterTest {
                     subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
                 )
                 with(PostgresSubsumsjonStore(DataSource.instance)) {
-                    val ubruktInternBehov = opprettBehov(behov, FakeUnleash())
-                    val bruktInternBehov = opprettBehov(behov, FakeUnleash())
+                    val ubruktInternBehov = opprettBehov(behov)
+                    val bruktInternBehov = opprettBehov(behov)
 
                     insertSubsumsjon(ubruktSubsumsjon.copy(behovId = ubruktInternBehov.behovId))
                     insertSubsumsjon(bruktSubsumsjon.copy(behovId = bruktInternBehov.behovId))

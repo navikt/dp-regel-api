@@ -13,7 +13,6 @@ import io.prometheus.client.CollectorRegistry
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.BehandlingsId
@@ -105,7 +104,7 @@ class PostgresSubsumsjonStoreTest {
                         YearMonth.now()
                     )
                 )
-                opprettBehov(behov, FakeUnleash())
+                opprettBehov(behov)
             }
         }
     }
@@ -137,8 +136,7 @@ class PostgresSubsumsjonStoreTest {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub)
@@ -152,8 +150,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 behovStatus(internBehov.behovId) shouldBe Status.Pending
             }
@@ -175,8 +172,7 @@ class PostgresSubsumsjonStoreTest {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
@@ -190,8 +186,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
 
@@ -228,8 +223,7 @@ class PostgresSubsumsjonStoreTest {
                 val grunnlagId = ULID().nextULID()
                 val periodeId = ULID().nextULID()
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 val subsumsjonWithResults = subsumsjon.copy(
                     behovId = internBehov.behovId,
@@ -291,8 +285,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 val subsumsjonWithResults = subsumsjon.copy(
                     behovId = internBehov.behovId,
