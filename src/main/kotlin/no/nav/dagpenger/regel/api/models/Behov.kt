@@ -32,8 +32,7 @@ data class InternBehov(
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
     val inntektsId: String? = null,
-    val lærling: Boolean? = null,
-    val koronaToggle: Boolean = false
+    val lærling: Boolean? = null
 
 ) {
     fun toJson() = toJson(this)
@@ -48,14 +47,14 @@ data class InternBehov(
         fun toPacket(internBehov: InternBehov): Packet = Packet("{}").apply {
             this.putValue(PacketKeys.BEHOV_ID, internBehov.behovId.id)
             this.putValue(PacketKeys.AKTØR_ID, internBehov.aktørId)
-            when (internBehov.behandlingsId.regelKontekst.type) {
-                Kontekst.VEDTAK -> this.putValue(PacketKeys.VEDTAK_ID, internBehov.behandlingsId.regelKontekst.id)
+            if (internBehov.behandlingsId.regelKontekst.type == Kontekst.VEDTAK) {
+                this.putValue(PacketKeys.VEDTAK_ID, internBehov.behandlingsId.regelKontekst.id)
             }
             this.putValue(PacketKeys.KONTEKST_ID, internBehov.behandlingsId.regelKontekst.id)
             this.putValue(PacketKeys.KONTEKST_TYPE, internBehov.behandlingsId.regelKontekst.type.name)
             this.putValue(PacketKeys.BEHANDLINGSID, internBehov.behandlingsId.id)
             this.putValue(PacketKeys.BEREGNINGS_DATO, internBehov.beregningsDato)
-            this.putValue(PacketKeys.KORONA_TOGGLE, internBehov.koronaToggle)
+
             internBehov.harAvtjentVerneplikt?.let { this.putValue(PacketKeys.HAR_AVTJENT_VERNE_PLIKT, it) }
             internBehov.oppfyllerKravTilFangstOgFisk?.let { this.putValue(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK, it) }
             internBehov.bruktInntektsPeriode?.let { this.putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, it.toJson()) }
@@ -65,7 +64,7 @@ data class InternBehov(
             internBehov.lærling?.let { this.putValue(PacketKeys.LÆRLING, it) }
         }
 
-        fun fromBehov(behov: Behov, behandlingsId: BehandlingsId, koronaToggle: Boolean = false): InternBehov {
+        fun fromBehov(behov: Behov, behandlingsId: BehandlingsId): InternBehov {
             return InternBehov(
                 behandlingsId = behandlingsId,
                 aktørId = behov.aktørId,
@@ -76,8 +75,7 @@ data class InternBehov(
                 bruktInntektsPeriode = behov.bruktInntektsPeriode,
                 antallBarn = behov.antallBarn,
                 inntektsId = behov.inntektsId,
-                lærling = behov.lærling,
-                koronaToggle = koronaToggle
+                lærling = behov.lærling
             )
         }
     }

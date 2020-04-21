@@ -49,11 +49,11 @@ class InternBehovGenerator : Gen<InternBehov> {
         InternBehov(
             aktørId = Gen.string().random().first(),
             behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst(Gen.string().random().first(), Kontekst.VEDTAK)),
+            beregningsDato = LocalDate.now(),
             harAvtjentVerneplikt = Gen.bool().random().first(),
             oppfyllerKravTilFangstOgFisk = Gen.bool().random().first(),
-            manueltGrunnlag = Gen.positiveIntegers().random().first(),
             antallBarn = Gen.positiveIntegers().random().first(),
-            beregningsDato = LocalDate.now()
+            manueltGrunnlag = Gen.positiveIntegers().random().first()
         )
     }
 }
