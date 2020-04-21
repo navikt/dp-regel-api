@@ -2,62 +2,65 @@ package no.nav.dagpenger.regel.api.models
 
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.properties.assertAll
+import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
-import io.kotest.property.Gen
 import io.kotest.property.arbitrary.arb
 import io.kotest.property.arbitrary.bool
 import io.kotest.property.arbitrary.int
-import io.kotest.property.arbitrary.single
+import io.kotest.property.arbitrary.localDate
+import io.kotest.property.arbitrary.map
+import io.kotest.property.arbitrary.next
 import io.kotest.property.arbitrary.string
-import io.kotest.property.forAll
+import io.kotest.property.checkAll
 import java.time.LocalDate
 import no.nav.dagpenger.events.Problem
 
 class JsonRoundtripSpec : StringSpec() {
     init {
+
         "Alle InternBehov skal kunne gjøre JSON roundtrips" {
-            forAll(gena = internBehovGenerator) { behov: InternBehov ->
+            checkAll(internBehovGenerator) { behov: InternBehov ->
                 val parsedBehov = InternBehov.fromJson(behov.toJson())
-                behov == parsedBehov
+                behov shouldBe parsedBehov
             }
         }
         "Alle Subsumsjoner skal kunne gjøre JSON roundtrips" {
-            assertAll(gena = SubsumsjonGenerator()) { subsumsjon: Subsumsjon ->
+            checkAll(subsumsjonGenerator) { subsumsjon: Subsumsjon ->
                 val parsedSubsumsjon = Subsumsjon.fromJson(subsumsjon.toJson())
-                subsumsjon == parsedSubsumsjon
+                subsumsjon shouldBe parsedSubsumsjon
             }
         }
     }
 }
 
-class SubsumsjonGenerator : Gen<Subsumsjon> {
-    override fun random(): Sequence<Subsumsjon> = generateSequence {
+private val subsumsjonGenerator = arb {
+    val stringArb = Arb.string(10, 10)
+    generateSequence {
         Subsumsjon(
             behovId = BehovId(ULID().nextULID()),
             faktum = Faktum(
-                aktorId = Gen.string().random().first(),
-                vedtakId = Gen.positiveIntegers().random().first(),
-                beregningsdato = Gen.localDate(minYear = 2010, maxYear = LocalDate.now().year).random().first()
-            ),
-            grunnlagResultat = Gen.map(genK = Gen.string(), genV = Gen.string()).random().first(),
-            periodeResultat = Gen.map(genK = Gen.string(), genV = Gen.string()).random().first(),
-            minsteinntektResultat = Gen.map(genK = Gen.string(), genV = Gen.string()).random().first(),
-            satsResultat = Gen.map(genK = Gen.string(), genV = Gen.string()).random().first(),
-            problem = Problem(title = Gen.string().random().first())
+                aktorId = stringArb.next(it),
+                vedtakId = Arb.int(0, 10000).next(it),
+                beregningsdato = Arb.localDate(minYear = 2010, maxYear = LocalDate.now().year).next(it)),
+            grunnlagResultat = Arb.map(stringArb, stringArb).next(it),
+            periodeResultat = Arb.map(stringArb, stringArb).next(it),
+            minsteinntektResultat = Arb.map(stringArb, stringArb).next(it),
+            satsResultat = Arb.map(stringArb, stringArb).next(it),
+            problem = Problem(title = stringArb.next(it))
         )
     }
 }
 
 private val internBehovGenerator = arb {
+    val stringArb = Arb.string(10, 10)
     generateSequence {
         InternBehov(
-            aktørId = Arb.string().single(it),
-            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst(Arb.string().single(it), Kontekst.VEDTAK)),
-            harAvtjentVerneplikt = Arb.bool().single(it),
-            oppfyllerKravTilFangstOgFisk = Arb.bool().single(it),
-            manueltGrunnlag = Arb.int(0, 1000).single(it),
-            antallBarn = Arb.int(0, 10).single(it),
+            aktørId = stringArb.next(it),
+            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst(Arb.string().next(it), Kontekst.VEDTAK)),
+            harAvtjentVerneplikt = Arb.bool().next(it),
+            oppfyllerKravTilFangstOgFisk = Arb.bool().next(it),
+            manueltGrunnlag = Arb.int(0, 1000).next(it),
+            antallBarn = Arb.int(0, 10).next(it),
             beregningsDato = LocalDate.now()
         )
     }

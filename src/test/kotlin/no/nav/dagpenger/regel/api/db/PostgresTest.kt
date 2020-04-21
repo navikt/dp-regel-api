@@ -2,12 +2,12 @@ package no.nav.dagpenger.regel.api.db
 
 import com.zaxxer.hikari.HikariDataSource
 import de.huxhorn.sulky.ulid.ULID
+import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotContain
-import io.kotlintest.assertSoftly
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
 import java.time.LocalDate
@@ -16,7 +16,6 @@ import kotlin.test.assertEquals
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.BehandlingsId
@@ -105,7 +104,7 @@ class PostgresSubsumsjonStoreTest {
                         YearMonth.now()
                     )
                 )
-                opprettBehov(behov, FakeUnleash())
+                opprettBehov(behov)
             }
         }
     }
@@ -137,8 +136,7 @@ class PostgresSubsumsjonStoreTest {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub)
@@ -152,8 +150,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 behovStatus(internBehov.behovId) shouldBe Status.Pending
             }
@@ -175,8 +172,7 @@ class PostgresSubsumsjonStoreTest {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
@@ -190,8 +186,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
 
@@ -228,8 +223,7 @@ class PostgresSubsumsjonStoreTest {
                 val grunnlagId = ULID().nextULID()
                 val periodeId = ULID().nextULID()
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 val subsumsjonWithResults = subsumsjon.copy(
                     behovId = internBehov.behovId,
@@ -291,8 +285,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now()),
-                    FakeUnleash()
+                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
                 )
                 val subsumsjonWithResults = subsumsjon.copy(
                     behovId = internBehov.behovId,

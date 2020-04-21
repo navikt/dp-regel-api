@@ -1,6 +1,6 @@
 package no.nav.dagpenger.regel.api.streams
 
-import io.kotest.matchers.numerics.shouldBeGreaterThan
+import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import java.time.LocalDate
@@ -30,7 +30,7 @@ internal class KafkaDagpengerBehovProducerTest {
             val metadata = produceEvent(InternBehov.fromBehov(
                 behov = Behov(aktørId = "aktorId", vedtakId = 1, beregningsDato = LocalDate.now()),
                 behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("123", Kontekst.VEDTAK))
-                )).get(5, TimeUnit.SECONDS)
+            )).get(5, TimeUnit.SECONDS)
 
             metadata shouldNotBe null
             metadata.hasOffset() shouldBe true
