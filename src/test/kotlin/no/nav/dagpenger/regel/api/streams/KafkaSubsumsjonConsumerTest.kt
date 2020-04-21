@@ -7,6 +7,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyAll
+import java.util.Properties
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.PacketKeys
@@ -16,7 +17,6 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TopologyTestDriver
 import org.apache.kafka.streams.test.ConsumerRecordFactory
 import org.junit.jupiter.api.Test
-import java.util.Properties
 
 internal class KafkaSubsumsjonConsumerTest {
 

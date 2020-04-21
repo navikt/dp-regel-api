@@ -1,12 +1,12 @@
 package no.nav.dagpenger.regel.api.models
 
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldNotBe
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import java.time.YearMonth
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntektMåned
 import org.junit.jupiter.api.Test
-import java.time.YearMonth
 
 internal class InntektsPeriodeTest {
 

@@ -1,9 +1,17 @@
 package no.nav.dagpenger.regel.api.db
 
-import no.finn.unleash.Unleash
-import no.nav.dagpenger.regel.api.models.*
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import no.finn.unleash.Unleash
+import no.nav.dagpenger.regel.api.models.BehandlingsId
+import no.nav.dagpenger.regel.api.models.Behov
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
+import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
 
 interface SubsumsjonStore {
 

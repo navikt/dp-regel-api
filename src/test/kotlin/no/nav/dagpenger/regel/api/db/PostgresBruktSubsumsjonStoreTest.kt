@@ -1,21 +1,21 @@
 package no.nav.dagpenger.regel.api.db
 
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldNotBe
-import io.kotlintest.shouldThrow
-import no.nav.dagpenger.events.Problem
-import no.nav.dagpenger.regel.api.models.BehovId
-import no.nav.dagpenger.regel.api.models.RegelKontekst
-import no.nav.dagpenger.regel.api.models.Faktum
-import no.nav.dagpenger.regel.api.models.Kontekst
-import no.nav.dagpenger.regel.api.models.Subsumsjon
-import no.nav.dagpenger.regel.api.models.SubsumsjonId
-import org.junit.jupiter.api.Test
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import no.nav.dagpenger.events.Problem
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.Faktum
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
+import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import org.junit.jupiter.api.Test
 
 class PostgresBruktSubsumsjonStoreTest {
 

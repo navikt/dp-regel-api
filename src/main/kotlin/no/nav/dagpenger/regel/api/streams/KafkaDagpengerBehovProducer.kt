@@ -1,8 +1,10 @@
 package no.nav.dagpenger.regel.api.streams
 
+import java.io.File
+import java.util.Properties
+import java.util.concurrent.Future
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
-
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
@@ -17,9 +19,6 @@ import org.apache.kafka.common.KafkaException
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.StringSerializer
-import java.io.File
-import java.util.Properties
-import java.util.concurrent.Future
 
 private val LOGGER = KotlinLogging.logger {}
 

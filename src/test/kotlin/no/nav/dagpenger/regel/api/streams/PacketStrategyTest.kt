@@ -1,8 +1,8 @@
 package no.nav.dagpenger.regel.api.streams
 
-import io.kotlintest.matchers.doubles.shouldBeGreaterThan
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldNotBe
+import io.kotest.matchers.doubles.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.mockk.Called
 import io.mockk.Runs
 import io.mockk.every

@@ -1,9 +1,9 @@
 package no.nav.dagpenger.regel.api.routing
 
 import de.huxhorn.sulky.ulid.ULID
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldNotBe
-import io.kotlintest.shouldThrow
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
@@ -11,6 +11,7 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
+import java.time.LocalDate
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -19,7 +20,6 @@ import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 
 internal class SubsumsjonRouteTest {
 

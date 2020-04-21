@@ -1,6 +1,7 @@
 package no.nav.dagpenger.regel.api
 
 import io.prometheus.client.Counter
+import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -11,7 +12,6 @@ import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Subsumsjon
-import javax.sql.DataSource
 
 private val deletedCounter = Counter.build()
     .name("subsumsjoner_slettet")

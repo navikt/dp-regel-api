@@ -4,15 +4,15 @@ import com.squareup.moshi.FromJson
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.ToJson
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import no.nav.dagpenger.events.URIJsonAdapter
-import no.nav.dagpenger.regel.api.models.BehovId
-import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import no.nav.dagpenger.events.URIJsonAdapter
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
 
 val moshiInstance: Moshi = Moshi.Builder()
     .add(BehovIdJsonAdapter())

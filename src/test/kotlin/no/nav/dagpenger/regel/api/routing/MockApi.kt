@@ -5,8 +5,8 @@ import io.mockk.mockk
 import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.regel.api.api
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
-import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 
 internal fun MockApi(

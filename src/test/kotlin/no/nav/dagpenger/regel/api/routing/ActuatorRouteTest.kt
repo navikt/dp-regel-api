@@ -1,7 +1,7 @@
 package no.nav.dagpenger.regel.api.routing
 
-import io.kotlintest.matchers.string.shouldContain
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest

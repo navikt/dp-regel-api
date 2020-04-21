@@ -1,11 +1,11 @@
 package no.nav.dagpenger.regel.api.models
 
-import io.kotlintest.shouldThrow
-import no.nav.dagpenger.regel.api.moshiInstance
-import org.junit.jupiter.api.Test
+import io.kotest.assertions.throwables.shouldThrow
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import no.nav.dagpenger.regel.api.moshiInstance
+import org.junit.jupiter.api.Test
 
 class UlidTest {
     @Test

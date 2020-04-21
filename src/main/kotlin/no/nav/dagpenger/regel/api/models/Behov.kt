@@ -1,9 +1,9 @@
 package no.nav.dagpenger.regel.api.models
 
 import de.huxhorn.sulky.ulid.ULID
+import java.time.LocalDate
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.moshiInstance
-import java.time.LocalDate
 
 private val ulidGenerator = ULID()
 

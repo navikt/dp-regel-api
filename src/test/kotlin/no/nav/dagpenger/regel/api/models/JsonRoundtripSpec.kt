@@ -1,21 +1,27 @@
 package no.nav.dagpenger.regel.api.models
 
 import de.huxhorn.sulky.ulid.ULID
-import io.kotlintest.properties.Gen
-import io.kotlintest.properties.assertAll
-import io.kotlintest.specs.StringSpec
-import no.nav.dagpenger.events.Problem
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.properties.assertAll
+import io.kotest.property.Arb
+import io.kotest.property.Gen
+import io.kotest.property.arbitrary.arb
+import io.kotest.property.arbitrary.bool
+import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.single
+import io.kotest.property.arbitrary.string
+import io.kotest.property.forAll
 import java.time.LocalDate
+import no.nav.dagpenger.events.Problem
 
 class JsonRoundtripSpec : StringSpec() {
     init {
         "Alle InternBehov skal kunne gjøre JSON roundtrips" {
-            assertAll(gena = InternBehovGenerator()) { behov: InternBehov ->
+            forAll(gena = internBehovGenerator) { behov: InternBehov ->
                 val parsedBehov = InternBehov.fromJson(behov.toJson())
                 behov == parsedBehov
             }
         }
-
         "Alle Subsumsjoner skal kunne gjøre JSON roundtrips" {
             assertAll(gena = SubsumsjonGenerator()) { subsumsjon: Subsumsjon ->
                 val parsedSubsumsjon = Subsumsjon.fromJson(subsumsjon.toJson())
@@ -24,8 +30,8 @@ class JsonRoundtripSpec : StringSpec() {
         }
     }
 }
+
 class SubsumsjonGenerator : Gen<Subsumsjon> {
-    override fun constants() = emptyList<Subsumsjon>()
     override fun random(): Sequence<Subsumsjon> = generateSequence {
         Subsumsjon(
             behovId = BehovId(ULID().nextULID()),
@@ -43,16 +49,15 @@ class SubsumsjonGenerator : Gen<Subsumsjon> {
     }
 }
 
-class InternBehovGenerator : Gen<InternBehov> {
-    override fun constants() = emptyList<InternBehov>()
-    override fun random(): Sequence<InternBehov> = generateSequence {
+private val internBehovGenerator = arb {
+    generateSequence {
         InternBehov(
-            aktørId = Gen.string().random().first(),
-            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst(Gen.string().random().first(), Kontekst.VEDTAK)),
-            harAvtjentVerneplikt = Gen.bool().random().first(),
-            oppfyllerKravTilFangstOgFisk = Gen.bool().random().first(),
-            manueltGrunnlag = Gen.positiveIntegers().random().first(),
-            antallBarn = Gen.positiveIntegers().random().first(),
+            aktørId = Arb.string().single(it),
+            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst(Arb.string().single(it), Kontekst.VEDTAK)),
+            harAvtjentVerneplikt = Arb.bool().single(it),
+            oppfyllerKravTilFangstOgFisk = Arb.bool().single(it),
+            manueltGrunnlag = Arb.int(0, 1000).single(it),
+            antallBarn = Arb.int(0, 10).single(it),
             beregningsDato = LocalDate.now()
         )
     }

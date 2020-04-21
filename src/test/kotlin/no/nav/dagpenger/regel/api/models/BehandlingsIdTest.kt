@@ -1,7 +1,7 @@
 package no.nav.dagpenger.regel.api.models
 
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldNotBe
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 
 class BehandlingsIdTest {

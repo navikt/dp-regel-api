@@ -3,12 +3,12 @@ package no.nav.dagpenger.regel.api.streams
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.time.ZonedDateTime
 import no.nav.dagpenger.regel.api.Vaktmester
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
 import org.junit.jupiter.api.Test
-import java.time.ZonedDateTime
 
 internal class BruktSubsumsjonStrategyTest {
     @Test

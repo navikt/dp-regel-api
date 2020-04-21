@@ -11,13 +11,17 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
+import java.time.LocalDate
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.*
+import no.nav.dagpenger.regel.api.models.Behov
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.RegelKontekst
+import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
-import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -59,17 +63,17 @@ internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProdu
 private data class StatusResponse(val status: String)
 
 internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
-        regelkontekst = request.regelkontekst,
-        aktørId = request.aktorId,
-        vedtakId = request.vedtakId,
-        beregningsDato = request.beregningsdato,
-        harAvtjentVerneplikt = request.harAvtjentVerneplikt,
-        oppfyllerKravTilFangstOgFisk = request.oppfyllerKravTilFangstOgFisk,
-        bruktInntektsPeriode = request.bruktInntektsPeriode,
-        manueltGrunnlag = request.manueltGrunnlag,
-        antallBarn = request.antallBarn ?: 0,
-        inntektsId = request.inntektsId,
-        lærling = request.lærling
+    regelkontekst = request.regelkontekst,
+    aktørId = request.aktorId,
+    vedtakId = request.vedtakId,
+    beregningsDato = request.beregningsdato,
+    harAvtjentVerneplikt = request.harAvtjentVerneplikt,
+    oppfyllerKravTilFangstOgFisk = request.oppfyllerKravTilFangstOgFisk,
+    bruktInntektsPeriode = request.bruktInntektsPeriode,
+    manueltGrunnlag = request.manueltGrunnlag,
+    antallBarn = request.antallBarn ?: 0,
+    inntektsId = request.inntektsId,
+    lærling = request.lærling
 )
 
 internal data class BehovRequest(

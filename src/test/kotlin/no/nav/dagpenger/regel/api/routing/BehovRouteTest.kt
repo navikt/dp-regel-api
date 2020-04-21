@@ -1,11 +1,11 @@
 package no.nav.dagpenger.regel.api.routing
 
-import io.kotlintest.matchers.string.shouldNotEndWith
-import io.kotlintest.matchers.string.shouldStartWith
-import io.kotlintest.matchers.withClue
-import io.kotlintest.shouldBe
-import io.kotlintest.shouldNotBe
-import io.kotlintest.shouldThrow
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.withClue
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldNotEndWith
+import io.kotest.matchers.string.shouldStartWith
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -15,19 +15,26 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-
 import io.mockk.verifyAll
-import no.nav.dagpenger.regel.api.db.BehovNotFoundException
-import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
-import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.*
-import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
-import org.apache.kafka.clients.producer.RecordMetadata
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZonedDateTime
 import java.util.concurrent.Future
+import no.nav.dagpenger.regel.api.db.BehovNotFoundException
+import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.BehandlingsId
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
+import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
+import org.apache.kafka.clients.producer.RecordMetadata
+import org.junit.jupiter.api.Test
 
 class BehovRouteTest {
 

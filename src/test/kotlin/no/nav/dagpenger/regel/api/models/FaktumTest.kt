@@ -1,9 +1,9 @@
 package no.nav.dagpenger.regel.api.models
 
-import io.kotlintest.shouldBe
-import org.junit.jupiter.api.Test
+import io.kotest.matchers.shouldBe
 import java.time.LocalDate
 import java.time.YearMonth
+import org.junit.jupiter.api.Test
 
 internal class FaktumTest {
     @Test

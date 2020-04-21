@@ -1,6 +1,6 @@
 package no.nav.dagpenger.regel.api.models
 
-import io.kotlintest.shouldBe
+import io.kotest.matchers.shouldBe
 import no.nav.dagpenger.events.Packet
 import org.junit.jupiter.api.Test
 

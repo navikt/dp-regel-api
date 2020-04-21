@@ -1,6 +1,9 @@
 package no.nav.dagpenger.regel.api.streams
 
 import io.prometheus.client.Summary
+import java.sql.SQLTransientConnectionException
+import java.time.Duration
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,9 +21,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.RetriableException
 import org.apache.kafka.common.serialization.StringDeserializer
-import java.sql.SQLTransientConnectionException
-import java.time.Duration
-import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger { }
 
