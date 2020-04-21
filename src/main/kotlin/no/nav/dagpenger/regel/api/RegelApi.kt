@@ -24,6 +24,8 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.fixedRateTimer
 import kotlinx.coroutines.cancel
 import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
@@ -49,8 +51,6 @@ import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
 import no.nav.dagpenger.regel.api.streams.producerConfig
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
-import java.util.concurrent.TimeUnit
-import kotlin.concurrent.fixedRateTimer
 
 private val MAINLOGGER = KotlinLogging.logger {}
 

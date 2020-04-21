@@ -11,6 +11,7 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
+import java.time.LocalDate
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -19,7 +20,6 @@ import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 
 internal class SubsumsjonRouteTest {
 

@@ -1,6 +1,10 @@
 package no.nav.dagpenger.regel.api.db
 
 import io.prometheus.client.Histogram
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZonedDateTime
+import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -19,11 +23,6 @@ import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
-import java.time.LocalDate
-
-import java.time.YearMonth
-import java.time.ZonedDateTime
-import javax.sql.DataSource
 
 private val LOGGER = KotlinLogging.logger {}
 

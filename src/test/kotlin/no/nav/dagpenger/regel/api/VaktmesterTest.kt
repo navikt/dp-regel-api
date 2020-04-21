@@ -3,6 +3,8 @@ package no.nav.dagpenger.regel.api
 import de.huxhorn.sulky.ulid.ULID
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
+import java.time.LocalDate
+import java.time.ZonedDateTime
 import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
@@ -10,9 +12,9 @@ import kotliquery.using
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.DataSource
+import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
-import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.withMigratedDb
 import no.nav.dagpenger.regel.api.models.Behov
@@ -21,8 +23,6 @@ import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.time.LocalDate
-import java.time.ZonedDateTime
 
 internal class VaktmesterTest {
 

@@ -15,19 +15,26 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-
 import io.mockk.verifyAll
-import no.nav.dagpenger.regel.api.db.BehovNotFoundException
-import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
-import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.*
-import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
-import org.apache.kafka.clients.producer.RecordMetadata
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZonedDateTime
 import java.util.concurrent.Future
+import no.nav.dagpenger.regel.api.db.BehovNotFoundException
+import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.BehandlingsId
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
+import no.nav.dagpenger.regel.api.models.Status
+import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
+import org.apache.kafka.clients.producer.RecordMetadata
+import org.junit.jupiter.api.Test
 
 class BehovRouteTest {
 

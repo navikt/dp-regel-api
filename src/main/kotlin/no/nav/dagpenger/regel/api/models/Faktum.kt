@@ -1,7 +1,7 @@
 package no.nav.dagpenger.regel.api.models
 
-import no.nav.dagpenger.events.Packet
 import java.time.LocalDate
+import no.nav.dagpenger.events.Packet
 
 data class Faktum(
     val aktorId: String,

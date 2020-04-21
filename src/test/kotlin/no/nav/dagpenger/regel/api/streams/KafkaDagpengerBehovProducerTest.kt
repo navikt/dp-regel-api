@@ -3,17 +3,17 @@ package no.nav.dagpenger.regel.api.streams
 import io.kotlintest.matchers.numerics.shouldBeGreaterThan
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
-import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import no.nav.dagpenger.regel.api.models.Behov
-import no.nav.dagpenger.regel.api.models.RegelKontekst
-import no.nav.dagpenger.regel.api.models.InternBehov
+import java.time.LocalDate
+import java.util.concurrent.TimeUnit
 import no.nav.dagpenger.regel.api.models.BehandlingsId
+import no.nav.dagpenger.regel.api.models.Behov
+import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
+import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.Topics
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
-import java.time.LocalDate
-import java.util.concurrent.TimeUnit
 
 private object Kafka {
     val instance by lazy {

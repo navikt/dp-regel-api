@@ -4,8 +4,8 @@ import de.huxhorn.sulky.ulid.ULID
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.assertAll
 import io.kotlintest.specs.StringSpec
-import no.nav.dagpenger.events.Problem
 import java.time.LocalDate
+import no.nav.dagpenger.events.Problem
 
 class JsonRoundtripSpec : StringSpec() {
     init {

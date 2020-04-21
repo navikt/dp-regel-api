@@ -1,8 +1,8 @@
 package no.nav.dagpenger.regel.api
 
+import kotlin.test.assertEquals
 import org.junit.Ignore
 import org.junit.Test
-import kotlin.test.assertEquals
 
 class ConfigurationTest {
 

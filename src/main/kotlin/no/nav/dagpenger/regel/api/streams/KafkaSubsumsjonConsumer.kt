@@ -1,8 +1,8 @@
 package no.nav.dagpenger.regel.api.streams
 
+import java.time.Duration
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
-
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
@@ -11,7 +11,6 @@ import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.streamConfig
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.kstream.Predicate
-import java.time.Duration
 
 private val LOGGER = KotlinLogging.logger {}
 

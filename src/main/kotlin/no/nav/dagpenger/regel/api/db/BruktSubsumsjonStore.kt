@@ -1,10 +1,10 @@
 package no.nav.dagpenger.regel.api.db
 
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.moshiInstance
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 interface BruktSubsumsjonStore {
     fun insertSubsumsjonBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt): Int
