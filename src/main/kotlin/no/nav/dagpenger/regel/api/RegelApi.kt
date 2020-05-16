@@ -116,7 +116,7 @@ fun main() {
     Runtime.getRuntime().addShutdownHook(Thread {
         kafkaConsumer.stop()
         bruktSubsumsjonConsumer.cancel()
-        app.stop(10, 60, TimeUnit.SECONDS)
+        app.stop(10000, 60000)
     })
 }
 
