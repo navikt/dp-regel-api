@@ -78,8 +78,8 @@ pipeline {
 
             sh label: 'Deploy with kubectl', script: """
               kubectl config use-context dev-${env.ZONE}
-              kubectl apply -f ./nais/nais-dev-deploy.yaml --wait
-              kubectl rollout status -w deployment/${APPLICATION_NAME}
+              kubectl apply -n default -f ./nais/nais-dev-deploy.yaml --wait
+              kubectl rollout status -n default -w deployment/${APPLICATION_NAME}
             """
 
             archiveArtifacts artifacts: 'nais/nais-dev-deploy.yaml', fingerprint: true
@@ -91,7 +91,7 @@ pipeline {
           steps {
             sh label: 'Deploy with kubectl', script: """
           kubectl config use-context dev-${env.ZONE}
-          kubectl apply  -f ./nais/nais-dev-q2-deploy.yaml --wait && sleep 5
+          kubectl apply  -n q2  -f ./nais/nais-dev-q2-deploy.yaml --wait && sleep 5
           kubectl rollout status -w deployment/${APPLICATION_NAME} -n q2
         """
 
@@ -100,16 +100,6 @@ pipeline {
           }
         }
 
-        stage('Deploy to pre-production, namespace dp') {
-          when { branch 'one_route' }
-          steps {
-            sh label: 'Deploy with kubectl', script: """
-              kubectl config use-context dev-${env.ZONE}
-              kubectl apply -f ./nais/nais-dev-deploy.yaml --wait
-              kubectl rollout status -w deployment/${APPLICATION_NAME}
-            """
-          }
-        }
 
         stage('Run tests') {
           // Since these tests usually are quite expensive, running them as
@@ -190,8 +180,8 @@ pipeline {
       steps {
         sh label: 'Deploy with kubectl', script: """
           kubectl config use-context prod-${env.ZONE}
-          kubectl apply  -f ./nais/nais-prod-deploy.yaml --wait
-          kubectl rollout status -w deployment/${APPLICATION_NAME}
+          kubectl apply -n default -f ./nais/nais-prod-deploy.yaml --wait
+          kubectl rollout status -w deployment/${APPLICATION_NAME} -n default
         """
 
         archiveArtifacts artifacts: 'nais/nais-prod-deploy.yaml', fingerprint: true
