@@ -22,7 +22,7 @@ class Vaktmester(
     val dataSource: DataSource,
     val subsumsjonStore: SubsumsjonStore = PostgresSubsumsjonStore(dataSource = dataSource),
     val bruktSubsumsjonStore: BruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource = dataSource),
-    private val lifeSpanInDays: Int = 90
+    private val lifeSpanInDays: Int = 180
 ) {
     companion object {
         val LOGGER = KotlinLogging.logger { }
