@@ -112,7 +112,7 @@ internal class VaktmesterTest {
     }
 
     @Test
-    fun `Skal slette ubrukte subsumsjoner eldre enn 3 måneder`() {
+    fun `Skal slette ubrukte subsumsjoner eldre enn 6 måneder`() {
         withMigratedDb {
             val (ubruktInternBehov, bruktInternBehov) = with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val ubruktInternBehov = opprettBehov(behov)
@@ -120,11 +120,11 @@ internal class VaktmesterTest {
 
                 insertSubsumsjon(
                     ubruktSubsumsjon.copy(behovId = ubruktInternBehov.behovId),
-                    created = ZonedDateTime.now().minusMonths(4)
+                    created = ZonedDateTime.now().minusMonths(7)
                 )
                 insertSubsumsjon(
                     bruktSubsumsjon.copy(behovId = bruktInternBehov.behovId),
-                    ZonedDateTime.now().minusMonths(4)
+                    ZonedDateTime.now().minusMonths(7)
                 )
                 return@with (ubruktInternBehov to bruktInternBehov)
             }
