@@ -191,7 +191,7 @@ private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.notFo
     cause: T
 ) {
     call.respond(HttpStatusCode.NotFound)
-    throw cause
+    MAINLOGGER.warn(cause) { "Not found" }
 }
 
 class BadRequestException : RuntimeException()
