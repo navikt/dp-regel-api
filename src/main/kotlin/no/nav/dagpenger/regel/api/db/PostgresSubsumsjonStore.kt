@@ -1,10 +1,6 @@
 package no.nav.dagpenger.regel.api.db
 
 import io.prometheus.client.Histogram
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.ZonedDateTime
-import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -23,6 +19,10 @@ import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PGobject
 import org.postgresql.util.PSQLException
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZonedDateTime
+import javax.sql.DataSource
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -113,7 +113,8 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                 queryOf(
                     """
                         |SELECT behov.*, ekstern_id, kontekst from v2_behov as behov, v1_behov_behandling_mapping as behandling WHERE behov.id = :id AND behov.behandlings_id = behandling.id 
-                    """.trimMargin(), mapOf("id" to behovId.id)
+                    """.trimMargin(),
+                    mapOf("id" to behovId.id)
                 ).map { row ->
                     InternBehov(
                         behovId = BehovId(row.string("id")),
@@ -153,7 +154,8 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                         """
                             DELETE FROM v2_subsumsjon WHERE behov_id = :id;
                             DELETE FROM v2_behov WHERE id = :id;
-                        """.trimIndent(), mapOf(
+                        """.trimIndent(),
+                        mapOf(
                             "id" to subsumsjon.behovId.id
                         )
                     ).asUpdate
@@ -170,7 +172,8 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                         queryOf(
                             """
                                 UPDATE v2_subsumsjon SET brukt = true WHERE data -> '$resultatNøkkel' ->> 'subsumsjonsId' = :id
-                            """.trimMargin(), mapOf("id" to internSubsumsjonBrukt.id)
+                            """.trimMargin(),
+                            mapOf("id" to internSubsumsjonBrukt.id)
                         ).asUpdate
                     )
                 }
@@ -210,9 +213,11 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
 
     override fun getSubsumsjon(behovId: BehovId): Subsumsjon = withTimer<Subsumsjon>("getSubsumsjon") {
         val json = using(sessionOf(dataSource)) { session ->
-            session.run(queryOf(""" SELECT data FROM v2_subsumsjon WHERE behov_id = ? """, behovId.id)
-                .map { row -> row.string("data") }
-                .asSingle)
+            session.run(
+                queryOf(""" SELECT data FROM v2_subsumsjon WHERE behov_id = ? """, behovId.id)
+                    .map { row -> row.string("data") }
+                    .asSingle
+            )
         } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with behov id $behovId")
 
         return Subsumsjon.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")

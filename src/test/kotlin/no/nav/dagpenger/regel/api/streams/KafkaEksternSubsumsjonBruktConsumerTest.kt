@@ -4,8 +4,6 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import java.time.ZonedDateTime
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Configuration
@@ -18,6 +16,8 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
+import java.time.ZonedDateTime
+import java.util.concurrent.TimeUnit
 
 val LOGGER = KotlinLogging.logger { }
 
@@ -59,7 +59,8 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
                     bootStapServerUrl = Kafka.instance.bootstrapServers
                 ).also {
                     it[ProducerConfig.ACKS_CONFIG] = "all"
-                })
+                }
+            )
             val bruktSubsumsjon =
                 EksternSubsumsjonBrukt(
                     id = "test",

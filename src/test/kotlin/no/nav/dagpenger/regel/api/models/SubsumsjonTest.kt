@@ -2,10 +2,10 @@ package no.nav.dagpenger.regel.api.models
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import java.time.LocalDate
-import java.time.YearMonth
 import no.nav.dagpenger.events.Problem
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.YearMonth
 
 internal class SubsumsjonTest {
 

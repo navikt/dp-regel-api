@@ -1,10 +1,6 @@
 package no.nav.dagpenger.regel.api.db
 
 import io.prometheus.client.Counter
-import java.time.Instant
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
-import javax.sql.DataSource
 import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
@@ -16,6 +12,10 @@ import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PSQLException
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import javax.sql.DataSource
 
 private val LOGGER = KotlinLogging.logger {}
 

@@ -11,7 +11,6 @@ import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
-import java.time.LocalDate
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -20,6 +19,7 @@ import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 internal class SubsumsjonRouteTest {
 
@@ -48,9 +48,11 @@ internal class SubsumsjonRouteTest {
             every { this@apply.getSubsumsjon(BehovId("01DSFGFVF3C1D1QQR69C7BRJT5")) } returns subsumsjon
         }
 
-        withTestApplication(MockApi(
-            subsumsjonStore = storeMock
-        )) {
+        withTestApplication(
+            MockApi(
+                subsumsjonStore = storeMock
+            )
+        ) {
 
             handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/01DSFGFVF3C1D1QQR69C7BRJT5")
                 .apply {
@@ -84,9 +86,11 @@ internal class SubsumsjonRouteTest {
             every { this@apply.getSubsumsjonByResult(SubsumsjonId(id)) } returns subsumsjon
         }
 
-        withTestApplication(MockApi(
-            subsumsjonStore = storeMock
-        )) {
+        withTestApplication(
+            MockApi(
+                subsumsjonStore = storeMock
+            )
+        ) {
 
             handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/result/$id")
                 .apply {
@@ -109,9 +113,11 @@ internal class SubsumsjonRouteTest {
 
         every { storeMock.getSubsumsjon(BehovId("01DSFGJBRYVBX2CNJKHJ0BB2W9")) } throws SubsumsjonNotFoundException("Not found")
 
-        withTestApplication(MockApi(
-            subsumsjonStore = storeMock
-        )) {
+        withTestApplication(
+            MockApi(
+                subsumsjonStore = storeMock
+            )
+        ) {
             shouldThrow<SubsumsjonNotFoundException> {
                 handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/01DSFGJBRYVBX2CNJKHJ0BB2W9")
             }

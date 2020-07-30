@@ -2,11 +2,11 @@ package no.nav.dagpenger.regel.api.models
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import java.time.YearMonth
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.inntekt.v1.Inntekt
 import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntektMåned
 import org.junit.jupiter.api.Test
+import java.time.YearMonth
 
 internal class InntektsPeriodeTest {
 
@@ -24,11 +24,13 @@ internal class InntektsPeriodeTest {
     @Test
     fun `Mapping from Packet`() {
         val inntektsPeriode = Packet().apply {
-            putValue(PacketKeys.BRUKT_INNTEKTSPERIODE,
+            putValue(
+                PacketKeys.BRUKT_INNTEKTSPERIODE,
                 mapOf(
                     Pair("førsteMåned", "2019-01"),
                     Pair("sisteMåned", "2019-02")
-                ))
+                )
+            )
         }.let { InntektsPeriode.fromPacket(it) }
 
         inntektsPeriode shouldNotBe null
@@ -51,14 +53,19 @@ internal class InntektTest {
 
     @Test
     fun `Mapping from Packet`() {
-        val inntekt = inntektFrom(Packet().apply {
-            putValue(PacketKeys.INNTEKT, mapOf(
-                Pair("inntektsId", "id"),
-                Pair("inntektsListe", listOf<String>()),
-                Pair("manueltRedigert", true),
-                Pair("sisteAvsluttendeKalenderMåned", YearMonth.now().toString()))
-            )
-        })
+        val inntekt = inntektFrom(
+            Packet().apply {
+                putValue(
+                    PacketKeys.INNTEKT,
+                    mapOf(
+                        Pair("inntektsId", "id"),
+                        Pair("inntektsListe", listOf<String>()),
+                        Pair("manueltRedigert", true),
+                        Pair("sisteAvsluttendeKalenderMåned", YearMonth.now().toString())
+                    )
+                )
+            }
+        )
 
         inntekt shouldNotBe null
         inntekt?.let {

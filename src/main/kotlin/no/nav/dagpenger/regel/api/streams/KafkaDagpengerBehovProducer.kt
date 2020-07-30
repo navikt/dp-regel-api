@@ -1,8 +1,5 @@
 package no.nav.dagpenger.regel.api.streams
 
-import java.io.File
-import java.util.Properties
-import java.util.concurrent.Future
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.models.InternBehov
@@ -19,6 +16,9 @@ import org.apache.kafka.common.KafkaException
 import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.StringSerializer
+import java.io.File
+import java.util.Properties
+import java.util.concurrent.Future
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -79,12 +79,14 @@ internal class KafkaDagpengerBehovProducer(private val kafkaProps: Properties, p
     private val kafkaProducer = KafkaProducer<String, Packet>(kafkaProps, behovTopic.keySerde.serializer(), behovTopic.valueSerde.serializer())
 
     init {
-        Runtime.getRuntime().addShutdownHook(Thread {
-            LOGGER.info("Closing dp-regel-api Kafka producer")
-            kafkaProducer.flush()
-            kafkaProducer.close()
-            LOGGER.info("done! ")
-        })
+        Runtime.getRuntime().addShutdownHook(
+            Thread {
+                LOGGER.info("Closing dp-regel-api Kafka producer")
+                kafkaProducer.flush()
+                kafkaProducer.close()
+                LOGGER.info("done! ")
+            }
+        )
     }
 
     override fun status(): HealthStatus {

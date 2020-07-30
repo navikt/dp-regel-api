@@ -1,9 +1,6 @@
 package no.nav.dagpenger.regel.api.streams
 
 import io.prometheus.client.Summary
-import java.sql.SQLTransientConnectionException
-import java.time.Duration
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,6 +18,9 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.errors.RetriableException
 import org.apache.kafka.common.serialization.StringDeserializer
+import java.sql.SQLTransientConnectionException
+import java.time.Duration
+import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger { }
 
@@ -29,7 +29,8 @@ private val summary: Summary = Summary.Builder()
     .help("Tid brukt til å consumere  privat-dagpenger-subsumsjon-brukt topic")
     .register()
 
-internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
+internal object KafkaSubsumsjonBruktConsumer :
+    HealthCheck,
     CoroutineScope {
 
     const val SERVICE_APP_ID = "dp-regel-api-sub-brukt"
@@ -88,7 +89,8 @@ internal object KafkaSubsumsjonBruktConsumer : HealthCheck,
                             bruktSubsumsjonStrategy.handle(
                                 records.asSequence()
                                     .map { r -> EksternSubsumsjonBrukt.fromJson(r.value()) }
-                                    .filterNotNull())
+                                    .filterNotNull()
+                            )
                             logger.info { " Brukte  ${timer.observeDuration()} sekunder på ${records.count()} events" }
                         }
                     }

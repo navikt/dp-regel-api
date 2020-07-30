@@ -1,8 +1,6 @@
 package no.nav.dagpenger.regel.api.streams
 
 import io.prometheus.client.Summary
-import java.time.Duration
-import java.time.LocalDateTime
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -13,6 +11,8 @@ import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon.Mapper.subsumsjonFrom
 import no.nav.dagpenger.regel.api.models.behovId
 import no.nav.dagpenger.regel.api.models.kontekst
+import java.time.Duration
+import java.time.LocalDateTime
 
 private val LOGGER = KotlinLogging.logger {}
 

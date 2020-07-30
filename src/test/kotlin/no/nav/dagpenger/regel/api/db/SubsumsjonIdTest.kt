@@ -3,10 +3,10 @@ package no.nav.dagpenger.regel.api.db
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
-import java.util.UUID
 import no.nav.dagpenger.regel.api.models.IllegalUlidException
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import org.junit.jupiter.api.Test
+import java.util.UUID
 
 internal class SubsumsjonIdTest {
 

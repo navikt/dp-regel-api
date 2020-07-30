@@ -16,10 +16,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verifyAll
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.ZonedDateTime
-import java.util.concurrent.Future
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -35,6 +31,10 @@ import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZonedDateTime
+import java.util.concurrent.Future
 
 class BehovRouteTest {
 
@@ -55,9 +55,11 @@ class BehovRouteTest {
         every { storeMock.behovStatus(BehovId("01DSFG798QNFAWXNFGZF0J2APX")) } returns Status.Done(BehovId("01DSFGCKM9TEZ94X872C7H4QB4"))
         every { storeMock.behovStatus(BehovId("01DSFG7JVZVVD2ZK7K7HG9SNVG")) } throws BehovNotFoundException("not found")
 
-        withTestApplication(MockApi(
-            subsumsjonStore = storeMock
-        )) {
+        withTestApplication(
+            MockApi(
+                subsumsjonStore = storeMock
+            )
+        ) {
 
             handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG6P7969DP56BPW2EDS1RN")
                 .apply {
@@ -98,14 +100,17 @@ class BehovRouteTest {
             every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
         }
 
-        withTestApplication(MockApi(
-            subsumsjonStoreMock,
-            kafkaMock
-        )) {
+        withTestApplication(
+            MockApi(
+                subsumsjonStoreMock,
+                kafkaMock
+            )
+        ) {
 
             handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                setBody("""
+                setBody(
+                    """
             {
                 "aktorId": "1234",
                 "vedtakId": 1,
@@ -117,7 +122,8 @@ class BehovRouteTest {
                 "antallBarn": 1,
                 "lærling": false
             }
-            """.trimIndent())
+                    """.trimIndent()
+                )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
                 withClue("Response should be handled") { requestHandled shouldBe true }
@@ -159,14 +165,17 @@ class BehovRouteTest {
             every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
         }
 
-        withTestApplication(MockApi(
-            subsumsjonStoreMock,
-            kafkaMock
-        )) {
+        withTestApplication(
+            MockApi(
+                subsumsjonStoreMock,
+                kafkaMock
+            )
+        ) {
 
             handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
-                setBody("""
+                setBody(
+                    """
             {
                 "regelkontekst" : { "type" : "vedtak", "id" : "45678" },
                 "aktorId": "1234",
@@ -178,7 +187,8 @@ class BehovRouteTest {
                 "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
                 "antallBarn": 1
             }
-            """.trimIndent())
+                    """.trimIndent()
+                )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
                 withClue("Response should be handled") { requestHandled shouldBe true }
@@ -257,33 +267,37 @@ class BehovRouteTest {
 internal class BehovRequestMappingTest {
     @Test
     fun `Add antallBarn to behov if not present in request`() {
-        val behov = mapRequestToBehov(BehovRequest(
-            aktorId = "aktorId",
-            vedtakId = 1,
-            beregningsdato = LocalDate.of(2019, 11, 7),
-            harAvtjentVerneplikt = null,
-            oppfyllerKravTilFangstOgFisk = null,
-            bruktInntektsPeriode = null,
-            manueltGrunnlag = null,
-            lærling = null,
-            antallBarn = null
-        ))
+        val behov = mapRequestToBehov(
+            BehovRequest(
+                aktorId = "aktorId",
+                vedtakId = 1,
+                beregningsdato = LocalDate.of(2019, 11, 7),
+                harAvtjentVerneplikt = null,
+                oppfyllerKravTilFangstOgFisk = null,
+                bruktInntektsPeriode = null,
+                manueltGrunnlag = null,
+                lærling = null,
+                antallBarn = null
+            )
+        )
         behov.antallBarn shouldBe 0
     }
 
     @Test
     fun `InntektsId should default to null if not present in request`() {
-        val behov = mapRequestToBehov(BehovRequest(
-            aktorId = "aktorId",
-            vedtakId = 1,
-            beregningsdato = LocalDate.of(2019, 11, 7),
-            harAvtjentVerneplikt = null,
-            oppfyllerKravTilFangstOgFisk = null,
-            bruktInntektsPeriode = null,
-            manueltGrunnlag = null,
-            lærling = null,
-            antallBarn = null
-        ))
+        val behov = mapRequestToBehov(
+            BehovRequest(
+                aktorId = "aktorId",
+                vedtakId = 1,
+                beregningsdato = LocalDate.of(2019, 11, 7),
+                harAvtjentVerneplikt = null,
+                oppfyllerKravTilFangstOgFisk = null,
+                bruktInntektsPeriode = null,
+                manueltGrunnlag = null,
+                lærling = null,
+                antallBarn = null
+            )
+        )
         behov.inntektsId shouldBe null
     }
 }

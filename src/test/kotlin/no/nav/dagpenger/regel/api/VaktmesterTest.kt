@@ -3,8 +3,6 @@ package no.nav.dagpenger.regel.api
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import java.time.LocalDate
-import java.time.ZonedDateTime
 import kotlinx.coroutines.runBlocking
 import kotliquery.queryOf
 import kotliquery.sessionOf
@@ -23,6 +21,8 @@ import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.LocalDate
+import java.time.ZonedDateTime
 
 internal class VaktmesterTest {
 

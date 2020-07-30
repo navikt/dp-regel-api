@@ -1,9 +1,9 @@
 package no.nav.dagpenger.regel.api.models
 
 import io.kotest.matchers.shouldBe
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.YearMonth
-import org.junit.jupiter.api.Test
 
 class InternBehovTest {
 
