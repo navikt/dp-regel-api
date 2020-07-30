@@ -32,9 +32,11 @@ class ActuatorRouteTest {
             every { this@apply.status() } returns HealthStatus.UP
         }
 
-        withTestApplication(MockApi(
-            healthChecks = listOf(healthCheck, healthCheck)
-        )) {
+        withTestApplication(
+            MockApi(
+                healthChecks = listOf(healthCheck, healthCheck)
+            )
+        ) {
             handleRequest(HttpMethod.Get, "/isAlive").apply {
                 response.status() shouldBe HttpStatusCode.OK
                 response.content shouldBe "ALIVE"
@@ -53,9 +55,11 @@ class ActuatorRouteTest {
             every { this@apply.status() } returns HealthStatus.UP andThen HealthStatus.DOWN
         }
 
-        withTestApplication(MockApi(
-            healthChecks = listOf(healthCheck, healthCheck)
-        )) {
+        withTestApplication(
+            MockApi(
+                healthChecks = listOf(healthCheck, healthCheck)
+            )
+        ) {
             handleRequest(HttpMethod.Get, "/isAlive").apply {
                 response.status() shouldBe HttpStatusCode.ServiceUnavailable
             }

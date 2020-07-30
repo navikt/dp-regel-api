@@ -10,9 +10,6 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotContain
 import io.mockk.mockk
 import io.prometheus.client.CollectorRegistry
-import java.time.LocalDate
-import java.time.YearMonth
-import kotlin.test.assertEquals
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -32,6 +29,9 @@ import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.testcontainers.containers.PostgreSQLContainer
+import java.time.LocalDate
+import java.time.YearMonth
+import kotlin.test.assertEquals
 
 internal object PostgresContainer {
     val instance by lazy {
@@ -120,12 +120,16 @@ class PostgresSubsumsjonStoreTest {
 
     @Test
     fun `Store health check DOWN`() {
-        with(PostgresSubsumsjonStore(HikariDataSource().apply {
-            username = PostgresContainer.instance.username
-            password = "BAD PASSWORD"
-            jdbcUrl = PostgresContainer.instance.jdbcUrl
-            connectionTimeout = 1000L
-        })) {
+        with(
+            PostgresSubsumsjonStore(
+                HikariDataSource().apply {
+                    username = PostgresContainer.instance.username
+                    password = "BAD PASSWORD"
+                    jdbcUrl = PostgresContainer.instance.jdbcUrl
+                    connectionTimeout = 1000L
+                }
+            )
+        ) {
             status() shouldBe HealthStatus.DOWN
         }
     }

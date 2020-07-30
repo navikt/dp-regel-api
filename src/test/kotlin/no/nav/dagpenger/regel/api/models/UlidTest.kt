@@ -1,11 +1,11 @@
 package no.nav.dagpenger.regel.api.models
 
 import io.kotest.assertions.throwables.shouldThrow
+import no.nav.dagpenger.regel.api.moshiInstance
+import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import no.nav.dagpenger.regel.api.moshiInstance
-import org.junit.jupiter.api.Test
 
 class UlidTest {
     @Test
@@ -49,8 +49,10 @@ class UlidTest {
         val subsumsjonAdapter = moshiInstance.adapter(SubsumsjonId::class.java)
         val jsonBehov = behovAdapter.toJson(BehovId("01DSFTA586H33ESMTYMY6QD4ZD"))
         val jsonSubsumsjon = subsumsjonAdapter.toJson(SubsumsjonId("01DSJ0SHHV49MJA6EJ8B7PSSXJ"))
-        val behovShouldBe = """"01DSFTA586H33ESMTYMY6QD4ZD""""
-        val subsumsjonShouldBe = """"01DSJ0SHHV49MJA6EJ8B7PSSXJ""""
+        val behovShouldBe =
+            """"01DSFTA586H33ESMTYMY6QD4ZD""""
+        val subsumsjonShouldBe =
+            """"01DSJ0SHHV49MJA6EJ8B7PSSXJ""""
 
         assertEquals(behovShouldBe, jsonBehov)
         assertEquals(subsumsjonShouldBe, jsonSubsumsjon)

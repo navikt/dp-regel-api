@@ -3,8 +3,6 @@ package no.nav.dagpenger.regel.api.streams
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import java.time.LocalDate
-import java.util.concurrent.TimeUnit
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.InternBehov
@@ -14,6 +12,8 @@ import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.Topics
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
+import java.time.LocalDate
+import java.util.concurrent.TimeUnit
 
 private object Kafka {
     val instance by lazy {
@@ -27,10 +27,12 @@ internal class KafkaDagpengerBehovProducerTest {
     @Test
     fun `Produce packet should success`() {
         KafkaDagpengerBehovProducer(producerConfig("APP", Kafka.instance.bootstrapServers, null), Topics.DAGPENGER_BEHOV_PACKET_EVENT).apply {
-            val metadata = produceEvent(InternBehov.fromBehov(
-                behov = Behov(aktørId = "aktorId", vedtakId = 1, beregningsDato = LocalDate.now()),
-                behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("123", Kontekst.VEDTAK))
-            )).get(5, TimeUnit.SECONDS)
+            val metadata = produceEvent(
+                InternBehov.fromBehov(
+                    behov = Behov(aktørId = "aktorId", vedtakId = 1, beregningsDato = LocalDate.now()),
+                    behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("123", Kontekst.VEDTAK))
+                )
+            ).get(5, TimeUnit.SECONDS)
 
             metadata shouldNotBe null
             metadata.hasOffset() shouldBe true

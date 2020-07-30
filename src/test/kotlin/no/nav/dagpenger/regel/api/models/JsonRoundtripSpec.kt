@@ -12,8 +12,8 @@ import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.next
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
-import java.time.LocalDate
 import no.nav.dagpenger.events.Problem
+import java.time.LocalDate
 
 class JsonRoundtripSpec : StringSpec() {
     init {
@@ -41,7 +41,8 @@ private val subsumsjonGenerator = arb {
             faktum = Faktum(
                 aktorId = stringArb.next(it),
                 vedtakId = Arb.int(0, 10000).next(it),
-                beregningsdato = Arb.localDate(minYear = 2010, maxYear = LocalDate.now().year).next(it)),
+                beregningsdato = Arb.localDate(minYear = 2010, maxYear = LocalDate.now().year).next(it)
+            ),
             grunnlagResultat = Arb.map(stringArb, stringArb).next(it),
             periodeResultat = Arb.map(stringArb, stringArb).next(it),
             minsteinntektResultat = Arb.map(stringArb, stringArb).next(it),

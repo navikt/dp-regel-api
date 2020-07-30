@@ -1,7 +1,5 @@
 package no.nav.dagpenger.regel.api.db
 
-import java.time.ZoneId
-import java.time.ZonedDateTime
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
@@ -11,6 +9,8 @@ import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 interface SubsumsjonStore {
 

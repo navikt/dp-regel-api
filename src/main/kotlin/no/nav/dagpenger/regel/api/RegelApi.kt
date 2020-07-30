@@ -24,8 +24,6 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
-import java.util.concurrent.TimeUnit
-import kotlin.concurrent.fixedRateTimer
 import kotlinx.coroutines.cancel
 import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
@@ -51,6 +49,8 @@ import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
 import no.nav.dagpenger.regel.api.streams.producerConfig
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.fixedRateTimer
 
 private val MAINLOGGER = KotlinLogging.logger {}
 
@@ -71,7 +71,8 @@ fun main() {
             MAINLOGGER.info { "Vaktmesteren rydder IKKE" }
             // vaktmester.rydd()
             MAINLOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
-        })
+        }
+    )
 
     val kafkaConsumer =
         KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), config)).also {
@@ -113,11 +114,13 @@ fun main() {
         it.start(wait = false)
     }
 
-    Runtime.getRuntime().addShutdownHook(Thread {
-        kafkaConsumer.stop()
-        bruktSubsumsjonConsumer.cancel()
-        app.stop(10000, 60000)
-    })
+    Runtime.getRuntime().addShutdownHook(
+        Thread {
+            kafkaConsumer.stop()
+            bruktSubsumsjonConsumer.cancel()
+            app.stop(10000, 60000)
+        }
+    )
 }
 
 internal fun Application.api(
@@ -140,8 +143,8 @@ internal fun Application.api(
 
         filter { call ->
             !call.request.path().startsWith("/isAlive") &&
-                    !call.request.path().startsWith("/isReady") &&
-                    !call.request.path().startsWith("/metrics")
+                !call.request.path().startsWith("/isReady") &&
+                !call.request.path().startsWith("/metrics")
         }
     }
 

@@ -11,7 +11,6 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
-import java.time.LocalDate
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -21,6 +20,7 @@ import no.nav.dagpenger.regel.api.models.InntektsPeriode
 import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
+import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
