@@ -1,8 +1,36 @@
-apiVersion: "nais.io/v1alpha1"
-kind: "Application"
+apiVersion: nais.io/v1alpha1
+kind: Application
 metadata:
-  name: dp-regel-api
+  name: {{app}}
+  namespace: {{namespace}}
+  labels:
+    team: {{team}}
 spec:
+  image: {{ image }}
+  env:
+    - name: FEATURE_GJUSTERING
+      value: "false"
+  port: 8092
+  liveness:
+    path: /isAlive
+  readiness:
+    path: /isReady
+  prometheus:
+    enabled: true
+    path: /metrics
+  replicas:
+    min: 2
+    max: 3
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
   ingresses:
     - "https://dp-regel-api.nais.preprod.local"
-
+  secureLogs:
+    enabled: true
+  vault:
+    enabled: true
