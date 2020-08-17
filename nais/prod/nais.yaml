@@ -20,11 +20,11 @@ spec:
     max: 3
   resources:
     limits:
-      cpu: 500m
-      memory: 1024Mi
+      cpu: 1000m
+      memory: 2024Mi
     requests:
-      cpu: 300m
-      memory: 512Mi
+      cpu: 800m
+      memory: 1024Mi
   ingresses:
     - "https://dp-regel-api.nais.adeo.no"
   secureLogs:
