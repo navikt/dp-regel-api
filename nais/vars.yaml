@@ -1,4 +1,3 @@
-app: dp-regel-grunnlag
+app: dp-regel-api
 namespace: teamdagpenger
 team: teamdagpenger
-service_user: srvdp-regel-grunnlag
