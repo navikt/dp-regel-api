@@ -7,9 +7,6 @@ metadata:
     team: {{team}}
 spec:
   image: {{ image }}
-  env:
-    - name: FEATURE_GJUSTERING
-      value: "false"
   port: 8092
   liveness:
     path: /isAlive
