@@ -45,7 +45,8 @@ class PostgresBruktSubsumsjonStore(
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
-                    """SELECT * FROM v2_subsumsjon_brukt""", emptyMap()
+                    """SELECT * FROM v2_subsumsjon_brukt""",
+                    emptyMap()
                 ).map { r ->
                     extractInternSubsumsjonBrukt(r)
                 }.asList
@@ -65,7 +66,8 @@ class PostgresBruktSubsumsjonStore(
             behandlingsId = behandlingsId.id,
             arenaTs = eksternSubsumsjonBrukt.arenaTs,
             created = ZonedDateTime.ofInstant(
-                Instant.ofEpochMilli(eksternSubsumsjonBrukt.ts), ZoneOffset.UTC
+                Instant.ofEpochMilli(eksternSubsumsjonBrukt.ts),
+                ZoneOffset.UTC
             )
         )
     }
