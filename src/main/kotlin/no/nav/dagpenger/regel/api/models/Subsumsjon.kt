@@ -33,6 +33,10 @@ data class Subsumsjon(
     }
 
     fun toJson(): String = toJson(this)
+
+    infix fun sammeMinsteinntektResultatSom(annen: Subsumsjon) =
+        this.minsteinntektResultat?.get("oppfyllerMinsteinntekt") ==
+            annen.minsteinntektResultat?.get("oppfyllerMinsteinntekt")
 }
 
 // todo Remove once "minsteinntektInntektsPerioder" is part of the result and return the map
