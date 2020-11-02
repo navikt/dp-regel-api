@@ -123,14 +123,15 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                         harAvtjentVerneplikt = row.boolean("avtjent_verne_plikt"),
                         oppfyllerKravTilFangstOgFisk = row.boolean("oppfyller_krav_til_fangst_og_fisk"),
 
-                        bruktInntektsPeriode = row.localDateOrNull("brukt_opptjening_forste_maned")?.toYearMonth()?.let { førsteMåned ->
-                            row.localDateOrNull("brukt_opptjening_siste_maned")?.toYearMonth()?.let { sisteMåned ->
-                                InntektsPeriode(
-                                    førsteMåned = førsteMåned,
-                                    sisteMåned = sisteMåned
-                                )
-                            }
-                        },
+                        bruktInntektsPeriode = row.localDateOrNull("brukt_opptjening_forste_maned")?.toYearMonth()
+                            ?.let { førsteMåned ->
+                                row.localDateOrNull("brukt_opptjening_siste_maned")?.toYearMonth()?.let { sisteMåned ->
+                                    InntektsPeriode(
+                                        førsteMåned = førsteMåned,
+                                        sisteMåned = sisteMåned
+                                    )
+                                }
+                            },
                         antallBarn = row.intOrNull("antall_barn"),
                         manueltGrunnlag = row.intOrNull("manuelt_grunnlag"),
                         inntektsId = row.stringOrNull("inntekts_id"),
@@ -238,6 +239,13 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                 Subsumsjon.fromJson(it)
             }.firstOrNull()
                 ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
+        }
+
+    override fun getSubsumsjonerByResults(subsumsjonIder: List<SubsumsjonId>): List<Subsumsjon> =
+        withTimer<List<Subsumsjon>>("getSubsumsjonerByResults") {
+            return subsumsjonIder.map { subsumsjonId ->
+                getSubsumsjonByResult(subsumsjonId)
+            }
         }
 
     private fun getSubsumsjonByResult(resultatNøkkel: String, subsumsjonId: SubsumsjonId): String? {

@@ -33,6 +33,7 @@ interface SubsumsjonStore {
     fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime = ZonedDateTime.now(ZoneId.of("UTC"))): Int
     fun getSubsumsjon(behovId: BehovId): Subsumsjon
     fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon
+    fun getSubsumsjonerByResults(subsumsjonIder: List<SubsumsjonId>): List<Subsumsjon>
     fun delete(subsumsjon: Subsumsjon)
     fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt)
 }
