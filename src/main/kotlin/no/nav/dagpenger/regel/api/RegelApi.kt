@@ -38,6 +38,7 @@ import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.models.IllegalUlidException
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.routing.behov
+import no.nav.dagpenger.regel.api.routing.lovverk
 import no.nav.dagpenger.regel.api.routing.metrics
 import no.nav.dagpenger.regel.api.routing.naischecks
 import no.nav.dagpenger.regel.api.routing.subsumsjon
@@ -179,6 +180,7 @@ internal fun Application.api(
         behov(subsumsjonStore, kafkaProducer)
         subsumsjon(subsumsjonStore)
         naischecks(healthChecks)
+        lovverk(subsumsjonStore, kafkaProducer)
         metrics()
     }
 }
