@@ -34,6 +34,18 @@ class LovverkRouteTest {
         problem = null
     )
 
+    val subsumsjonStore = mockk<SubsumsjonStore>().apply {
+        every { behovStatus(any()) } returns Status.Done(BehovId(ULID().nextULID()))
+        every { getSubsumsjonerByResults(any()) } returns listOf(subsumsjonMock)
+        every { getBehov(any()) } returns InternBehov(
+            aktørId = "abc",
+            behandlingsId = mockk(),
+            beregningsDato = LocalDate.of(2020, 1, 13)
+        )
+    }
+
+    internal val behovProducer = mockk<DagpengerBehovProducer>(relaxed = true)
+
     @Test
     fun `401 on unauthorized requests`() {
         withTestApplication(MockApi()) {
@@ -47,69 +59,67 @@ class LovverkRouteTest {
     }
 
     @Test
-    fun `må ikke reberegnes når begge har samme resultat på oppfyllerKravTilMinsteinntekt`() {
-
-        val subsumsjonStore = mockk<SubsumsjonStore>().apply {
-            every { behovStatus(any()) } returns Status.Done(BehovId(ULID().nextULID()))
-            every { getSubsumsjonByResult(any()) } returns subsumsjonMock
+    fun `må ikke reberegnes når begge har samme resultat på oppfyllerMinsteinntekt`() {
+        subsumsjonStore.apply {
             every { getSubsumsjon(any()) } returns subsumsjonMock
-            every { getBehov(any()) } returns InternBehov(aktørId = "abc", behandlingsId = mockk(), beregningsDato = LocalDate.of(2020, 1, 13))
         }
-        val behovProducer = mockk<DagpengerBehovProducer>(relaxed = true)
-        withTestApplication(MockApi(subsumsjonStore = subsumsjonStore, kafkaDagpengerBehovProducer = behovProducer)) {
-            handleAuthenticatedRequest(HttpMethod.Post, "/lovverk/krever-ny-behandling") {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody(
-                    """
-{
-    "dato": "2020-01-13",
-    "subsumsjoner": ["$subsumsjonId1", "$subsumsjonId2"]
-}
-                    """.trimIndent()
-                )
-            }
-                .apply {
-                    response.status() shouldBe HttpStatusCode.OK
-                    withClue("Response should be handled") { requestHandled shouldBe true }
-                    response.content shouldBe """{"reberegnes":false}"""
-                    verify { subsumsjonStore.getSubsumsjonByResult(SubsumsjonId(subsumsjonId1)) }
-                    verify { subsumsjonStore.getSubsumsjonByResult(SubsumsjonId(subsumsjonId2)) }
+
+        testApplicationRequest(subsumsjonStore)
+            .apply {
+                response.status() shouldBe HttpStatusCode.OK
+                withClue("Response should be handled") { requestHandled shouldBe true }
+                response.content shouldBe """{"reberegnes":false}"""
+                verify {
+                    subsumsjonStore.getSubsumsjonerByResults(
+                        listOf(
+                            SubsumsjonId(subsumsjonId1),
+                            SubsumsjonId(subsumsjonId2)
+                        )
+                    )
                 }
-        }
+            }
     }
 
     @Test
-    fun `må reberegnes når subsumsjoner har ulike resultat på oppfyllerKravTilMinsteinntekt`() {
-        val subsumsjonStore = mockk<SubsumsjonStore>().apply {
-            every { behovStatus(any()) } returns Status.Done(BehovId(ULID().nextULID()))
-            every { getSubsumsjonByResult(any()) } returns subsumsjonMock
-            every { getSubsumsjon(any()) } returns subsumsjonMock.copy(minsteinntektResultat = mapOf("oppfyllerMinsteinntekt" to false))
-            every { getBehov(any()) } returns InternBehov(aktørId = "abc", behandlingsId = mockk(), beregningsDato = LocalDate.of(2020, 1, 13))
+    fun `må reberegnes når subsumsjoner har ulike resultat på oppfyllerMinsteinntekt`() {
+        subsumsjonStore.apply {
+            every { getSubsumsjon(any()) } returns
+                subsumsjonMock.copy(minsteinntektResultat = mapOf("oppfyllerMinsteinntekt" to false))
         }
-        val behovProducer = mockk<DagpengerBehovProducer>(relaxed = true)
-        withTestApplication(MockApi(subsumsjonStore = subsumsjonStore, kafkaDagpengerBehovProducer = behovProducer)) {
-            handleAuthenticatedRequest(HttpMethod.Post, "/lovverk/krever-ny-behandling") {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody(
-                    """
-{
-    "dato": "2020-01-13",
-    "subsumsjoner": ["$subsumsjonId1", "$subsumsjonId2"]
-}
-                    """.trimIndent()
-                )
-            }
-                .apply {
-                    response.status() shouldBe HttpStatusCode.OK
-                    withClue("Response should be handled") { requestHandled shouldBe true }
-                    response.content shouldBe """{"reberegnes":true}"""
-                    verify { subsumsjonStore.getSubsumsjonByResult(SubsumsjonId(subsumsjonId1)) }
+
+        testApplicationRequest(subsumsjonStore)
+            .apply {
+                response.status() shouldBe HttpStatusCode.OK
+                withClue("Response should be handled") { requestHandled shouldBe true }
+                response.content shouldBe """{"reberegnes":true}"""
+                verify {
+                    subsumsjonStore.getSubsumsjonerByResults(
+                        listOf(
+                            SubsumsjonId(subsumsjonId1),
+                            SubsumsjonId(subsumsjonId2)
+                        )
+                    )
                 }
-        }
+            }
     }
 
     companion object {
         val subsumsjonId1 = ULID().nextULID()
         val subsumsjonId2 = ULID().nextULID()
     }
+
+    fun testApplicationRequest(subsumsjonStore: SubsumsjonStore) =
+        withTestApplication(MockApi(subsumsjonStore = subsumsjonStore, kafkaDagpengerBehovProducer = behovProducer)) {
+            handleAuthenticatedRequest(HttpMethod.Post, "/lovverk/krever-ny-behandling") {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                setBody(jsonRequestBody)
+            }
+        }
+
+    val jsonRequestBody =
+        """{
+    "beregningsdato": "2020-01-13",
+    "subsumsjonIder": ["$subsumsjonId1", "$subsumsjonId2"]
+     }
+        """.trimIndent()
 }

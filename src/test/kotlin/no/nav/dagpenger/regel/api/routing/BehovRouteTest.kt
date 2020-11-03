@@ -260,6 +260,10 @@ class BehovRouteTest {
             override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon {
                 TODO("not implemented")
             }
+
+            override fun getSubsumsjonerByResults(subsumsjonIder: List<SubsumsjonId>): List<Subsumsjon> {
+                TODO("Not yet implemented")
+            }
         }
     }
 }
