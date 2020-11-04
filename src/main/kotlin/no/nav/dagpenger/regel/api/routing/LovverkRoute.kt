@@ -50,6 +50,7 @@ internal fun Routing.lovverk(store: SubsumsjonStore, producer: DagpengerBehovPro
 
 suspend fun SubsumsjonStore.sjekkResultat(behovId: BehovId, subsumsjon: Subsumsjon): Boolean {
     repeat(15) {
+        LOGGER.info("Sjekker resultat. Runde: $it. For behov: $behovId og subsumsjon: $subsumsjon")
         when (this.behovStatus(behovId)) {
             is Status.Done -> return !(this.getSubsumsjon(behovId) sammeMinsteinntektResultatSom subsumsjon)
             is Status.Pending -> delay(1000)
