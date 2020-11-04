@@ -10,11 +10,14 @@ import io.ktor.routing.route
 import kotlinx.coroutines.delay
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
-import no.nav.dagpenger.regel.api.models.ulidGenerator
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
 
@@ -22,10 +25,10 @@ private val LOGGER = KotlinLogging.logger {}
 
 internal fun Routing.lovverk(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
     suspend fun Subsumsjon.måReberegnes(beregningsdato: LocalDate): Boolean {
-        store.getBehov(this.behovId).let { behov ->
-            val nyttBehov = behov.copy(behovId = BehovId(ulidGenerator.nextULID()), beregningsDato = beregningsdato)
-            producer.produceEvent(nyttBehov)
-            if (store.sjekkResultat(nyttBehov.behovId, this)) {
+        store.getBehov(this.behovId).let { internBehov ->
+            val behov = store.opprettBehov(internBehov.tilBehov(beregningsdato))
+            producer.produceEvent(behov)
+            if (store.sjekkResultat(behov.behovId, this)) {
                 return true
             }
         }
@@ -48,6 +51,23 @@ internal fun Routing.lovverk(store: SubsumsjonStore, producer: DagpengerBehovPro
         }
     }
 }
+
+private const val UBRUKT_VEDTAK_ID = -9999
+
+private fun InternBehov.tilBehov(beregningsdato: LocalDate) =
+    Behov(
+        regelkontekst = RegelKontekst(this.behovId.id, Kontekst.REVURDERING), // TODO: Underøsk litt mer, GA mente ikke var i bruk
+        aktørId = this.aktørId,
+        vedtakId = UBRUKT_VEDTAK_ID, // Skal bli slettet så lenge vedtakId ikke er markert i bruk
+        beregningsDato = beregningsdato,
+        harAvtjentVerneplikt = this.harAvtjentVerneplikt,
+        oppfyllerKravTilFangstOgFisk = this.oppfyllerKravTilFangstOgFisk,
+        bruktInntektsPeriode = this.bruktInntektsPeriode,
+        antallBarn = this.antallBarn,
+        manueltGrunnlag = this.manueltGrunnlag,
+        inntektsId = this.inntektsId,
+        lærling = this.lærling
+    )
 
 suspend fun SubsumsjonStore.sjekkResultat(behovId: BehovId, subsumsjon: Subsumsjon): Boolean {
     repeat(15) {

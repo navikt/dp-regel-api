@@ -11,6 +11,8 @@ enum class Kontekst {
     VEILEDNING,
     @Json(name = "vedtak")
     VEDTAK,
+    @Json(name = "revurdering")
+    REVURDERING,
     @Json(name = "corona")
     CORONA
 }

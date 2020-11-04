@@ -34,14 +34,17 @@ class LovverkRouteTest {
         problem = null
     )
 
+    val behov = InternBehov(
+        aktørId = "abc",
+        behandlingsId = mockk(),
+        beregningsDato = LocalDate.of(2020, 1, 13)
+    )
+
     val subsumsjonStore = mockk<SubsumsjonStore>().apply {
         every { behovStatus(any()) } returns Status.Done(BehovId(ULID().nextULID()))
         every { getSubsumsjonerByResults(any()) } returns listOf(subsumsjonMock)
-        every { getBehov(any()) } returns InternBehov(
-            aktørId = "abc",
-            behandlingsId = mockk(),
-            beregningsDato = LocalDate.of(2020, 1, 13)
-        )
+        every { opprettBehov(any()) } returns behov
+        every { getBehov(any()) } returns behov
     }
 
     internal val behovProducer = mockk<DagpengerBehovProducer>(relaxed = true)
