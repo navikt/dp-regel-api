@@ -15,7 +15,6 @@ import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
-import java.lang.RuntimeException
 import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
@@ -33,16 +32,16 @@ internal fun Routing.lovverk(store: SubsumsjonStore, producer: DagpengerBehovPro
     }
 
     authenticate {
-        route("/lovverk") {
-            post("/krever-ny-behandling") {
+        route("/lovverk/vurdering") {
+            post("/minsteinntekt") {
                 call.receive<KreverNyBehandlingParametre>().apply {
                     val beregningsdato = beregningsdato
                     val subsumsjonIder = subsumsjonIder.map { SubsumsjonId(it) }
                     store.getSubsumsjonerByResults(subsumsjonIder)
                         .any { subsumsjon -> subsumsjon.måReberegnes(beregningsdato) }
-                        .let { call.respond(MåReberegnesResponse(it)) }
+                        .let { call.respond(KreverNyVurdering(it)) }
                 }.also {
-                    LOGGER.info("Sjekker om ${it.subsumsjonIder} må reberegnes med beregningsdato ${it.beregningsdato}.")
+                    LOGGER.info("Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}.")
                 }
             }
         }
@@ -61,6 +60,6 @@ suspend fun SubsumsjonStore.sjekkResultat(behovId: BehovId, subsumsjon: Subsumsj
 
 class BehovTimeoutException : RuntimeException("Timet ut ved henting av behov")
 
-private data class MåReberegnesResponse(val reberegnes: Boolean)
+private data class KreverNyVurdering(val nyVurdering: Boolean)
 
 data class KreverNyBehandlingParametre(val subsumsjonIder: List<String>, val beregningsdato: LocalDate)

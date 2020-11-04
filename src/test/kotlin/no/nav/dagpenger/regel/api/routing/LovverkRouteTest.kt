@@ -51,9 +51,9 @@ class LovverkRouteTest {
         withTestApplication(MockApi()) {
             handleRequest(
                 HttpMethod.Post,
-                "lovverk/krever-ny-behandling"
+                "lovverk/vurdering/minsteinntekt"
             ).response.status() shouldBe HttpStatusCode.Unauthorized
-            handleRequest(HttpMethod.Post, "lovverk/krever-ny-behandling") { addHeader("X-API-KEY", "notvalid") }
+            handleRequest(HttpMethod.Post, "lovverk/vurdering/minsteinntekt") { addHeader("X-API-KEY", "notvalid") }
                 .response.status() shouldBe HttpStatusCode.Unauthorized
         }
     }
@@ -68,7 +68,7 @@ class LovverkRouteTest {
             .apply {
                 response.status() shouldBe HttpStatusCode.OK
                 withClue("Response should be handled") { requestHandled shouldBe true }
-                response.content shouldBe """{"reberegnes":false}"""
+                response.content shouldBe """{"nyVurdering":false}"""
                 verify {
                     subsumsjonStore.getSubsumsjonerByResults(
                         listOf(
@@ -91,7 +91,7 @@ class LovverkRouteTest {
             .apply {
                 response.status() shouldBe HttpStatusCode.OK
                 withClue("Response should be handled") { requestHandled shouldBe true }
-                response.content shouldBe """{"reberegnes":true}"""
+                response.content shouldBe """{"nyVurdering":true}"""
                 verify {
                     subsumsjonStore.getSubsumsjonerByResults(
                         listOf(
@@ -110,7 +110,7 @@ class LovverkRouteTest {
 
     fun testApplicationRequest(subsumsjonStore: SubsumsjonStore) =
         withTestApplication(MockApi(subsumsjonStore = subsumsjonStore, kafkaDagpengerBehovProducer = behovProducer)) {
-            handleAuthenticatedRequest(HttpMethod.Post, "/lovverk/krever-ny-behandling") {
+            handleAuthenticatedRequest(HttpMethod.Post, "/lovverk/vurdering/minsteinntekt") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(jsonRequestBody)
             }
