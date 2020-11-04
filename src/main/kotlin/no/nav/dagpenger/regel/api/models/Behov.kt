@@ -5,7 +5,7 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.moshiInstance
 import java.time.LocalDate
 
-private val ulidGenerator = ULID()
+internal val ulidGenerator = ULID()
 
 data class Behov(
     val regelkontekst: RegelKontekst? = null,
@@ -37,6 +37,7 @@ data class InternBehov(
 ) {
     fun toJson() = toJson(this)
     fun toPacket() = toPacket(this)
+
     companion object Mapper {
         private val adapter = moshiInstance.adapter(InternBehov::class.java)
 

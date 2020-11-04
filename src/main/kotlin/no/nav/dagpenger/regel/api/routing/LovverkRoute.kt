@@ -14,6 +14,7 @@ import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import no.nav.dagpenger.regel.api.models.ulidGenerator
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
 
@@ -22,7 +23,7 @@ private val LOGGER = KotlinLogging.logger {}
 internal fun Routing.lovverk(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
     suspend fun Subsumsjon.måReberegnes(beregningsdato: LocalDate): Boolean {
         store.getBehov(this.behovId).let { behov ->
-            val nyttBehov = behov.copy(beregningsDato = beregningsdato)
+            val nyttBehov = behov.copy(behovId = BehovId(ulidGenerator.nextULID()), beregningsDato = beregningsdato)
             producer.produceEvent(nyttBehov)
             if (store.sjekkResultat(nyttBehov.behovId, this)) {
                 return true
