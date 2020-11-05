@@ -56,9 +56,9 @@ private const val UBRUKT_VEDTAK_ID = -9999
 
 private fun InternBehov.tilBehov(beregningsdato: LocalDate) =
     Behov(
-        regelkontekst = RegelKontekst(this.behovId.id, Kontekst.REVURDERING), // TODO: Underøsk litt mer, GA mente ikke var i bruk
+        regelkontekst = RegelKontekst(this.behovId.id, Kontekst.REVURDERING),
         aktørId = this.aktørId,
-        vedtakId = UBRUKT_VEDTAK_ID, // Skal bli slettet så lenge vedtakId ikke er markert i bruk
+        vedtakId = UBRUKT_VEDTAK_ID,
         beregningsDato = beregningsdato,
         harAvtjentVerneplikt = this.harAvtjentVerneplikt,
         oppfyllerKravTilFangstOgFisk = this.oppfyllerKravTilFangstOgFisk,
