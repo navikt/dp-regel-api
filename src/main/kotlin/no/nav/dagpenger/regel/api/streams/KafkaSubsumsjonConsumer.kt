@@ -53,7 +53,10 @@ internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacke
     override val SERVICE_APP_ID: String = config.application.id
 
     override fun filterPredicates(): List<Predicate<String, Packet>> =
-        listOf(Predicate { _, packet -> packet.hasField(PacketKeys.BEHOV_ID) })
+        listOf(
+            Predicate { _, packet -> packet.hasField(PacketKeys.BEHOV_ID) },
+            Predicate { _, packet -> !packet.hasProblem() }
+        )
 
     override fun onPacket(packet: Packet) = packetStrategies.forEach { it.run(packet) }
 }

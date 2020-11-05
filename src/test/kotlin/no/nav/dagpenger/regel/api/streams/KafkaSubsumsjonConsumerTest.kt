@@ -8,6 +8,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyAll
 import no.nav.dagpenger.events.Packet
+import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.behovId
@@ -36,6 +37,20 @@ internal class KafkaSubsumsjonConsumerTest {
         }
         runTest(listOf(mock, mock), packet) {
             verify(exactly = 2) { mock.run(match { it.behovId.id == "01DSFHJA5MJWPW7TV0GGCSBC54" }) }
+        }
+    }
+
+    @Test
+    fun `Skip packets with problems `() {
+
+        val packet = Packet().apply {
+            this.putValue(PacketKeys.BEHOV_ID, "01DSFHJA5MJWPW7TV0GGCSBC54")
+            this.addProblem(Problem(title = "feil"))
+        }
+
+        val mock = mockk<SubsumsjonPacketStrategy>()
+        runTest(listOf(mock), packet) {
+            verifyAll { mock wasNot Called }
         }
     }
 
