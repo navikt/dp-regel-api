@@ -56,7 +56,7 @@ private const val UBRUKT_VEDTAK_ID = -9999
 
 private fun InternBehov.tilBehov(beregningsdato: LocalDate) =
     Behov(
-        regelkontekst = RegelKontekst(this.behovId.id, Kontekst.REVURDERING),
+        regelkontekst = RegelKontekst("$UBRUKT_VEDTAK_ID", Kontekst.REVURDERING),
         aktørId = this.aktørId,
         vedtakId = UBRUKT_VEDTAK_ID,
         beregningsDato = beregningsdato,
