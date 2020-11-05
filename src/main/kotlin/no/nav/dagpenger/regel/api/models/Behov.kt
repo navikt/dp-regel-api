@@ -48,7 +48,7 @@ data class InternBehov(
         fun toPacket(internBehov: InternBehov): Packet = Packet("{}").apply {
             this.putValue(PacketKeys.BEHOV_ID, internBehov.behovId.id)
             this.putValue(PacketKeys.AKTØR_ID, internBehov.aktørId)
-            if (internBehov.behandlingsId.regelKontekst.type == Kontekst.VEDTAK) {
+            if (internBehov.behandlingsId.regelKontekst.type == Kontekst.VEDTAK || internBehov.behandlingsId.regelKontekst.type == Kontekst.REVURDERING) {
                 this.putValue(PacketKeys.VEDTAK_ID, internBehov.behandlingsId.regelKontekst.id)
             }
             this.putValue(PacketKeys.KONTEKST_ID, internBehov.behandlingsId.regelKontekst.id)
