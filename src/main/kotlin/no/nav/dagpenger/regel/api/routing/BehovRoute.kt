@@ -11,6 +11,8 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -22,35 +24,39 @@ import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import java.time.LocalDate
 
-private val LOGGER = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 internal fun Routing.behov(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
     authenticate {
         route("/behov") {
             post {
-                mapRequestToBehov(call.receive()).apply {
-                    store.opprettBehov(this).also {
-                        producer.produceEvent(it)
-                    }.also {
-                        call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId.id}")
-                        call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
-                    }.also {
-                        LOGGER.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
+                withContext(IO) {
+                    mapRequestToBehov(call.receive()).apply {
+                        store.opprettBehov(this).also {
+                            producer.produceEvent(it)
+                        }.also {
+                            call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId.id}")
+                            call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
+                        }.also {
+                            logger.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
+                        }
                     }
                 }
             }
 
             route("/status") {
                 get("/{behovId}") {
-                    val behovId = BehovId(call.parameters["behovid"] ?: throw BadRequestException())
+                    withContext(IO) {
+                        val behovId = BehovId(call.parameters["behovid"] ?: throw BadRequestException())
 
-                    when (val status = store.behovStatus(behovId)) {
-                        is Status.Done -> {
-                            call.response.header(HttpHeaders.Location, "/subsumsjon/${status.behovId.id}")
-                            call.respond(HttpStatusCode.SeeOther)
-                        }
-                        is Status.Pending -> {
-                            call.respond(StatusResponse("PENDING"))
+                        when (val status = store.behovStatus(behovId)) {
+                            is Status.Done -> {
+                                call.response.header(HttpHeaders.Location, "/subsumsjon/${status.behovId.id}")
+                                call.respond(HttpStatusCode.SeeOther)
+                            }
+                            is Status.Pending -> {
+                                call.respond(StatusResponse("PENDING"))
+                            }
                         }
                     }
                 }

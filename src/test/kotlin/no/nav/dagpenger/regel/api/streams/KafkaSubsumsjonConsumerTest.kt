@@ -62,11 +62,13 @@ internal class KafkaSubsumsjonConsumerTest {
         fun runTest(strategies: List<SubsumsjonPacketStrategy>, packet: Packet, testBlock: () -> Unit) {
             SubsumsjonPond(strategies, Configuration()).let {
                 TopologyTestDriver(it.buildTopology(), config).use { topologyTestDriver ->
-                    topologyTestDriver.createInputTopic(
+                    val input = topologyTestDriver.createInputTopic(
                         Topics.DAGPENGER_BEHOV_PACKET_EVENT.name,
                         Topics.DAGPENGER_BEHOV_PACKET_EVENT.keySerde.serializer(),
                         Topics.DAGPENGER_BEHOV_PACKET_EVENT.valueSerde.serializer()
-                    ).pipeInput(packet)
+                    )
+                    input.pipeInput(packet)
+
                     testBlock()
                 }
             }

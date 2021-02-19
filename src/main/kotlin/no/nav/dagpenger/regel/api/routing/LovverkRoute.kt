@@ -7,7 +7,9 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.post
 import io.ktor.routing.route
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
@@ -38,14 +40,16 @@ internal fun Routing.lovverk(store: SubsumsjonStore, producer: DagpengerBehovPro
     authenticate {
         route("/lovverk/vurdering") {
             post("/minsteinntekt") {
-                call.receive<KreverNyBehandlingParametre>().apply {
-                    val beregningsdato = beregningsdato
-                    val subsumsjonIder = subsumsjonIder.map { SubsumsjonId(it) }
-                    store.getSubsumsjonerByResults(subsumsjonIder)
-                        .any { subsumsjon -> subsumsjon.måReberegnes(beregningsdato) }
-                        .let { call.respond(KreverNyVurdering(it)) }
-                }.also {
-                    LOGGER.info("Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}.")
+                withContext(Dispatchers.IO) {
+                    call.receive<KreverNyBehandlingParametre>().apply {
+                        val beregningsdato = beregningsdato
+                        val subsumsjonIder = subsumsjonIder.map { SubsumsjonId(it) }
+                        store.getSubsumsjonerByResults(subsumsjonIder)
+                            .any { subsumsjon -> subsumsjon.måReberegnes(beregningsdato) }
+                            .let { call.respond(KreverNyVurdering(it)) }
+                    }.also {
+                        LOGGER.info("Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}.")
+                    }
                 }
             }
         }
