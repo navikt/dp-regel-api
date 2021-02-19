@@ -4,7 +4,7 @@ import de.huxhorn.sulky.ulid.ULID
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
-import io.kotest.property.arbitrary.arb
+import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.bool
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.localDate
@@ -33,36 +33,38 @@ class JsonRoundtripSpec : StringSpec() {
     }
 }
 
-private val subsumsjonGenerator = arb {
+private val subsumsjonGenerator = arbitrary {
     val stringArb = Arb.string(10, 10)
-    generateSequence {
-        Subsumsjon(
-            behovId = BehovId(ULID().nextULID()),
-            faktum = Faktum(
-                aktorId = stringArb.next(it),
-                vedtakId = Arb.int(0, 10000).next(it),
-                beregningsdato = Arb.localDate(minYear = 2010, maxYear = LocalDate.now().year).next(it)
-            ),
-            grunnlagResultat = Arb.map(stringArb, stringArb).next(it),
-            periodeResultat = Arb.map(stringArb, stringArb).next(it),
-            minsteinntektResultat = Arb.map(stringArb, stringArb).next(it),
-            satsResultat = Arb.map(stringArb, stringArb).next(it),
-            problem = Problem(title = stringArb.next(it))
-        )
-    }
+    Subsumsjon(
+        behovId = BehovId(ULID().nextULID()),
+        faktum = Faktum(
+            aktorId = stringArb.next(it),
+            vedtakId = Arb.int(0, 10000).next(it),
+            beregningsdato = Arb.localDate(LocalDate.of(2010, 1, 1), LocalDate.of(LocalDate.now().year, 1, 1))
+                .next(it)
+        ),
+        grunnlagResultat = Arb.map(stringArb, stringArb).next(it),
+        periodeResultat = Arb.map(stringArb, stringArb).next(it),
+        minsteinntektResultat = Arb.map(stringArb, stringArb).next(it),
+        satsResultat = Arb.map(stringArb, stringArb).next(it),
+        problem = Problem(title = stringArb.next(it))
+    )
 }
 
-private val internBehovGenerator = arb {
+private val internBehovGenerator = arbitrary {
     val stringArb = Arb.string(10, 10)
-    generateSequence {
-        InternBehov(
-            aktørId = stringArb.next(it),
-            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst(Arb.string().next(it), Kontekst.VEDTAK)),
-            harAvtjentVerneplikt = Arb.bool().next(it),
-            oppfyllerKravTilFangstOgFisk = Arb.bool().next(it),
-            manueltGrunnlag = Arb.int(0, 1000).next(it),
-            antallBarn = Arb.int(0, 10).next(it),
-            beregningsDato = LocalDate.now()
-        )
-    }
+    InternBehov(
+        aktørId = stringArb.next(it),
+        behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(
+            RegelKontekst(
+                Arb.string().next(it),
+                Kontekst.VEDTAK
+            )
+        ),
+        harAvtjentVerneplikt = Arb.bool().next(it),
+        oppfyllerKravTilFangstOgFisk = Arb.bool().next(it),
+        manueltGrunnlag = Arb.int(0, 1000).next(it),
+        antallBarn = Arb.int(0, 10).next(it),
+        beregningsDato = LocalDate.now()
+    )
 }

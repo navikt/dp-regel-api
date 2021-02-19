@@ -15,7 +15,6 @@ import no.nav.dagpenger.regel.api.models.behovId
 import no.nav.dagpenger.streams.Topics
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TopologyTestDriver
-import org.apache.kafka.streams.test.ConsumerRecordFactory
 import org.junit.jupiter.api.Test
 import java.util.Properties
 
@@ -55,12 +54,6 @@ internal class KafkaSubsumsjonConsumerTest {
     }
 
     private companion object {
-        val factory = ConsumerRecordFactory<String, Packet>(
-            Topics.DAGPENGER_BEHOV_PACKET_EVENT.name,
-            Topics.DAGPENGER_BEHOV_PACKET_EVENT.keySerde.serializer(),
-            Topics.DAGPENGER_BEHOV_PACKET_EVENT.valueSerde.serializer()
-        )
-
         val config = Properties().apply {
             this[StreamsConfig.APPLICATION_ID_CONFIG] = "test"
             this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = "dummy:1234"
@@ -69,7 +62,11 @@ internal class KafkaSubsumsjonConsumerTest {
         fun runTest(strategies: List<SubsumsjonPacketStrategy>, packet: Packet, testBlock: () -> Unit) {
             SubsumsjonPond(strategies, Configuration()).let {
                 TopologyTestDriver(it.buildTopology(), config).use { topologyTestDriver ->
-                    topologyTestDriver.pipeInput(factory.create(packet))
+                    topologyTestDriver.createInputTopic(
+                        Topics.DAGPENGER_BEHOV_PACKET_EVENT.name,
+                        Topics.DAGPENGER_BEHOV_PACKET_EVENT.keySerde.serializer(),
+                        Topics.DAGPENGER_BEHOV_PACKET_EVENT.valueSerde.serializer()
+                    ).pipeInput(packet)
                     testBlock()
                 }
             }

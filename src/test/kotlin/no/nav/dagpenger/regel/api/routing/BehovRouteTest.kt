@@ -41,9 +41,9 @@ class BehovRouteTest {
     @Test
     fun `401 on unauthorized requests`() {
         withTestApplication(MockApi()) {
-            handleRequest(HttpMethod.Get, "behov/status/id").response.status() shouldBe HttpStatusCode.Unauthorized
-            handleRequest(HttpMethod.Post, "behov/").response.status() shouldBe HttpStatusCode.Unauthorized
-            handleRequest(HttpMethod.Post, "behov/") { addHeader("X-API-KEY", "notvalid") }
+            handleRequest(HttpMethod.Get, "/behov/status/id").response.status() shouldBe HttpStatusCode.Unauthorized
+            handleRequest(HttpMethod.Post, "/behov").response.status() shouldBe HttpStatusCode.Unauthorized
+            handleRequest(HttpMethod.Post, "/behov") { addHeader("X-API-KEY", "notvalid") }
                 .response.status() shouldBe HttpStatusCode.Unauthorized
         }
     }

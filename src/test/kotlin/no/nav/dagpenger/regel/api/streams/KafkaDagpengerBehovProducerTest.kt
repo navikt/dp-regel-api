@@ -12,13 +12,14 @@ import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.streams.Topics
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
+import org.testcontainers.utility.DockerImageName
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 
 private object Kafka {
     val instance by lazy {
         // See https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility
-        KafkaContainer("5.3.1").apply { this.start() }
+        KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.3.1")).apply { this.start() }
     }
 }
 

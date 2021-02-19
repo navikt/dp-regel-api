@@ -16,6 +16,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.KafkaContainer
+import org.testcontainers.utility.DockerImageName
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
@@ -24,7 +25,7 @@ val LOGGER = KotlinLogging.logger { }
 class KafkaEksternSubsumsjonBruktConsumerTest {
     private object Kafka {
         val instance by lazy {
-            KafkaContainer("5.3.1").apply { this.start() }
+            KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.3.1")).apply { this.start() }
         }
     }
 
