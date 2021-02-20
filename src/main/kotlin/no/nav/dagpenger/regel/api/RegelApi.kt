@@ -7,6 +7,7 @@ import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
+import io.ktor.auth.authenticate
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -135,7 +136,7 @@ internal fun Application.api(
     install(DefaultHeaders)
 
     install(Authentication) {
-        apiKeyAuth {
+        apiKeyAuth(name = "X-API-KEY") {
             apiKeyName = "X-API-KEY"
             validate { creds -> apiAuthApiKeyVerifier.verify(creds) }
         }
@@ -179,11 +180,14 @@ internal fun Application.api(
     }
 
     routing {
-        behov(subsumsjonStore, kafkaProducer)
-        subsumsjon(subsumsjonStore)
         naischecks(healthChecks)
-        lovverk(subsumsjonStore, kafkaProducer)
         metrics()
+
+        authenticate("X-API-KEY") {
+            subsumsjon(subsumsjonStore)
+            lovverk(subsumsjonStore, kafkaProducer)
+            behov(subsumsjonStore, kafkaProducer)
+        }
     }
 }
 

@@ -1,10 +1,9 @@
 package no.nav.dagpenger.regel.api.routing
 
 import io.ktor.application.call
-import io.ktor.auth.authenticate
 import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.routing.Routing
+import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +24,7 @@ import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
-internal fun Routing.lovverk(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
+internal fun Route.lovverk(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
     suspend fun Subsumsjon.måReberegnes(beregningsdato: LocalDate): Boolean {
         store.getBehov(this.behovId).let { internBehov ->
             val behov = store.opprettBehov(internBehov.tilBehov(beregningsdato))
@@ -36,20 +35,17 @@ internal fun Routing.lovverk(store: SubsumsjonStore, producer: DagpengerBehovPro
         }
         return false
     }
-
-    authenticate {
-        route("/lovverk/vurdering") {
-            post("/minsteinntekt") {
-                withContext(Dispatchers.IO) {
-                    call.receive<KreverNyBehandlingParametre>().apply {
-                        val beregningsdato = beregningsdato
-                        val subsumsjonIder = subsumsjonIder.map { SubsumsjonId(it) }
-                        store.getSubsumsjonerByResults(subsumsjonIder)
-                            .any { subsumsjon -> subsumsjon.måReberegnes(beregningsdato) }
-                            .let { call.respond(KreverNyVurdering(it)) }
-                    }.also {
-                        LOGGER.info("Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}.")
-                    }
+    route("/lovverk/vurdering") {
+        post("/minsteinntekt") {
+            withContext(Dispatchers.IO) {
+                call.receive<KreverNyBehandlingParametre>().apply {
+                    val beregningsdato = beregningsdato
+                    val subsumsjonIder = subsumsjonIder.map { SubsumsjonId(it) }
+                    store.getSubsumsjonerByResults(subsumsjonIder)
+                        .any { subsumsjon -> subsumsjon.måReberegnes(beregningsdato) }
+                        .let { call.respond(KreverNyVurdering(it)) }
+                }.also {
+                    LOGGER.info("Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}.")
                 }
             }
         }
