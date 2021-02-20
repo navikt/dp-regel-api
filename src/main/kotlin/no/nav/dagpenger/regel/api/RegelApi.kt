@@ -187,7 +187,6 @@ internal fun Application.api(
     }
 }
 
-
 private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.errorHandler(
     cause: T,
     httpStatusCode: HttpStatusCode
