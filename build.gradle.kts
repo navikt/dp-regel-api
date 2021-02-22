@@ -57,8 +57,6 @@ dependencies {
     implementation(Ktor.micrometerMetrics)
     implementation(Ktor.library("client-core"))
     implementation(Ktor.library("client-cio"))
-    implementation(Ktor.library("client-json"))
-    implementation(Ktor.library("client-jackson"))
     implementation(Dagpenger.Biblioteker.ktorUtils)
     implementation(Micrometer.prometheusRegistry)
 

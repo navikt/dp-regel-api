@@ -2,27 +2,30 @@ package no.nav.dagpenger.regel.api.auth
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.DeserializationFeature
+import com.squareup.moshi.Json
 import io.ktor.auth.jwt.JWTAuthenticationProvider
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.ProxyBuilder
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.http
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.get
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
+import no.nav.dagpenger.events.moshiInstance
 import java.net.URL
 import java.util.concurrent.TimeUnit
+
+private val LOGGER = KotlinLogging.logger {}
 
 internal fun JWTAuthenticationProvider.Configuration.azureAdJWT(
     providerUrl: String,
     realm: String,
     clientId: String
 ) {
-    this.verifier(jwkProvider(providerUrl), issuerProvider(providerUrl))
+
+    val meta = meta(providerUrl)
+    this.verifier(jwkProvider(meta.jwksUri), meta.issuer)
     this.realm = realm
     validate { credentials ->
         try {
@@ -34,17 +37,13 @@ internal fun JWTAuthenticationProvider.Configuration.azureAdJWT(
             }
             JWTPrincipal(credentials.payload)
         } catch (e: Throwable) {
+            LOGGER.error("Unauthorized", e)
             null
         }
     }
 }
 
 private val httpClient = HttpClient(CIO) {
-    install(JsonFeature) {
-        serializer = JacksonSerializer {
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        }
-    }
     engine {
         System.getenv("HTTP_PROXY")?.let {
             this.proxy = ProxyBuilder.http(it)
@@ -53,24 +52,25 @@ private val httpClient = HttpClient(CIO) {
 }
 
 internal data class AzureAdOpenIdConfiguration(
-    @JsonProperty("jwks_uri")
+    @Json(name = "jwks_uri")
     val jwksUri: String,
-    @JsonProperty("issuer")
+    @Json(name = "issuer")
     val issuer: String,
-    @JsonProperty("token_endpoint")
+    @Json(name = "token_endpoint")
     val tokenEndpoint: String,
-    @JsonProperty("authorization_endpoint")
+    @Json(name = "authorization_endpoint")
     val authorizationEndpoint: String
 )
 
-internal fun issuerProvider(url: String): String {
+private fun meta(url: String): AzureAdOpenIdConfiguration {
     return runBlocking {
-        println(url)
-        httpClient.get<AzureAdOpenIdConfiguration>(url).issuer
+        httpClient.get<String>(url).let {
+            moshiInstance.adapter(AzureAdOpenIdConfiguration::class.java).fromJson(it)!!
+        }
     }
 }
 
-internal fun jwkProvider(url: String): JwkProvider {
+private fun jwkProvider(url: String): JwkProvider {
     return JwkProviderBuilder(URL(url))
         .cached(10, 24, TimeUnit.HOURS) // cache up to 10 JWKs for 24 hours
         .rateLimited(
