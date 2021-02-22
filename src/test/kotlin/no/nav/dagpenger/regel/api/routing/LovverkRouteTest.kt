@@ -8,7 +8,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -19,6 +18,7 @@ import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -47,11 +47,11 @@ class LovverkRouteTest {
         every { getBehov(any()) } returns behov
     }
 
-    internal val behovProducer = mockk<DagpengerBehovProducer>(relaxed = true)
+    private val behovProducer = mockk<DagpengerBehovProducer>(relaxed = true)
 
     @Test
     fun `401 on unauthorized requests`() {
-        withTestApplication(MockApi()) {
+        withMockAuthServerAndTestApplication(MockApi()) {
             handleRequest(
                 HttpMethod.Post,
                 "lovverk/vurdering/minsteinntekt"
@@ -112,7 +112,12 @@ class LovverkRouteTest {
     }
 
     fun testApplicationRequest(subsumsjonStore: SubsumsjonStore) =
-        withTestApplication(MockApi(subsumsjonStore = subsumsjonStore, kafkaDagpengerBehovProducer = behovProducer)) {
+        withMockAuthServerAndTestApplication(
+            MockApi(
+                subsumsjonStore = subsumsjonStore,
+                kafkaDagpengerBehovProducer = behovProducer
+            )
+        ) {
             handleAuthenticatedRequest(HttpMethod.Post, "/lovverk/vurdering/minsteinntekt") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(jsonRequestBody)

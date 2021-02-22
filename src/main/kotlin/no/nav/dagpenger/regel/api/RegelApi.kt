@@ -8,6 +8,7 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
+import io.ktor.auth.jwt.jwt
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -17,6 +18,8 @@ import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.request.path
 import io.ktor.response.respond
+import io.ktor.routing.get
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -31,6 +34,7 @@ import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
+import no.nav.dagpenger.regel.api.auth.azureAdJWT
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
@@ -112,7 +116,8 @@ fun main() {
                 kafkaConsumer as HealthCheck,
                 kafkaProducer as HealthCheck,
                 bruktSubsumsjonConsumer as HealthCheck
-            )
+            ),
+            config
         )
     }.also {
         it.start(wait = false)
@@ -131,7 +136,8 @@ internal fun Application.api(
     subsumsjonStore: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
-    healthChecks: List<HealthCheck>
+    healthChecks: List<HealthCheck>,
+    config: Configuration
 ) {
     install(DefaultHeaders)
 
@@ -139,6 +145,14 @@ internal fun Application.api(
         apiKeyAuth(name = "X-API-KEY") {
             apiKeyName = "X-API-KEY"
             validate { creds -> apiAuthApiKeyVerifier.verify(creds) }
+        }
+
+        jwt(name = "jwt") {
+            azureAdJWT(
+                providerUrl = config.auth.azureAppWellKnownUrl,
+                realm = config.application.id,
+                clientId = config.auth.azureAppClientId
+            )
         }
     }
 
@@ -187,6 +201,14 @@ internal fun Application.api(
             subsumsjon(subsumsjonStore)
             lovverk(subsumsjonStore, kafkaProducer)
             behov(subsumsjonStore, kafkaProducer)
+        }
+
+        authenticate("jwt") {
+            route("/secured") {
+                get {
+                    call.respond(HttpStatusCode.OK, "Ok")
+                }
+            }
         }
     }
 }

@@ -55,6 +55,10 @@ dependencies {
     implementation(Ktor.authJwt)
     implementation(Ktor.locations)
     implementation(Ktor.micrometerMetrics)
+    implementation(Ktor.library("client-core"))
+    implementation(Ktor.library("client-cio"))
+    implementation(Ktor.library("client-json"))
+    implementation(Ktor.library("client-jackson"))
     implementation(Dagpenger.Biblioteker.ktorUtils)
     implementation(Micrometer.prometheusRegistry)
 
@@ -92,7 +96,7 @@ dependencies {
     implementation(Prometheus.hotspot)
     implementation(Prometheus.log4j2)
 
-    runtime(Vault.javaDriver)
+    runtimeOnly(Vault.javaDriver)
 
     testImplementation(kotlin("test-junit5"))
     testImplementation(Ktor.ktorTest)
@@ -103,6 +107,7 @@ dependencies {
     testImplementation(TestContainers.postgresql)
     testImplementation(TestContainers.kafka)
     testImplementation(Kafka.streamTestUtils)
+    testImplementation("no.nav.security:mock-oauth2-server:0.3.1")
 
     testImplementation(Mockk.mockk)
 

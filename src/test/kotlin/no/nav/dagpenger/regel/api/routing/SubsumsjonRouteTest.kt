@@ -7,7 +7,6 @@ import io.kotest.matchers.shouldNotBe
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
@@ -18,6 +17,7 @@ import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
@@ -25,7 +25,7 @@ internal class SubsumsjonRouteTest {
 
     @Test
     fun `401 on unauthorized requests`() {
-        withTestApplication(MockApi()) {
+        withMockAuthServerAndTestApplication(MockApi()) {
             handleRequest(HttpMethod.Get, "subsumsjon/id").response.status() shouldBe HttpStatusCode.Unauthorized
             handleRequest(HttpMethod.Get, "subsumsjon/id") { addHeader("X-API-KEY", "notvalid") }
                 .response.status() shouldBe HttpStatusCode.Unauthorized
@@ -48,7 +48,7 @@ internal class SubsumsjonRouteTest {
             every { this@apply.getSubsumsjon(BehovId("01DSFGFVF3C1D1QQR69C7BRJT5")) } returns subsumsjon
         }
 
-        withTestApplication(
+        withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStore = storeMock
             )
@@ -86,7 +86,7 @@ internal class SubsumsjonRouteTest {
             every { this@apply.getSubsumsjonByResult(SubsumsjonId(id)) } returns subsumsjon
         }
 
-        withTestApplication(
+        withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStore = storeMock
             )
@@ -113,7 +113,7 @@ internal class SubsumsjonRouteTest {
 
         every { storeMock.getSubsumsjon(BehovId("01DSFGJBRYVBX2CNJKHJ0BB2W9")) } throws SubsumsjonNotFoundException("Not found")
 
-        withTestApplication(
+        withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStore = storeMock
             )
