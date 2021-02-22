@@ -24,7 +24,9 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
@@ -185,18 +187,20 @@ internal fun Application.api(
     }
 }
 
-private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.badRequest(
-    cause: T
-) {
-    call.respond(HttpStatusCode.BadRequest)
+private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.errorHandler(
+    cause: T,
+    httpStatusCode: HttpStatusCode
+): Unit = withContext(Dispatchers.IO) {
+    call.respond(httpStatusCode)
     throw cause
 }
 
+private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.badRequest(
+    cause: T
+) = errorHandler(cause, HttpStatusCode.BadRequest)
+
 private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.notFound(
     cause: T
-) {
-    call.respond(HttpStatusCode.NotFound)
-    throw cause
-}
+) = errorHandler(cause, HttpStatusCode.NotFound)
 
 class BadRequestException : RuntimeException()
