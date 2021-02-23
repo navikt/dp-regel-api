@@ -13,10 +13,17 @@ internal object TestApplication {
     private const val ISSUER_ID = "default"
 
     val mockOAuth2Server: MockOAuth2Server by lazy {
-        MockOAuth2Server().also { it.start() }
+        MockOAuth2Server().also {
+            it.start()
+        }
     }
 
-    val testOAuthToken: String by lazy { mockOAuth2Server.issueToken(ISSUER_ID).serialize() }
+    val testOAuthToken: String by lazy {
+        mockOAuth2Server.issueToken(
+            issuerId = ISSUER_ID,
+            claims = mapOf("roles" to listOf("access_as_application"))
+        ).serialize()
+    }
 
     internal fun <R> withMockAuthServerAndTestApplication(
         moduleFunction: Application.() -> Unit,

@@ -11,12 +11,25 @@ import org.junit.jupiter.api.Test
 internal class ProtectedRouteTest {
 
     @Test
-    fun `401 on unauthorized requests`() {
+    fun `401 on requests without token`() {
         withMockAuthServerAndTestApplication(MockApi()) {
             handleRequest(
                 HttpMethod.Get,
                 "/secured"
             ).response.status() shouldBe HttpStatusCode.Unauthorized
+        }
+    }
+
+    @Test
+    fun `401 on requests with token without valid roles`() {
+        val tokenWithoutRole = TestApplication.mockOAuth2Server.issueToken()
+        withMockAuthServerAndTestApplication(MockApi()) {
+            handleRequest(
+                HttpMethod.Get,
+                "/secured"
+            ) {
+                addHeader("Authorization", "Bearer $tokenWithoutRole")
+            }.response.status() shouldBe HttpStatusCode.Unauthorized
         }
     }
 

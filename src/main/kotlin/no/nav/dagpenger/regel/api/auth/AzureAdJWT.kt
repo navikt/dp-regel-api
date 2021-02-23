@@ -2,8 +2,10 @@ package no.nav.dagpenger.regel.api.auth
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
+import com.auth0.jwt.interfaces.Claim
 import com.squareup.moshi.Json
 import io.ktor.auth.jwt.JWTAuthenticationProvider
+import io.ktor.auth.jwt.JWTCredential
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.ProxyBuilder
@@ -27,7 +29,7 @@ internal fun JWTAuthenticationProvider.Configuration.azureAdJWT(
     val meta = meta(providerUrl)
     this.verifier(jwkProvider(meta.jwksUri), meta.issuer)
     this.realm = realm
-    validate { credentials ->
+    validate { credentials: JWTCredential ->
         try {
             requireNotNull(credentials.payload.audience) {
                 "Auth: Missing audience in token"
@@ -35,6 +37,19 @@ internal fun JWTAuthenticationProvider.Configuration.azureAdJWT(
             require(credentials.payload.audience.contains(clientId)) {
                 "Auth: Valid audience not found in claims"
             }
+
+            val roles: Claim? = credentials.payload.claims["roles"]
+
+            requireNotNull(roles) {
+                "Auth: Roles not found in claims"
+            }
+
+            require(
+                roles.asList(String::class.java).contains("access_as_application")
+            ) {
+                "Auth: Valid role not found in claims"
+            }
+
             JWTPrincipal(credentials.payload)
         } catch (e: Throwable) {
             LOGGER.error("Unauthorized", e)
