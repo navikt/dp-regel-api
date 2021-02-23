@@ -8,7 +8,9 @@ class ConfigurationTest {
 
     private val defaultProps = mapOf(
         "auth.secret" to "secret",
-        "auth.allowedKeys" to "secret1, secret2"
+        "auth.allowedKeys" to "secret1, secret2",
+        "azure.app.well.known.url" to "http://localhost/",
+        "azure.app.client.id" to "clientid"
     )
 
     private fun withProps(props: Map<String, String>, test: () -> Unit) {

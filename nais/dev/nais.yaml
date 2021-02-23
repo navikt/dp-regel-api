@@ -31,3 +31,16 @@ spec:
     enabled: true
   vault:
     enabled: true
+  azure:
+    application:
+      enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: dp-kalkulator-api
+          namespace: teamdagpenger
+          cluster: dev-gcp
+        - application: dp-regel-api-arena-adapter
+
+  # required for on-premises only
+  webproxy: true

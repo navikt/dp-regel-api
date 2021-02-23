@@ -29,7 +29,9 @@ private val localProperties = ConfigurationMap(
         "auth.allowedKeys" to "secret1, secret2",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
         "unleash.url" to "https://localhost",
-        "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
+        "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name,
+        "azure.app.well.known.url" to "http://localhost/",
+        "azure.app.client.id" to "default"
     )
 )
 private val devProperties = ConfigurationMap(
@@ -84,7 +86,9 @@ internal data class Configuration(
     data class Auth(
         val secret: String = config()[Key("auth.secret", stringType)],
         val allowedKeys: List<String> = config()[Key("auth.allowedKeys", listType(stringType))],
-        val authApiKeyVerifier: AuthApiKeyVerifier = AuthApiKeyVerifier(secret, allowedKeys)
+        val authApiKeyVerifier: AuthApiKeyVerifier = AuthApiKeyVerifier(secret, allowedKeys),
+        val azureAppClientId: String = config()[Key("azure.app.client.id", stringType)],
+        val azureAppWellKnownUrl: String = config()[Key("azure.app.well.known.url", stringType)],
     )
 
     data class Database(

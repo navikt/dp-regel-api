@@ -11,7 +11,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -28,6 +27,7 @@ import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.junit.jupiter.api.Test
@@ -40,7 +40,7 @@ class BehovRouteTest {
 
     @Test
     fun `401 on unauthorized requests`() {
-        withTestApplication(MockApi()) {
+        withMockAuthServerAndTestApplication(MockApi()) {
             handleRequest(HttpMethod.Get, "/behov/status/id").response.status() shouldBe HttpStatusCode.Unauthorized
             handleRequest(HttpMethod.Post, "/behov").response.status() shouldBe HttpStatusCode.Unauthorized
             handleRequest(HttpMethod.Post, "/behov") { addHeader("X-API-KEY", "notvalid") }
@@ -55,7 +55,7 @@ class BehovRouteTest {
         every { storeMock.behovStatus(BehovId("01DSFG798QNFAWXNFGZF0J2APX")) } returns Status.Done(BehovId("01DSFGCKM9TEZ94X872C7H4QB4"))
         every { storeMock.behovStatus(BehovId("01DSFG7JVZVVD2ZK7K7HG9SNVG")) } throws BehovNotFoundException("not found")
 
-        withTestApplication(
+        withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStore = storeMock
             )
@@ -100,7 +100,7 @@ class BehovRouteTest {
             every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
         }
 
-        withTestApplication(
+        withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStoreMock,
                 kafkaMock
@@ -165,7 +165,7 @@ class BehovRouteTest {
             every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
         }
 
-        withTestApplication(
+        withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStoreMock,
                 kafkaMock
