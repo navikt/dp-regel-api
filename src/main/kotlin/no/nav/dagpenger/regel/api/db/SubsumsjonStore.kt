@@ -15,7 +15,7 @@ import java.time.ZonedDateTime
 interface SubsumsjonStore {
 
     fun opprettBehov(behov: Behov): InternBehov {
-        val regelkontekst = behov.regelkontekst ?: RegelKontekst(behov.vedtakId.toString(), Kontekst.VEDTAK)
+        val regelkontekst = RegelKontekst(behov.vedtakId.toString(), Kontekst.VEDTAK) // TODO: bruk regelkontekst fra request når resten av mikrotjenestene kan håndtere at det ikke er vedtakid på pakken
         val behandlingsId = hentKoblingTilRegelKontekst(regelkontekst) ?: opprettKoblingTilRegelkontekst(regelkontekst)
         val internBehov = InternBehov.fromBehov(
             behov = behov,
