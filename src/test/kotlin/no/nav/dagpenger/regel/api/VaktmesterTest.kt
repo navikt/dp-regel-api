@@ -18,6 +18,8 @@ import no.nav.dagpenger.regel.api.db.withMigratedDb
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -35,7 +37,12 @@ internal class VaktmesterTest {
     val minsteinntektSubsumsjonId = ULID().nextULID()
     val bruktSubsumsjon = Subsumsjon(
         behovId = BehovId("01DSFT4J9SW8XDZ2ZJZMXD5XV7"),
-        faktum = Faktum("aktorId", 1, LocalDate.now()),
+        faktum = Faktum(
+            aktorId = "aktorId",
+            vedtakId = 1,
+            kontekst = RegelKontekst("id", Kontekst.VEDTAK),
+            beregningsdato = LocalDate.now()
+        ),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = mapOf(
             "subsumsjonsId" to minsteinntektSubsumsjonId

@@ -12,6 +12,7 @@ import io.kotest.property.arbitrary.map
 import io.kotest.property.arbitrary.next
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
+import io.kotest.property.exhaustive.exhaustive
 import no.nav.dagpenger.events.Problem
 import java.time.LocalDate
 
@@ -40,6 +41,7 @@ private val subsumsjonGenerator = arbitrary {
         faktum = Faktum(
             aktorId = stringArb.next(it),
             vedtakId = Arb.int(0, 10000).next(it),
+            kontekst = RegelKontekst(Arb.string().next(), kontekstGenerator.next()),
             beregningsdato = Arb.localDate(LocalDate.of(2010, 1, 1), LocalDate.of(LocalDate.now().year, 1, 1))
                 .next(it)
         ),
@@ -50,6 +52,8 @@ private val subsumsjonGenerator = arbitrary {
         problem = Problem(title = stringArb.next(it))
     )
 }
+
+private val kontekstGenerator: Arb<Kontekst> = Kontekst.values().toList().exhaustive().toArb()
 
 private val internBehovGenerator = arbitrary {
     val stringArb = Arb.string(10, 10)

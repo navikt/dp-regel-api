@@ -15,6 +15,8 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.InternBehov
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
@@ -26,7 +28,12 @@ import java.time.LocalDate
 class LovverkRouteTest {
     val subsumsjonMock = Subsumsjon(
         behovId = BehovId("01DSFSRMWGYP0AVHAHY282W3GN"),
-        faktum = Faktum("aktorId", 1, LocalDate.now()),
+        faktum = Faktum(
+            aktorId = "aktorId",
+            vedtakId = 1,
+            kontekst = RegelKontekst("id", Kontekst.VEDTAK),
+            beregningsdato = LocalDate.now()
+        ),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = mapOf("oppfyllerMinsteinntekt" to true),
         periodeResultat = emptyMap(),

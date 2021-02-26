@@ -331,7 +331,12 @@ class PostgresSubsumsjonStoreTest {
 
     private val subsumsjon = Subsumsjon(
         behovId = BehovId("01DSFST7S8HCXHRASYP9PC197W"),
-        faktum = Faktum("aktorId", 1, LocalDate.now()),
+        faktum = Faktum(
+            aktorId = "aktorId",
+            vedtakId = 1,
+            kontekst = RegelKontekst("id", Kontekst.VEDTAK),
+            beregningsdato = LocalDate.now()
+        ),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = emptyMap(),
         periodeResultat = emptyMap(),

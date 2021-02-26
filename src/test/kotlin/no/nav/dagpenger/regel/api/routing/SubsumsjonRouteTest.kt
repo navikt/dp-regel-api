@@ -15,6 +15,8 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
@@ -36,7 +38,12 @@ internal class SubsumsjonRouteTest {
     fun `Returns subsumsjon if found`() {
         val subsumsjon = Subsumsjon(
             behovId = BehovId("01DSFSSNA8S577XGQ8V1R9EBJ7"),
-            faktum = Faktum("aktorId", 1, LocalDate.now()),
+            faktum = Faktum(
+                aktorId = "aktorId",
+                vedtakId = 1,
+                kontekst = RegelKontekst("id", Kontekst.VEDTAK),
+                beregningsdato = LocalDate.now()
+            ),
             grunnlagResultat = emptyMap(),
             minsteinntektResultat = emptyMap(),
             periodeResultat = emptyMap(),
@@ -74,7 +81,12 @@ internal class SubsumsjonRouteTest {
         val id = ULID().nextULID()
         val subsumsjon = Subsumsjon(
             behovId = BehovId("01DSFSRMWGYP0AVHAHY282W3GN"),
-            faktum = Faktum("aktorId", 1, LocalDate.now()),
+            faktum = Faktum(
+                aktorId = "aktorId",
+                vedtakId = 1,
+                kontekst = RegelKontekst("id", Kontekst.VEDTAK),
+                beregningsdato = LocalDate.now()
+            ),
             grunnlagResultat = emptyMap(),
             minsteinntektResultat = emptyMap(),
             periodeResultat = emptyMap(),
