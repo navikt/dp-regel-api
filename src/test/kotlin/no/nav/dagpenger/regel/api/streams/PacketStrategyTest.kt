@@ -118,18 +118,6 @@ internal class SuccessStrategyTest {
 
         verifyAll { pendingBehovStrategy wasNot Called }
     }
-
-    @Test
-    fun `Stratgy should onle trigger for required context `() {
-        val packet = Packet().apply {
-            this.putValue(PacketKeys.KONTEKST_TYPE, Kontekst.CORONA)
-        }
-        val pendingBehovStrategy = mockk<PendingBehovStrategy>()
-
-        SuccessStrategy(pendingBehovStrategy, Kontekst.VEDTAK).run(packet)
-
-        verifyAll { pendingBehovStrategy wasNot Called }
-    }
 }
 
 internal class ProblemStrategyTest {
