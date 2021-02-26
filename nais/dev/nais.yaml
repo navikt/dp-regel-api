@@ -41,6 +41,7 @@ spec:
           namespace: teamdagpenger
           cluster: dev-gcp
         - application: dp-regel-api-arena-adapter
+        - application: dagpenger-journalforing-ferdigstill
 
   # required for on-premises only
   webproxy: true
