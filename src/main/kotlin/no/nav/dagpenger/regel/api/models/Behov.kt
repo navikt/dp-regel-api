@@ -18,7 +18,8 @@ data class Behov(
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
     val inntektsId: String? = null,
-    val lærling: Boolean? = null
+    val lærling: Boolean? = null,
+    val regelverksdato: LocalDate? = null
 )
 
 data class InternBehov(
@@ -32,9 +33,10 @@ data class InternBehov(
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
     val inntektsId: String? = null,
-    val lærling: Boolean? = null
-
+    val lærling: Boolean? = null,
+    val regelverksdato: LocalDate? = null
 ) {
+
     fun toJson() = toJson(this)
     fun toPacket() = toPacket(this)
 
@@ -74,7 +76,8 @@ data class InternBehov(
                 bruktInntektsPeriode = behov.bruktInntektsPeriode,
                 antallBarn = behov.antallBarn,
                 inntektsId = behov.inntektsId,
-                lærling = behov.lærling
+                lærling = behov.lærling,
+                regelverksdato = behov.regelverksdato
             )
         }
     }
