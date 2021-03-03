@@ -15,8 +15,10 @@ data class Faktum(
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
     val lærling: Boolean? = null,
-    val bruktInntektsPeriode: InntektsPeriode? = null
+    val bruktInntektsPeriode: InntektsPeriode? = null,
+    val regelverksdato: LocalDate? = null
 ) {
+
     companion object Mapper {
         fun faktumFrom(packet: Packet): Faktum {
             val inntekt = inntektFrom(packet)
@@ -32,7 +34,8 @@ data class Faktum(
                 antallBarn = packet.getNullableIntValue(PacketKeys.ANTALL_BARN),
                 manueltGrunnlag = packet.getNullableIntValue(PacketKeys.MANUELT_GRUNNLAG),
                 lærling = packet.getNullableBoolean(PacketKeys.LÆRLING),
-                bruktInntektsPeriode = InntektsPeriode.fromPacket(packet)
+                bruktInntektsPeriode = InntektsPeriode.fromPacket(packet),
+                regelverksdato = packet.getNullableLocalDate(PacketKeys.REGELVERKSDATO)
             )
         }
     }

@@ -18,7 +18,8 @@ internal class FaktumTest {
                 bruktInntektsPeriode = InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7)),
                 antallBarn = 1,
                 lærling = false,
-                manueltGrunnlag = 1
+                manueltGrunnlag = 1,
+                regelverksdato = LocalDate.of(2020, 1, 1)
             ),
             behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1", Kontekst.VEDTAK))
         ).toPacket().apply {
@@ -44,6 +45,7 @@ internal class FaktumTest {
             it.manueltGrunnlag shouldBe 1
             it.bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7))
             it.lærling shouldBe false
+            it.regelverksdato shouldBe LocalDate.of(2020, 1, 1)
         }
     }
 }
