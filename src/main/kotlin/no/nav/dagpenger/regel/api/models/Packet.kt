@@ -24,7 +24,8 @@ internal object PacketKeys {
     const val BRUKT_INNTEKTSPERIODE = "bruktInntektsPeriode"
     const val PROBLEM = "system_problem"
     const val INNTEKTS_ID = "inntektsId"
-    const val LÆRLING: String = "lærling"
+    const val LÆRLING = "lærling"
+    const val REGELVERKSDATO = "regelverksdato"
 }
 
 internal val Packet.behovId: BehovId

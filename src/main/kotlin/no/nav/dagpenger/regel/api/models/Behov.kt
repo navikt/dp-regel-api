@@ -63,6 +63,7 @@ data class InternBehov(
             internBehov.manueltGrunnlag?.let { this.putValue(PacketKeys.MANUELT_GRUNNLAG, it) }
             internBehov.inntektsId?.let { this.putValue(PacketKeys.INNTEKTS_ID, it) }
             internBehov.lærling?.let { this.putValue(PacketKeys.LÆRLING, it) }
+            internBehov.regelverksdato?.let { this.putValue(PacketKeys.REGELVERKSDATO, it) }
         }
 
         fun fromBehov(behov: Behov, behandlingsId: BehandlingsId): InternBehov {
