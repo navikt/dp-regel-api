@@ -13,6 +13,8 @@ enum class Kontekst {
     VEDTAK,
     @Json(name = "revurdering")
     REVURDERING,
+    @Json(name = "forskudd")
+    FORSKUDD,
     @Json(name = "corona")
-    CORONA
+    CORONA // Todo: fjern når forskudd er ute
 }
