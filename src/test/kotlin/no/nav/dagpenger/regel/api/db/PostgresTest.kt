@@ -120,7 +120,7 @@ class PostgresSubsumsjonStoreTest {
 
     @Test
     fun `Store health check DOWN`() {
-        with(
+        withMigratedDb {
             PostgresSubsumsjonStore(
                 HikariDataSource().apply {
                     username = PostgresContainer.instance.username
@@ -128,9 +128,7 @@ class PostgresSubsumsjonStoreTest {
                     jdbcUrl = PostgresContainer.instance.jdbcUrl
                     connectionTimeout = 1000L
                 }
-            )
-        ) {
-            status() shouldBe HealthStatus.DOWN
+            ).status() shouldBe HealthStatus.DOWN
         }
     }
 
@@ -267,7 +265,9 @@ class PostgresSubsumsjonStoreTest {
                                             WHERE data->'$it' ->> 'subsumsjonsId' = 'id' """,
                                 emptyMap()
                             ).map { r ->
-                                withClue("Seq scan for resultatnøkkel  '$it'") { r.string(1).shouldNotContain("Seq Scan") }
+                                withClue("Seq scan for resultatnøkkel  '$it'") {
+                                    r.string(1).shouldNotContain("Seq Scan")
+                                }
                             }.asSingle
                         )
                     }
