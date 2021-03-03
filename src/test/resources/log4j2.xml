@@ -11,7 +11,7 @@
         <Logger name="no.nav" level="trace">
             <AppenderRef ref="ConsoleAppender" />
         </Logger>
-        <Root level="warn">
+        <Root level="debug">
             <AppenderRef ref="ConsoleAppender"/>
         </Root>
     </Loggers>
