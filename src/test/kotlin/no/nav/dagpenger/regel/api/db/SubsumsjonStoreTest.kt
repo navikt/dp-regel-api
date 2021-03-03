@@ -25,7 +25,7 @@ import java.time.YearMonth
 class SubsumsjonStoreTest {
 
     @Test
-    fun `Kaster ikke feil ved lagring av behov`() {
+    fun `Lagre behov`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val behov = Behov(
@@ -40,6 +40,7 @@ class SubsumsjonStoreTest {
                         YearMonth.now().minusMonths(12),
                         YearMonth.now()
                     ),
+                    regelverksdato = LocalDate.of(2020, 1, 1)
                 )
                 val internBehov = opprettBehov(behov)
                 val lagretInternBehov = getBehov(internBehov.behovId)
