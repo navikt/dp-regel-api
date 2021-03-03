@@ -4,7 +4,6 @@ on: [ push ]
 
 env:
   IMAGE: docker.pkg.github.com/${{ github.repository }}/dp-regel-api:${{ github.sha }}
-  TESTCONTAINERS_RYUK_DISABLED: true
 jobs:
   build:
     name: Build and publish Docker image
