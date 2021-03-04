@@ -7,7 +7,7 @@ import java.time.YearMonth
 
 internal class FaktumTest {
     @Test
-    fun `Mapping from  Packet to Faktum`() {
+    fun `Mapping from Packet to Faktum`() {
         val packet = InternBehov.fromBehov(
             behov = Behov(
                 aktørId = "aktørId",
@@ -35,6 +35,7 @@ internal class FaktumTest {
 
         Faktum.faktumFrom(packet).let {
             it.aktorId shouldBe "aktørId"
+            it.regelkontekst shouldBe RegelKontekst("1", Kontekst.VEDTAK)
             it.vedtakId shouldBe 1
             it.beregningsdato shouldBe LocalDate.of(2011, 7, 22)
             it.inntektsId shouldBe "inntektsId"

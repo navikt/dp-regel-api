@@ -5,6 +5,7 @@ import java.time.LocalDate
 
 data class Faktum(
     val aktorId: String,
+    val regelkontekst: RegelKontekst,
     val vedtakId: Int,
     val beregningsdato: LocalDate,
     val inntektsId: String? = null,
@@ -22,6 +23,10 @@ data class Faktum(
             val inntekt = inntektFrom(packet)
             return Faktum(
                 aktorId = packet.getStringValue(PacketKeys.AKTØR_ID),
+                regelkontekst = RegelKontekst(
+                    packet.getStringValue(PacketKeys.KONTEKST_ID),
+                    Kontekst.valueOf(packet.getStringValue(PacketKeys.KONTEKST_TYPE))
+                ),
                 vedtakId = packet.getIntValue(PacketKeys.VEDTAK_ID),
                 beregningsdato = packet.getLocalDate(PacketKeys.BEREGNINGS_DATO),
                 inntektsId = inntekt?.inntektsId,

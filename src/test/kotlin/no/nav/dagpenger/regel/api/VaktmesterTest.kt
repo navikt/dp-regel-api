@@ -37,7 +37,7 @@ internal class VaktmesterTest {
     val minsteinntektSubsumsjonId = ULID().nextULID()
     val bruktSubsumsjon = Subsumsjon(
         behovId = BehovId("01DSFT4J9SW8XDZ2ZJZMXD5XV7"),
-        faktum = Faktum("aktorId", 1, LocalDate.now()),
+        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.VEDTAK), 1, LocalDate.now()),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = mapOf(
             "subsumsjonsId" to minsteinntektSubsumsjonId

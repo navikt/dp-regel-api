@@ -39,6 +39,7 @@ private val subsumsjonGenerator = arbitrary {
         behovId = BehovId(ULID().nextULID()),
         faktum = Faktum(
             aktorId = stringArb.next(it),
+            RegelKontekst(stringArb.next(), Kontekst.VEDTAK),
             vedtakId = Arb.int(0, 10000).next(it),
             beregningsdato = Arb.localDate(LocalDate.of(2010, 1, 1), LocalDate.of(LocalDate.now().year, 1, 1))
                 .next(it)
