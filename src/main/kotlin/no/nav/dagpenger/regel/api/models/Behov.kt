@@ -8,9 +8,8 @@ import java.time.LocalDate
 internal val ulidGenerator = ULID()
 
 data class Behov(
-    val regelkontekst: RegelKontekst? = null,
+    val regelkontekst: RegelKontekst,
     val aktørId: String,
-    val vedtakId: Int,
     val beregningsDato: LocalDate,
     val harAvtjentVerneplikt: Boolean? = null,
     val oppfyllerKravTilFangstOgFisk: Boolean? = null,

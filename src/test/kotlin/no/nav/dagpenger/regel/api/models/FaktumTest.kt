@@ -11,7 +11,7 @@ internal class FaktumTest {
         val packet = InternBehov.fromBehov(
             behov = Behov(
                 aktørId = "aktørId",
-                vedtakId = 1,
+                regelkontekst = RegelKontekst("1", Kontekst.VEDTAK),
                 beregningsDato = LocalDate.of(2011, 7, 22),
                 harAvtjentVerneplikt = true,
                 oppfyllerKravTilFangstOgFisk = true,

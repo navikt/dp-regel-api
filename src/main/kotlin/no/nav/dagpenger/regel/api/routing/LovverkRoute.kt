@@ -58,7 +58,6 @@ private fun InternBehov.tilBehov(beregningsdato: LocalDate) =
     Behov(
         regelkontekst = RegelKontekst("$UBRUKT_VEDTAK_ID", Kontekst.REVURDERING),
         aktørId = this.aktørId,
-        vedtakId = UBRUKT_VEDTAK_ID,
         beregningsDato = beregningsdato,
         harAvtjentVerneplikt = this.harAvtjentVerneplikt,
         oppfyllerKravTilFangstOgFisk = this.oppfyllerKravTilFangstOgFisk,

@@ -67,7 +67,6 @@ private data class StatusResponse(val status: String)
 internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
     regelkontekst = request.regelkontekst,
     aktørId = request.aktorId,
-    vedtakId = request.vedtakId,
     beregningsDato = request.beregningsdato,
     harAvtjentVerneplikt = request.harAvtjentVerneplikt,
     oppfyllerKravTilFangstOgFisk = request.oppfyllerKravTilFangstOgFisk,
@@ -79,9 +78,8 @@ internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
 )
 
 internal data class BehovRequest(
-    val regelkontekst: RegelKontekst? = null,
+    val regelkontekst: RegelKontekst,
     val aktorId: String,
-    val vedtakId: Int,
     val beregningsdato: LocalDate,
     val harAvtjentVerneplikt: Boolean?,
     val oppfyllerKravTilFangstOgFisk: Boolean?,

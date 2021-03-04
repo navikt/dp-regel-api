@@ -109,11 +109,12 @@ class BehovRouteTest {
 
             handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
+                //language=JSON
                 setBody(
                     """
             {
                 "aktorId": "1234",
-                "vedtakId": 1,
+                "regelkontekst": {"id": "1", "type": "vedtak"},
                 "beregningsdato": "2019-01-08",
                 "manueltGrunnlag": 54200,
                 "harAvtjentVerneplikt": true,
@@ -241,7 +242,7 @@ class BehovRouteTest {
                 return 1
             }
 
-            override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId? {
+            override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId {
                 return BehandlingsId.nyBehandlingsIdFraEksternId(regelKontekst)
             }
 
@@ -274,7 +275,7 @@ internal class BehovRequestMappingTest {
         val behov = mapRequestToBehov(
             BehovRequest(
                 aktorId = "aktorId",
-                vedtakId = 1,
+                regelkontekst = RegelKontekst("1", Kontekst.VEDTAK),
                 beregningsdato = LocalDate.of(2019, 11, 7),
                 harAvtjentVerneplikt = null,
                 oppfyllerKravTilFangstOgFisk = null,
@@ -292,7 +293,7 @@ internal class BehovRequestMappingTest {
         val behov = mapRequestToBehov(
             BehovRequest(
                 aktorId = "aktorId",
-                vedtakId = 1,
+                regelkontekst = RegelKontekst("1", Kontekst.VEDTAK),
                 beregningsdato = LocalDate.of(2019, 11, 7),
                 harAvtjentVerneplikt = null,
                 oppfyllerKravTilFangstOgFisk = null,

@@ -4,7 +4,6 @@ import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.InternBehov
-import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
@@ -15,7 +14,7 @@ import java.time.ZonedDateTime
 interface SubsumsjonStore {
 
     fun opprettBehov(behov: Behov): InternBehov {
-        val regelkontekst = behov.regelkontekst ?: RegelKontekst(behov.vedtakId.toString(), Kontekst.VEDTAK)
+        val regelkontekst = behov.regelkontekst
         val behandlingsId = hentKoblingTilRegelKontekst(regelkontekst) ?: opprettKoblingTilRegelkontekst(regelkontekst)
         val internBehov = InternBehov.fromBehov(
             behov = behov,

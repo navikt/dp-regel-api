@@ -93,7 +93,7 @@ class PostgresSubsumsjonStoreTest {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val behov = Behov(
                     aktørId = "1234",
-                    vedtakId = 1234,
+                    regelkontekst = RegelKontekst("1234", Kontekst.VEDTAK),
                     beregningsDato = LocalDate.now(),
                     antallBarn = 1,
                     manueltGrunnlag = 11,
@@ -138,7 +138,7 @@ class PostgresSubsumsjonStoreTest {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
+                    Behov(aktørId = "aktorid", regelkontekst = RegelKontekst("1", Kontekst.VEDTAK), beregningsDato = LocalDate.now())
                 )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub)
@@ -152,7 +152,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
+                    Behov(aktørId = "aktorid", regelkontekst = RegelKontekst("1", Kontekst.VEDTAK), beregningsDato = LocalDate.now())
                 )
                 behovStatus(internBehov.behovId) shouldBe Status.Pending
             }
@@ -174,7 +174,7 @@ class PostgresSubsumsjonStoreTest {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
 
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
+                    Behov(aktørId = "aktorid", regelkontekst = RegelKontekst("1", Kontekst.VEDTAK), beregningsDato = LocalDate.now())
                 )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
                 insertSubsumsjon(sub) shouldBe 1
@@ -188,7 +188,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
+                    Behov(aktørId = "aktorid", regelkontekst = RegelKontekst("1", Kontekst.VEDTAK), beregningsDato = LocalDate.now())
                 )
                 val sub = subsumsjon.copy(behovId = internBehov.behovId)
 
@@ -225,7 +225,7 @@ class PostgresSubsumsjonStoreTest {
                 val grunnlagId = ULID().nextULID()
                 val periodeId = ULID().nextULID()
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
+                    Behov(aktørId = "aktorid", regelkontekst = RegelKontekst("1", Kontekst.VEDTAK), beregningsDato = LocalDate.now())
                 )
                 val subsumsjonWithResults = subsumsjon.copy(
                     behovId = internBehov.behovId,
@@ -289,7 +289,7 @@ class PostgresSubsumsjonStoreTest {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val internBehov = opprettBehov(
-                    Behov(aktørId = "aktorid", vedtakId = 1, beregningsDato = LocalDate.now())
+                    Behov(aktørId = "aktorid", regelkontekst = RegelKontekst("1", Kontekst.VEDTAK), beregningsDato = LocalDate.now())
                 )
                 val subsumsjonWithResults = subsumsjon.copy(
                     behovId = internBehov.behovId,

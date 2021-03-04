@@ -18,6 +18,8 @@ import no.nav.dagpenger.regel.api.db.withMigratedDb
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -28,8 +30,8 @@ internal class VaktmesterTest {
 
     val behov = Behov(
         aktørId = "1234",
-        vedtakId = 9876,
-        beregningsDato = LocalDate.now()
+        beregningsDato = LocalDate.now(),
+        regelkontekst = RegelKontekst("9876", Kontekst.VEDTAK)
     )
 
     val minsteinntektSubsumsjonId = ULID().nextULID()
@@ -56,7 +58,7 @@ internal class VaktmesterTest {
             val marker = bruktSubsumsjonStore.eksternTilInternSubsumsjon(
                 EksternSubsumsjonBrukt(
                     id = minsteinntektSubsumsjonId,
-                    eksternId = behov.vedtakId.toLong(),
+                    eksternId = behov.regelkontekst.id.toLong(),
                     arenaTs = ZonedDateTime.now(),
                     ts = ZonedDateTime.now().toEpochSecond()
                 )
@@ -92,7 +94,7 @@ internal class VaktmesterTest {
                 val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
-                        eksternId = behov.vedtakId.toLong(),
+                        eksternId = behov.regelkontekst.id.toLong(),
                         arenaTs = ZonedDateTime.now(),
                         ts = ZonedDateTime.now().toEpochSecond()
 
@@ -136,7 +138,7 @@ internal class VaktmesterTest {
                 val bruktSub = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
-                        eksternId = behov.vedtakId.toLong(),
+                        eksternId = behov.regelkontekst.id.toLong(),
                         arenaTs = ZonedDateTime.now(),
                         ts = ZonedDateTime.now().toEpochSecond()
 
@@ -179,7 +181,7 @@ internal class VaktmesterTest {
                 val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
-                        eksternId = behov.vedtakId.toLong(),
+                        eksternId = behov.regelkontekst.id.toLong(),
                         arenaTs = ZonedDateTime.now(),
                         ts = ZonedDateTime.now().toEpochSecond()
 
@@ -220,7 +222,7 @@ internal class VaktmesterTest {
                     val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                         EksternSubsumsjonBrukt(
                             id = minsteinntektSubsumsjonId,
-                            eksternId = behov.vedtakId.toLong(),
+                            eksternId = behov.regelkontekst.id.toLong(),
                             arenaTs = ZonedDateTime.now(),
                             ts = ZonedDateTime.now().toEpochSecond()
 
