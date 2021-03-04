@@ -46,6 +46,10 @@ dependencies {
     implementation(Dagpenger.Streams)
     implementation(Dagpenger.Events)
 
+    implementation(Jackson.core)
+    implementation(Jackson.kotlin)
+    implementation(Jackson.jsr310)
+    implementation(Kafka.streams)
     implementation(Kafka.clients)
     implementation(Kafka.streams)
 

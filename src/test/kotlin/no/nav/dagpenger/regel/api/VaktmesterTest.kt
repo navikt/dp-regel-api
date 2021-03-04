@@ -11,6 +11,7 @@ import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.DataSource
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.JsonAdapter
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
@@ -70,7 +71,7 @@ internal class VaktmesterTest {
                     queryOf(
                         "SELECT * FROM v2_subsumsjon WHERE brukt = true",
                         emptyMap()
-                    ).map { r -> Subsumsjon.fromJson(r.string("data")) }.asList
+                    ).map { r -> JsonAdapter.fromJson(r.string("data")) }.asList
                 )
                 brukteSubsumsjoner.size shouldBe 1
                 brukteSubsumsjoner.first().minsteinntektResultat?.get("subsumsjonsId") shouldBe minsteinntektSubsumsjonId
@@ -236,7 +237,7 @@ internal class VaktmesterTest {
                         queryOf(
                             "SELECT * FROM v2_subsumsjon WHERE brukt = true",
                             emptyMap()
-                        ).map { r -> Subsumsjon.fromJson(r.string("data")) }.asList
+                        ).map { r -> JsonAdapter.fromJson(r.string("data")) }.asList
                     )
                     brukteSubsumsjoner.size shouldBe 1
                     brukteSubsumsjoner.first().minsteinntektResultat?.get("subsumsjonsId") shouldBe minsteinntektSubsumsjonId
