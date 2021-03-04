@@ -18,7 +18,6 @@ data class Subsumsjon(
 
         private val adapter = moshiInstance.adapter(Subsumsjon::class.java)
         fun toJson(subsumsjon: Subsumsjon): String = adapter.toJson(subsumsjon)
-        fun fromJson(json: String): Subsumsjon? = adapter.fromJson(json)
 
         fun subsumsjonFrom(packet: Packet): Subsumsjon =
             Subsumsjon(
@@ -58,4 +57,4 @@ internal fun grunnlagResultatFrom(packet: Packet): Map<String, Any>? =
 internal fun mapFrom(packetKey: String, packet: Packet): Map<String, Any>? =
     packet.hasField(packetKey).takeIf { it }?.let { packet.getMapValue(packetKey) }
 
-internal class SubsumsjonSerDerException(message: String) : RuntimeException(message)
+internal class SubsumsjonSerDerException(message: String, cause: Throwable) : RuntimeException(message, cause)

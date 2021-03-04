@@ -11,6 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
 import no.nav.dagpenger.events.Problem
+import no.nav.dagpenger.regel.api.db.JsonAdapter
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.BehovId
@@ -61,7 +62,7 @@ internal class SubsumsjonRouteTest {
                     response.status() shouldBe HttpStatusCode.OK
                     response.content shouldNotBe null
                     response.content?.let {
-                        Subsumsjon.fromJson(it) shouldBe subsumsjon
+                        JsonAdapter.fromJson(it) shouldBe subsumsjon
                     }
                 }
         }
@@ -99,7 +100,7 @@ internal class SubsumsjonRouteTest {
                     response.status() shouldBe HttpStatusCode.OK
                     response.content shouldNotBe null
                     response.content?.let {
-                        Subsumsjon.fromJson(it) shouldBe subsumsjon
+                        JsonAdapter.fromJson(it) shouldBe subsumsjon
                     }
                 }
         }
