@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api
 
+import com.fasterxml.jackson.databind.JsonMappingException
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -182,9 +183,10 @@ internal fun Application.api(
             badRequest(cause)
         }
 
-//        exception<JsonDataException> { cause ->
-//            badRequest(cause)
-//        }
+        exception<JsonMappingException> { cause ->
+            badRequest(cause)
+        }
+
         exception<BehovNotFoundException> { cause ->
             notFound(cause)
         }
