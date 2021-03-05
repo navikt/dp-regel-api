@@ -28,34 +28,9 @@ import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDate
 import java.time.YearMonth
 import kotlin.test.assertEquals
-
-internal object PostgresContainer {
-    val instance by lazy {
-        PostgreSQLContainer<Nothing>("postgres:11.2").apply {
-            start()
-        }
-    }
-}
-
-internal object DataSource {
-    val instance: HikariDataSource by lazy {
-        HikariDataSource().apply {
-            username = PostgresContainer.instance.username
-            password = PostgresContainer.instance.password
-            jdbcUrl = PostgresContainer.instance.jdbcUrl
-            connectionTimeout = 1000L
-        }
-    }
-}
-
-internal fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
-
-internal fun withMigratedDb(test: () -> Unit) =
-    DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
 
 internal class PostgresTest {
 
@@ -63,7 +38,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(16, migrations, "Wrong number of migrations")
+            assertEquals(17, migrations, "Wrong number of migrations")
         }
     }
 
@@ -81,6 +56,29 @@ internal class PostgresTest {
     fun `JDBC url is set correctly from  config values `() {
         with(hikariConfigFrom(Configuration())) {
             assertEquals("jdbc:postgresql://localhost:5432/dp-regel-api", jdbcUrl)
+        }
+    }
+
+    @Test
+    fun `Store health check UP`() {
+        withMigratedDb {
+            with(PostgresSubsumsjonStore(DataSource.instance)) {
+                status() shouldBe HealthStatus.UP
+            }
+        }
+    }
+
+    @Test
+    fun `Store health check DOWN`() {
+        withMigratedDb {
+            PostgresSubsumsjonStore(
+                HikariDataSource().apply {
+                    username = PostgresContainer.instance.username
+                    password = "BAD PASSWORD"
+                    jdbcUrl = PostgresContainer.instance.jdbcUrl
+                    connectionTimeout = 1000L
+                }
+            ).status() shouldBe HealthStatus.DOWN
         }
     }
 }
@@ -106,29 +104,6 @@ class PostgresSubsumsjonStoreTest {
                 )
                 opprettBehov(behov)
             }
-        }
-    }
-
-    @Test
-    fun `Store health check UP`() {
-        withMigratedDb {
-            with(PostgresSubsumsjonStore(DataSource.instance)) {
-                status() shouldBe HealthStatus.UP
-            }
-        }
-    }
-
-    @Test
-    fun `Store health check DOWN`() {
-        withMigratedDb {
-            PostgresSubsumsjonStore(
-                HikariDataSource().apply {
-                    username = PostgresContainer.instance.username
-                    password = "BAD PASSWORD"
-                    jdbcUrl = PostgresContainer.instance.jdbcUrl
-                    connectionTimeout = 1000L
-                }
-            ).status() shouldBe HealthStatus.DOWN
         }
     }
 
