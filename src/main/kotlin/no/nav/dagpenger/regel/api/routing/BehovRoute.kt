@@ -18,6 +18,7 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
+import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
@@ -64,25 +65,26 @@ internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProduce
 
 private data class StatusResponse(val status: String)
 
-internal fun mapRequestToBehov(request: BehovRequest): Behov = Behov(
-    regelkontekst = request.regelkontekst,
-    aktørId = request.aktorId,
-    vedtakId = request.vedtakId,
-    beregningsDato = request.beregningsdato,
-    harAvtjentVerneplikt = request.harAvtjentVerneplikt,
-    oppfyllerKravTilFangstOgFisk = request.oppfyllerKravTilFangstOgFisk,
-    bruktInntektsPeriode = request.bruktInntektsPeriode,
-    manueltGrunnlag = request.manueltGrunnlag,
-    antallBarn = request.antallBarn ?: 0,
-    inntektsId = request.inntektsId,
-    lærling = request.lærling,
-    regelverksdato = request.regelverksdato
-)
+internal fun mapRequestToBehov(request: BehovRequest): Behov {
+    val id = request.regelkontekst.id ?: "N/A"
+    return Behov(
+        regelkontekst = RegelKontekst(id, request.regelkontekst.type),
+        aktørId = request.aktorId,
+        beregningsDato = request.beregningsdato,
+        harAvtjentVerneplikt = request.harAvtjentVerneplikt,
+        oppfyllerKravTilFangstOgFisk = request.oppfyllerKravTilFangstOgFisk,
+        bruktInntektsPeriode = request.bruktInntektsPeriode,
+        manueltGrunnlag = request.manueltGrunnlag,
+        antallBarn = request.antallBarn ?: 0,
+        inntektsId = request.inntektsId,
+        lærling = request.lærling,
+        regelverksdato = request.regelverksdato
+    )
+}
 
 internal data class BehovRequest(
-    val regelkontekst: RegelKontekst? = null,
+    val regelkontekst: RegelKontekst,
     val aktorId: String,
-    val vedtakId: Int,
     val beregningsdato: LocalDate,
     val harAvtjentVerneplikt: Boolean?,
     val oppfyllerKravTilFangstOgFisk: Boolean?,
@@ -92,4 +94,6 @@ internal data class BehovRequest(
     val inntektsId: String? = null,
     val lærling: Boolean?,
     val regelverksdato: LocalDate? = null
-)
+) {
+    data class RegelKontekst(val id: String? = null, val type: Kontekst)
+}

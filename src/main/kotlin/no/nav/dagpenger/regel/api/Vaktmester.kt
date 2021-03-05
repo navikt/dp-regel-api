@@ -7,10 +7,10 @@ import kotliquery.using
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.JsonAdapter
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.models.Subsumsjon
 import javax.sql.DataSource
 
 private val deletedCounter = Counter.build()
@@ -34,7 +34,7 @@ class Vaktmester(
                 queryOf(
                     """SELECT data FROM v2_subsumsjon WHERE brukt = false AND created < (now() - (make_interval(days := :days)))""",
                     mapOf("days" to lifeSpanInDays)
-                ).map { Subsumsjon.fromJson(it.string("data")) }.asList
+                ).map { JsonAdapter.fromJson(it.string("data")) }.asList
             )
             subsumsjonerSomSkalSlettes.forEach {
                 subsumsjonStore.delete(it)

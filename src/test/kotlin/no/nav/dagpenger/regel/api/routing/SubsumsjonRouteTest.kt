@@ -11,10 +11,13 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
 import no.nav.dagpenger.events.Problem
+import no.nav.dagpenger.regel.api.db.JsonAdapter
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
@@ -36,7 +39,7 @@ internal class SubsumsjonRouteTest {
     fun `Returns subsumsjon if found`() {
         val subsumsjon = Subsumsjon(
             behovId = BehovId("01DSFSSNA8S577XGQ8V1R9EBJ7"),
-            faktum = Faktum("aktorId", 1, LocalDate.now()),
+            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.VEDTAK), 1, LocalDate.now()),
             grunnlagResultat = emptyMap(),
             minsteinntektResultat = emptyMap(),
             periodeResultat = emptyMap(),
@@ -59,7 +62,7 @@ internal class SubsumsjonRouteTest {
                     response.status() shouldBe HttpStatusCode.OK
                     response.content shouldNotBe null
                     response.content?.let {
-                        Subsumsjon.fromJson(it) shouldBe subsumsjon
+                        JsonAdapter.fromJson(it) shouldBe subsumsjon
                     }
                 }
         }
@@ -74,7 +77,7 @@ internal class SubsumsjonRouteTest {
         val id = ULID().nextULID()
         val subsumsjon = Subsumsjon(
             behovId = BehovId("01DSFSRMWGYP0AVHAHY282W3GN"),
-            faktum = Faktum("aktorId", 1, LocalDate.now()),
+            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.VEDTAK), 1, LocalDate.now()),
             grunnlagResultat = emptyMap(),
             minsteinntektResultat = emptyMap(),
             periodeResultat = emptyMap(),
@@ -97,7 +100,7 @@ internal class SubsumsjonRouteTest {
                     response.status() shouldBe HttpStatusCode.OK
                     response.content shouldNotBe null
                     response.content?.let {
-                        Subsumsjon.fromJson(it) shouldBe subsumsjon
+                        JsonAdapter.fromJson(it) shouldBe subsumsjon
                     }
                 }
         }

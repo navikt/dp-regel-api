@@ -14,7 +14,6 @@ import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
-import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import org.postgresql.util.PGobject
@@ -223,7 +222,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
             )
         } ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with behov id $behovId")
 
-        return Subsumsjon.fromJson(json) ?: throw SubsumsjonSerDerException("Unable to deserialize: $json")
+        return JsonAdapter.fromJson(json)
     }
 
     override fun status(): HealthStatus {
@@ -238,7 +237,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
     override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon =
         withTimer<Subsumsjon>("getSubsumsjonByResult") {
             return resultatNøkler.mapNotNull { getSubsumsjonByResult(it, subsumsjonId) }.map {
-                Subsumsjon.fromJson(it)
+                JsonAdapter.fromJson(it)
             }.firstOrNull()
                 ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
         }

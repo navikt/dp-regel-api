@@ -109,11 +109,12 @@ class BehovRouteTest {
 
             handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
+                //language=JSON
                 setBody(
                     """
             {
                 "aktorId": "1234",
-                "vedtakId": 1,
+                "regelkontekst": {"id": "1", "type": "vedtak"},
                 "beregningsdato": "2019-01-08",
                 "manueltGrunnlag": 54200,
                 "harAvtjentVerneplikt": true,
@@ -156,6 +157,64 @@ class BehovRouteTest {
     }
 
     @Test
+    fun `Handle behov where regelkontekst id is not present`() {
+        val subsumsjonStoreMock: SubsumsjonStore = mockedSubsumsjonStore()
+
+        val produceSlot = slot<InternBehov>()
+        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
+            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+        }
+
+        withMockAuthServerAndTestApplication(
+            MockApi(
+                subsumsjonStoreMock,
+                kafkaMock
+            )
+        ) {
+
+            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                setBody(
+                    """
+            {
+                "regelkontekst" : { "type" : "vedtak"},
+                "aktorId": "1234",
+                "beregningsdato": "2019-01-08",
+                "manueltGrunnlag": 54200,
+                "harAvtjentVerneplikt": true,
+                "oppfyllerKravTilFangstOgFisk": true,
+                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
+                "antallBarn": 1
+            }
+                    """.trimIndent()
+                )
+            }.apply {
+                response.status() shouldBe HttpStatusCode.Accepted
+                withClue("Response should be handled") { requestHandled shouldBe true }
+                response.headers.contains(HttpHeaders.Location) shouldBe true
+                response.headers[HttpHeaders.Location]?.let { location ->
+                    location shouldStartWith "/behov/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
+                }
+            }
+        }
+
+        with(produceSlot.captured) {
+            behovId shouldNotBe null
+            aktørId shouldBe "1234"
+            behandlingsId shouldNotBe null
+            behandlingsId.regelKontekst.type shouldBe Kontekst.VEDTAK
+            behandlingsId.regelKontekst.id shouldBe "N/A"
+            beregningsDato shouldBe LocalDate.of(2019, 1, 8)
+            harAvtjentVerneplikt shouldBe true
+            oppfyllerKravTilFangstOgFisk shouldBe true
+            bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7))
+            manueltGrunnlag shouldBe 54200
+            antallBarn shouldBe 1
+        }
+    }
+
+    @Test
     fun `Valid json with regelkontekst to behov endpoint should be accepted, saved and produce an event to Kafka`() {
 
         val subsumsjonStoreMock: SubsumsjonStore = mockedSubsumsjonStore()
@@ -179,7 +238,6 @@ class BehovRouteTest {
             {
                 "regelkontekst" : { "type" : "vedtak", "id" : "45678" },
                 "aktorId": "1234",
-                "vedtakId": 1,
                 "beregningsdato": "2019-01-08",
                 "manueltGrunnlag": 54200,
                 "harAvtjentVerneplikt": true,
@@ -306,7 +364,7 @@ class BehovRouteTest {
                 return 1
             }
 
-            override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId? {
+            override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId {
                 return BehandlingsId.nyBehandlingsIdFraEksternId(regelKontekst)
             }
 
@@ -339,7 +397,7 @@ internal class BehovRequestMappingTest {
         val behov = mapRequestToBehov(
             BehovRequest(
                 aktorId = "aktorId",
-                vedtakId = 1,
+                regelkontekst = BehovRequest.RegelKontekst("1", Kontekst.VEDTAK),
                 beregningsdato = LocalDate.of(2019, 11, 7),
                 harAvtjentVerneplikt = null,
                 oppfyllerKravTilFangstOgFisk = null,
@@ -357,7 +415,7 @@ internal class BehovRequestMappingTest {
         val behov = mapRequestToBehov(
             BehovRequest(
                 aktorId = "aktorId",
-                vedtakId = 1,
+                regelkontekst = BehovRequest.RegelKontekst("1", Kontekst.VEDTAK),
                 beregningsdato = LocalDate.of(2019, 11, 7),
                 harAvtjentVerneplikt = null,
                 oppfyllerKravTilFangstOgFisk = null,

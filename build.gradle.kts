@@ -46,6 +46,10 @@ dependencies {
     implementation(Dagpenger.Streams)
     implementation(Dagpenger.Events)
 
+    implementation(Jackson.core)
+    implementation(Jackson.kotlin)
+    implementation(Jackson.jsr310)
+    implementation(Kafka.streams)
     implementation(Kafka.clients)
     implementation(Kafka.streams)
 
@@ -133,8 +137,9 @@ tasks.withType<Test> {
     testLogging {
         showExceptions = true
         showStackTraces = true
+        showStandardStreams = true
         exceptionFormat = TestExceptionFormat.FULL
-        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED, TestLogEvent.STANDARD_OUT, TestLogEvent.STANDARD_ERROR)
     }
 }
 
@@ -152,4 +157,8 @@ tasks.named("jar") {
 
 tasks.named("compileKotlin") {
     dependsOn("spotlessCheck")
+}
+
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer::class.java)
 }

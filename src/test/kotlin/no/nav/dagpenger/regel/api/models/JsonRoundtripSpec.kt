@@ -13,6 +13,7 @@ import io.kotest.property.arbitrary.next
 import io.kotest.property.arbitrary.string
 import io.kotest.property.checkAll
 import no.nav.dagpenger.events.Problem
+import no.nav.dagpenger.regel.api.db.JsonAdapter
 import java.time.LocalDate
 
 class JsonRoundtripSpec : StringSpec() {
@@ -26,7 +27,7 @@ class JsonRoundtripSpec : StringSpec() {
         }
         "Alle Subsumsjoner skal kunne gjøre JSON roundtrips" {
             checkAll(subsumsjonGenerator) { subsumsjon: Subsumsjon ->
-                val parsedSubsumsjon = Subsumsjon.fromJson(subsumsjon.toJson())
+                val parsedSubsumsjon = JsonAdapter.fromJson(subsumsjon.toJson())
                 subsumsjon shouldBe parsedSubsumsjon
             }
         }
@@ -35,11 +36,13 @@ class JsonRoundtripSpec : StringSpec() {
 
 private val subsumsjonGenerator = arbitrary {
     val stringArb = Arb.string(10, 10)
+    val vedtakId = Arb.int(0, 10000).next(it)
     Subsumsjon(
         behovId = BehovId(ULID().nextULID()),
         faktum = Faktum(
             aktorId = stringArb.next(it),
-            vedtakId = Arb.int(0, 10000).next(it),
+            RegelKontekst(vedtakId.toString(), Kontekst.VEDTAK),
+            vedtakId = vedtakId,
             beregningsdato = Arb.localDate(LocalDate.of(2010, 1, 1), LocalDate.of(LocalDate.now().year, 1, 1))
                 .next(it)
         ),

@@ -15,7 +15,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 class PostgresBruktSubsumsjonStoreTest {
 
@@ -41,7 +40,9 @@ class PostgresBruktSubsumsjonStoreTest {
             with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
                 val internSubsumsjonBrukt = InternSubsumsjonBrukt(
                     id = subsumsjon.behovId.id,
-                    behandlingsId = PostgresSubsumsjonStore(DataSource.instance).opprettKoblingTilRegelkontekst(eksternId).id,
+                    behandlingsId = PostgresSubsumsjonStore(DataSource.instance).opprettKoblingTilRegelkontekst(
+                        eksternId
+                    ).id,
                     arenaTs = exampleDate
                 )
                 this.insertSubsumsjonBrukt(internSubsumsjonBrukt = internSubsumsjonBrukt)
@@ -145,12 +146,11 @@ class PostgresBruktSubsumsjonStoreTest {
         )
     }
 
-    val secondFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
     val oslo = ZoneId.of("Europe/Oslo")
     val exampleDate = ZonedDateTime.now(oslo).minusHours(6)
     val subsumsjon = Subsumsjon(
         behovId = BehovId("01DSFT25TF56A7J8HBGDMEXAZB"),
-        faktum = Faktum("aktorId", 1, LocalDate.now()),
+        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.VEDTAK), 1, LocalDate.now()),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = emptyMap(),
         periodeResultat = emptyMap(),

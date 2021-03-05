@@ -11,6 +11,7 @@ import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.DataSource
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.JsonAdapter
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
@@ -18,6 +19,8 @@ import no.nav.dagpenger.regel.api.db.withMigratedDb
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -28,14 +31,14 @@ internal class VaktmesterTest {
 
     val behov = Behov(
         aktørId = "1234",
-        vedtakId = 9876,
-        beregningsDato = LocalDate.now()
+        beregningsDato = LocalDate.now(),
+        regelkontekst = RegelKontekst("9876", Kontekst.VEDTAK)
     )
 
     val minsteinntektSubsumsjonId = ULID().nextULID()
     val bruktSubsumsjon = Subsumsjon(
         behovId = BehovId("01DSFT4J9SW8XDZ2ZJZMXD5XV7"),
-        faktum = Faktum("aktorId", 1, LocalDate.now()),
+        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.VEDTAK), 1, LocalDate.now()),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = mapOf(
             "subsumsjonsId" to minsteinntektSubsumsjonId
@@ -56,7 +59,7 @@ internal class VaktmesterTest {
             val marker = bruktSubsumsjonStore.eksternTilInternSubsumsjon(
                 EksternSubsumsjonBrukt(
                     id = minsteinntektSubsumsjonId,
-                    eksternId = behov.vedtakId.toLong(),
+                    eksternId = behov.regelkontekst.id.toLong(),
                     arenaTs = ZonedDateTime.now(),
                     ts = ZonedDateTime.now().toEpochSecond()
                 )
@@ -68,7 +71,7 @@ internal class VaktmesterTest {
                     queryOf(
                         "SELECT * FROM v2_subsumsjon WHERE brukt = true",
                         emptyMap()
-                    ).map { r -> Subsumsjon.fromJson(r.string("data")) }.asList
+                    ).map { r -> JsonAdapter.fromJson(r.string("data")) }.asList
                 )
                 brukteSubsumsjoner.size shouldBe 1
                 brukteSubsumsjoner.first().minsteinntektResultat?.get("subsumsjonsId") shouldBe minsteinntektSubsumsjonId
@@ -92,7 +95,7 @@ internal class VaktmesterTest {
                 val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
-                        eksternId = behov.vedtakId.toLong(),
+                        eksternId = behov.regelkontekst.id.toLong(),
                         arenaTs = ZonedDateTime.now(),
                         ts = ZonedDateTime.now().toEpochSecond()
 
@@ -136,7 +139,7 @@ internal class VaktmesterTest {
                 val bruktSub = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
-                        eksternId = behov.vedtakId.toLong(),
+                        eksternId = behov.regelkontekst.id.toLong(),
                         arenaTs = ZonedDateTime.now(),
                         ts = ZonedDateTime.now().toEpochSecond()
 
@@ -179,7 +182,7 @@ internal class VaktmesterTest {
                 val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
-                        eksternId = behov.vedtakId.toLong(),
+                        eksternId = behov.regelkontekst.id.toLong(),
                         arenaTs = ZonedDateTime.now(),
                         ts = ZonedDateTime.now().toEpochSecond()
 
@@ -220,7 +223,7 @@ internal class VaktmesterTest {
                     val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                         EksternSubsumsjonBrukt(
                             id = minsteinntektSubsumsjonId,
-                            eksternId = behov.vedtakId.toLong(),
+                            eksternId = behov.regelkontekst.id.toLong(),
                             arenaTs = ZonedDateTime.now(),
                             ts = ZonedDateTime.now().toEpochSecond()
 
@@ -234,7 +237,7 @@ internal class VaktmesterTest {
                         queryOf(
                             "SELECT * FROM v2_subsumsjon WHERE brukt = true",
                             emptyMap()
-                        ).map { r -> Subsumsjon.fromJson(r.string("data")) }.asList
+                        ).map { r -> JsonAdapter.fromJson(r.string("data")) }.asList
                     )
                     brukteSubsumsjoner.size shouldBe 1
                     brukteSubsumsjoner.first().minsteinntektResultat?.get("subsumsjonsId") shouldBe minsteinntektSubsumsjonId
