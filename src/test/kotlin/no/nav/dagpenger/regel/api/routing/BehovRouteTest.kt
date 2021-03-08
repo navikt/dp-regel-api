@@ -204,7 +204,7 @@ class BehovRouteTest {
             aktørId shouldBe "1234"
             behandlingsId shouldNotBe null
             behandlingsId.regelKontekst.type shouldBe Kontekst.vedtak
-            behandlingsId.regelKontekst.id shouldBe "N/A"
+            behandlingsId.regelKontekst.id shouldBe "0"
             beregningsDato shouldBe LocalDate.of(2019, 1, 8)
             harAvtjentVerneplikt shouldBe true
             oppfyllerKravTilFangstOgFisk shouldBe true
