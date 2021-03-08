@@ -1,6 +1,6 @@
 package no.nav.dagpenger.regel.api
 
-import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.core.JacksonException
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -183,7 +183,7 @@ internal fun Application.api(
             badRequest(cause)
         }
 
-        exception<JsonMappingException> { cause ->
+        exception<JacksonException> { cause ->
             badRequest(cause)
         }
 
