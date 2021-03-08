@@ -39,7 +39,7 @@ internal class SubsumsjonRouteTest {
     fun `Returns subsumsjon if found`() {
         val subsumsjon = Subsumsjon(
             behovId = BehovId("01DSFSSNA8S577XGQ8V1R9EBJ7"),
-            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.VEDTAK), 1, LocalDate.now()),
+            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), 1, LocalDate.now()),
             grunnlagResultat = emptyMap(),
             minsteinntektResultat = emptyMap(),
             periodeResultat = emptyMap(),
@@ -77,7 +77,7 @@ internal class SubsumsjonRouteTest {
         val id = ULID().nextULID()
         val subsumsjon = Subsumsjon(
             behovId = BehovId("01DSFSRMWGYP0AVHAHY282W3GN"),
-            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.VEDTAK), 1, LocalDate.now()),
+            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), 1, LocalDate.now()),
             grunnlagResultat = emptyMap(),
             minsteinntektResultat = emptyMap(),
             periodeResultat = emptyMap(),

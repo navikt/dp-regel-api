@@ -93,7 +93,7 @@ internal class SuccessStrategyTest {
     @Test
     fun `Should delegate to PendingBehovStrategy if criterias are matched`() {
         val packet = Packet().apply {
-            this.putValue(PacketKeys.KONTEKST_TYPE, Kontekst.VEDTAK.name)
+            this.putValue(PacketKeys.KONTEKST_TYPE, Kontekst.vedtak.name)
         }
 
         val pendingBehovStrategy = mockk<PendingBehovStrategy>().apply {

@@ -11,7 +11,7 @@ internal class FaktumTest {
         val packet = InternBehov.fromBehov(
             behov = Behov(
                 aktørId = "aktørId",
-                regelkontekst = RegelKontekst("1", Kontekst.VEDTAK),
+                regelkontekst = RegelKontekst("1", Kontekst.vedtak),
                 beregningsDato = LocalDate.of(2011, 7, 22),
                 harAvtjentVerneplikt = true,
                 oppfyllerKravTilFangstOgFisk = true,
@@ -20,7 +20,7 @@ internal class FaktumTest {
                 lærling = false,
                 manueltGrunnlag = 1
             ),
-            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1", Kontekst.VEDTAK))
+            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1", Kontekst.vedtak))
         ).toPacket().apply {
             this.putValue(
                 PacketKeys.INNTEKT,
@@ -35,7 +35,7 @@ internal class FaktumTest {
 
         Faktum.faktumFrom(packet).let {
             it.aktorId shouldBe "aktørId"
-            it.regelkontekst shouldBe RegelKontekst("1", Kontekst.VEDTAK)
+            it.regelkontekst shouldBe RegelKontekst("1", Kontekst.vedtak)
             it.vedtakId shouldBe 1
             it.beregningsdato shouldBe LocalDate.of(2011, 7, 22)
             it.inntektsId shouldBe "inntektsId"

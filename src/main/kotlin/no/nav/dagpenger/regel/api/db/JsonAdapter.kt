@@ -54,7 +54,7 @@ internal object JsonAdapter {
     private fun getFaktum(json: JsonNode): Faktum {
         val faktum = json["faktum"]
         val regelkontekst = if (faktum.has("vedtakId")) {
-            RegelKontekst(faktum["vedtakId"].asText(), Kontekst.VEDTAK)
+            RegelKontekst(faktum["vedtakId"].asText(), Kontekst.vedtak)
         } else {
             json["regelkontekst"].let {
                 RegelKontekst(it["id"].asText(), Kontekst.valueOf(it["type"].asText()))

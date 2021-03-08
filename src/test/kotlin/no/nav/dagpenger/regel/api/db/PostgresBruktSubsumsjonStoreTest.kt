@@ -66,7 +66,7 @@ class PostgresBruktSubsumsjonStoreTest {
                 subsumsjonStore.opprettKoblingTilRegelkontekst(
                     RegelKontekst(
                         bruktSubsumsjon.eksternId.toString(),
-                        Kontekst.VEDTAK
+                        Kontekst.vedtak
                     )
                 )
                 insertSubsumsjonBrukt(eksternTilInternSubsumsjon(bruktSubsumsjon)) shouldBe 1
@@ -141,7 +141,7 @@ class PostgresBruktSubsumsjonStoreTest {
         subsumsjonStore.opprettKoblingTilRegelkontekst(
             RegelKontekst(
                 bruktSubsumsjon.eksternId.toString(),
-                Kontekst.VEDTAK
+                Kontekst.vedtak
             )
         )
     }
@@ -150,14 +150,14 @@ class PostgresBruktSubsumsjonStoreTest {
     val exampleDate = ZonedDateTime.now(oslo).minusHours(6)
     val subsumsjon = Subsumsjon(
         behovId = BehovId("01DSFT25TF56A7J8HBGDMEXAZB"),
-        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.VEDTAK), 1, LocalDate.now()),
+        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), 1, LocalDate.now()),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = emptyMap(),
         periodeResultat = emptyMap(),
         satsResultat = emptyMap(),
         problem = Problem(title = "problem")
     )
-    val eksternId = RegelKontekst(id = "1234", type = Kontekst.VEDTAK)
+    val eksternId = RegelKontekst(id = "1234", type = Kontekst.vedtak)
     val bruktSubsumsjon =
         EksternSubsumsjonBrukt(
             id = subsumsjon.behovId.id,

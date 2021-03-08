@@ -58,7 +58,7 @@ class PostgresBruktSubsumsjonStore(
         val behandlingsId = subsumsjonStore.hentKoblingTilRegelKontekst(
             RegelKontekst(
                 eksternSubsumsjonBrukt.eksternId.toString(),
-                Kontekst.VEDTAK
+                Kontekst.vedtak
             )
         ) ?: throw SubsumsjonBruktNotFoundException("Could not find susbsumsjon based on $eksternSubsumsjonBrukt")
         return InternSubsumsjonBrukt(
