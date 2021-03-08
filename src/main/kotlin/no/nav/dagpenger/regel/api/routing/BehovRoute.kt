@@ -66,7 +66,7 @@ internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProduce
 private data class StatusResponse(val status: String)
 
 internal fun mapRequestToBehov(request: BehovRequest): Behov {
-    val id = request.regelkontekst.id ?: "N/A"
+    val id = request.regelkontekst.id ?: "0"
     return Behov(
         regelkontekst = RegelKontekst(id, request.regelkontekst.type),
         aktørId = request.aktorId,
