@@ -6,6 +6,7 @@ import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.RegelKontekst
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 class JsonAdapterTest {
     @Test
@@ -14,6 +15,7 @@ class JsonAdapterTest {
         with(JsonAdapter.fromJson(json2)) {
             minsteinntektResultat shouldBe null
             faktum.inntektManueltRedigert shouldBe null
+            faktum.regelverksdato shouldBe LocalDate.of(2020, 1, 1)
         }
     }
 
@@ -154,7 +156,8 @@ class JsonAdapterTest {
       "type": "vedtak"
     },
     "beregningsdato": "2021-03-03",
-    "inntektManueltRedigert": null
+    "inntektManueltRedigert": null,
+    "regelverksdato": "2020-01-01"
   },
   "behovId": "01EZYG0JSCG597XJEK4YXJQACM",
   "satsResultat": {

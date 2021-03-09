@@ -63,7 +63,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(16, migrations, "Wrong number of migrations")
+            assertEquals(17, migrations, "Wrong number of migrations")
         }
     }
 
@@ -88,7 +88,7 @@ internal class PostgresTest {
 class PostgresSubsumsjonStoreTest {
 
     @Test
-    fun `Successful opprett of behov`() {
+    fun `Lagre behov`() {
         withMigratedDb {
             with(PostgresSubsumsjonStore(DataSource.instance)) {
                 val behov = Behov(
@@ -102,9 +102,22 @@ class PostgresSubsumsjonStoreTest {
                     bruktInntektsPeriode = InntektsPeriode(
                         YearMonth.now().minusMonths(12),
                         YearMonth.now()
-                    )
+                    ),
+                    regelverksdato = LocalDate.of(2020, 1, 1)
                 )
-                opprettBehov(behov)
+                val internBehov = opprettBehov(behov)
+                val lagretInternBehov = getBehov(internBehov.behovId)
+
+                with(behov) {
+                    aktørId shouldBe lagretInternBehov.aktørId
+                    beregningsDato shouldBe lagretInternBehov.beregningsDato
+                    antallBarn shouldBe lagretInternBehov.antallBarn
+                    manueltGrunnlag shouldBe lagretInternBehov.manueltGrunnlag
+                    harAvtjentVerneplikt shouldBe lagretInternBehov.harAvtjentVerneplikt
+                    lærling shouldBe lagretInternBehov.lærling
+                    bruktInntektsPeriode shouldBe lagretInternBehov.bruktInntektsPeriode
+                    regelverksdato shouldBe lagretInternBehov.regelverksdato
+                }
             }
         }
     }

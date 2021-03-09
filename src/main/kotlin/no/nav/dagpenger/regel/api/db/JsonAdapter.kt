@@ -74,7 +74,8 @@ internal object JsonAdapter {
             antallBarn = faktum.getOrNull("antallBarn")?.asInt(),
             manueltGrunnlag = faktum.getOrNull("manueltGrunnlag")?.asInt(),
             lærling = faktum.getOrNull("lærling")?.asBoolean(),
-            bruktInntektsPeriode = faktum.getOrNull("bruktInntektsPeriode")?.asInntektsPeriode()
+            bruktInntektsPeriode = faktum.getOrNull("bruktInntektsPeriode")?.asInntektsPeriode(),
+            regelverksdato = faktum.getOrNull("regelverksdato")?.asLocalDate()
         )
     }
 

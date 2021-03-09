@@ -1,0 +1,1 @@
+ALTER TABLE v2_behov ADD COLUMN regelverksdato DATE DEFAULT null

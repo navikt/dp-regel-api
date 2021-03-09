@@ -277,6 +277,71 @@ class BehovRouteTest {
         }
     }
 
+    @Test
+    fun `Regelverksdato`() {
+        val subsumsjonStoreMock: SubsumsjonStore = mockedSubsumsjonStore()
+
+        val produceSlot = slot<InternBehov>()
+        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
+            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+        }
+
+        withMockAuthServerAndTestApplication(
+            MockApi(
+                subsumsjonStoreMock,
+                kafkaMock
+            )
+        ) {
+
+            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+                addHeader(HttpHeaders.ContentType, "application/json")
+                setBody(
+                    """
+            {
+                "regelkontekst" : { "type" : "vedtak", "id" : "45678" },
+                "aktorId": "1234",
+                "vedtakId": 1,
+                "beregningsdato": "2019-01-08",
+                "manueltGrunnlag": 54200,
+                "harAvtjentVerneplikt": true,
+                "oppfyllerKravTilFangstOgFisk": true,
+                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
+                "antallBarn": 1,
+                "regelverksdato": "2020-02-09"
+            }
+                    """.trimIndent()
+                )
+            }.apply {
+                response.status() shouldBe HttpStatusCode.Accepted
+                withClue("Response should be handled") { requestHandled shouldBe true }
+                response.headers.contains(HttpHeaders.Location) shouldBe true
+                response.headers[HttpHeaders.Location]?.let { location ->
+                    location shouldStartWith "/behov/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
+                }
+            }
+        }
+
+        with(produceSlot.captured) {
+            behovId shouldNotBe null
+            aktørId shouldBe "1234"
+            behandlingsId shouldNotBe null
+            behandlingsId.regelKontekst.type shouldBe Kontekst.vedtak
+            behandlingsId.regelKontekst.id shouldBe "45678"
+            beregningsDato shouldBe LocalDate.of(2019, 1, 8)
+            harAvtjentVerneplikt shouldBe true
+            oppfyllerKravTilFangstOgFisk shouldBe true
+            bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7))
+            manueltGrunnlag shouldBe 54200
+            antallBarn shouldBe 1
+            regelverksdato shouldBe LocalDate.of(2020, 2, 9)
+        }
+
+        verifyAll {
+            kafkaMock.produceEvent(any())
+        }
+    }
+
     private fun mockedSubsumsjonStore(): SubsumsjonStore {
         return object : SubsumsjonStore {
             override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int {
@@ -361,5 +426,23 @@ internal class BehovRequestMappingTest {
             )
         )
         behov.inntektsId shouldBe null
+    }
+
+    @Test
+    fun `Regelverksdato should default to null if not present in request`() {
+        val behov = mapRequestToBehov(
+            BehovRequest(
+                aktorId = "aktorId",
+                regelkontekst = BehovRequest.RegelKontekst("1", Kontekst.vedtak),
+                beregningsdato = LocalDate.of(2019, 11, 7),
+                harAvtjentVerneplikt = null,
+                oppfyllerKravTilFangstOgFisk = null,
+                bruktInntektsPeriode = null,
+                manueltGrunnlag = null,
+                lærling = null,
+                antallBarn = null
+            )
+        )
+        behov.regelverksdato shouldBe null
     }
 }
