@@ -36,13 +36,11 @@ class JsonRoundtripSpec : StringSpec() {
 
 private val subsumsjonGenerator = arbitrary {
     val stringArb = Arb.string(10, 10)
-    val vedtakId = Arb.int(0, 10000).next(it)
     Subsumsjon(
         behovId = BehovId(ULID().nextULID()),
         faktum = Faktum(
             aktorId = stringArb.next(it),
-            RegelKontekst(vedtakId.toString(), Kontekst.vedtak),
-            vedtakId = vedtakId,
+            regelkontekst = RegelKontekst(stringArb.next(it), Kontekst.vedtak),
             beregningsdato = Arb.localDate(LocalDate.of(2010, 1, 1), LocalDate.of(LocalDate.now().year, 1, 1))
                 .next(it)
         ),

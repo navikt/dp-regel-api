@@ -14,7 +14,6 @@ class InternBehovTest {
 
         packet.getStringValue(PacketKeys.BEHOV_ID) shouldBe behov.behovId.id
         packet.getStringValue(PacketKeys.AKTØR_ID) shouldBe behov.aktørId
-        packet.getIntValue(PacketKeys.VEDTAK_ID) shouldBe behov.behandlingsId.regelKontekst.id.toInt()
         packet.kontekst shouldBe behov.behandlingsId.regelKontekst.type
         packet.kontekstId shouldBe behov.behandlingsId.regelKontekst.id
         packet.getStringValue(PacketKeys.BEHANDLINGSID) shouldBe behov.behandlingsId.id

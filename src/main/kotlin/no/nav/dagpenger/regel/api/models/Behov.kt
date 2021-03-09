@@ -46,7 +46,6 @@ data class InternBehov(
         fun toPacket(internBehov: InternBehov): Packet = Packet("{}").apply {
             this.putValue(PacketKeys.BEHOV_ID, internBehov.behovId.id)
             this.putValue(PacketKeys.AKTØR_ID, internBehov.aktørId)
-            this.putValue(PacketKeys.VEDTAK_ID, internBehov.behandlingsId.regelKontekst.id) // todo: Når inntekt-klassifiserer ikke lenger eksploderer av manglende vedtakId ønsker vi å gå vekk fra denne og heller peke mot regelkontekstId
             this.putValue(PacketKeys.KONTEKST_ID, internBehov.behandlingsId.regelKontekst.id)
             this.putValue(PacketKeys.KONTEKST_TYPE, internBehov.behandlingsId.regelKontekst.type.name)
             this.putValue(PacketKeys.BEHANDLINGSID, internBehov.behandlingsId.id)
