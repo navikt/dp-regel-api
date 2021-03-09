@@ -140,7 +140,7 @@ class BehovRouteTest {
             behovId shouldNotBe null
             aktørId shouldBe "1234"
             behandlingsId shouldNotBe null
-            behandlingsId.regelKontekst.type shouldBe Kontekst.VEDTAK
+            behandlingsId.regelKontekst.type shouldBe Kontekst.vedtak
             behandlingsId.regelKontekst.id shouldBe "1"
             beregningsDato shouldBe LocalDate.of(2019, 1, 8)
             harAvtjentVerneplikt shouldBe true
@@ -203,8 +203,8 @@ class BehovRouteTest {
             behovId shouldNotBe null
             aktørId shouldBe "1234"
             behandlingsId shouldNotBe null
-            behandlingsId.regelKontekst.type shouldBe Kontekst.VEDTAK
-            behandlingsId.regelKontekst.id shouldBe "N/A"
+            behandlingsId.regelKontekst.type shouldBe Kontekst.vedtak
+            behandlingsId.regelKontekst.id shouldBe "0"
             beregningsDato shouldBe LocalDate.of(2019, 1, 8)
             harAvtjentVerneplikt shouldBe true
             oppfyllerKravTilFangstOgFisk shouldBe true
@@ -262,7 +262,7 @@ class BehovRouteTest {
             behovId shouldNotBe null
             aktørId shouldBe "1234"
             behandlingsId shouldNotBe null
-            behandlingsId.regelKontekst.type shouldBe Kontekst.VEDTAK
+            behandlingsId.regelKontekst.type shouldBe Kontekst.vedtak
             behandlingsId.regelKontekst.id shouldBe "45678"
             beregningsDato shouldBe LocalDate.of(2019, 1, 8)
             harAvtjentVerneplikt shouldBe true
@@ -397,7 +397,7 @@ internal class BehovRequestMappingTest {
         val behov = mapRequestToBehov(
             BehovRequest(
                 aktorId = "aktorId",
-                regelkontekst = BehovRequest.RegelKontekst("1", Kontekst.VEDTAK),
+                regelkontekst = BehovRequest.RegelKontekst("1", Kontekst.vedtak),
                 beregningsdato = LocalDate.of(2019, 11, 7),
                 harAvtjentVerneplikt = null,
                 oppfyllerKravTilFangstOgFisk = null,
@@ -415,7 +415,7 @@ internal class BehovRequestMappingTest {
         val behov = mapRequestToBehov(
             BehovRequest(
                 aktorId = "aktorId",
-                regelkontekst = BehovRequest.RegelKontekst("1", Kontekst.VEDTAK),
+                regelkontekst = BehovRequest.RegelKontekst("1", Kontekst.vedtak),
                 beregningsdato = LocalDate.of(2019, 11, 7),
                 harAvtjentVerneplikt = null,
                 oppfyllerKravTilFangstOgFisk = null,

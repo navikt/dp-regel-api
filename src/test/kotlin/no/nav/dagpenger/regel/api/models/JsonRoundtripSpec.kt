@@ -41,7 +41,7 @@ private val subsumsjonGenerator = arbitrary {
         behovId = BehovId(ULID().nextULID()),
         faktum = Faktum(
             aktorId = stringArb.next(it),
-            RegelKontekst(vedtakId.toString(), Kontekst.VEDTAK),
+            RegelKontekst(vedtakId.toString(), Kontekst.vedtak),
             vedtakId = vedtakId,
             beregningsdato = Arb.localDate(LocalDate.of(2010, 1, 1), LocalDate.of(LocalDate.now().year, 1, 1))
                 .next(it)
@@ -61,7 +61,7 @@ private val internBehovGenerator = arbitrary {
         behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(
             RegelKontekst(
                 Arb.string().next(it),
-                Kontekst.VEDTAK
+                Kontekst.vedtak
             )
         ),
         harAvtjentVerneplikt = Arb.bool().next(it),

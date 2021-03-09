@@ -21,7 +21,7 @@ class JsonAdapterTest {
     fun `Mapper gamle subsumsjoner med vedtakid`() {
         val vedtakId = "123"
         with(JsonAdapter.fromJson(json3(vedtakId))) {
-            faktum.regelkontekst shouldBe RegelKontekst(vedtakId, Kontekst.VEDTAK)
+            faktum.regelkontekst shouldBe RegelKontekst(vedtakId, Kontekst.vedtak)
         }
     }
 

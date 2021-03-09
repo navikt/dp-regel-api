@@ -8,20 +8,8 @@ import java.time.YearMonth
 internal class PacketTest {
 
     @Test
-    fun `Mapping from InternBehov to Packet with all fields`() {
-        val behov = InternBehov(
-            behovId = BehovId("01DSFVQ4NQQ64SNT4Z16TJXXE7"),
-            aktørId = "aktørId",
-            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1234", Kontekst.VEDTAK)),
-            beregningsDato = LocalDate.now(),
-            harAvtjentVerneplikt = true,
-            oppfyllerKravTilFangstOgFisk = true,
-            bruktInntektsPeriode = InntektsPeriode(YearMonth.now(), YearMonth.now()),
-            antallBarn = 1,
-            manueltGrunnlag = 1,
-            lærling = false,
-            regelverksdato = LocalDate.of(2020, 1, 2)
-        )
+    fun `Mapping from BehovV2 to Packet with all fields`() {
+        val behov = InternBehov(BehovId("01DSFVQ4NQQ64SNT4Z16TJXXE7"), "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1234", Kontekst.vedtak)), LocalDate.now(), true, true, InntektsPeriode(YearMonth.now(), YearMonth.now()), 1, 1, lærling = false, regelverksdato = LocalDate.of(2020, 1, 2))
         val packet = InternBehov.toPacket(behov)
 
         packet.getStringValue(PacketKeys.BEHOV_ID) shouldBe behov.behovId.id
@@ -41,8 +29,8 @@ internal class PacketTest {
     }
 
     @Test
-    fun `Mapping from InternBehov to Packet with nullable fields`() {
-        val behov = InternBehov(BehovId("01DSFVQY33P2A5K7GHNC96W3JJ"), "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1234", Kontekst.VEDTAK)), LocalDate.now())
+    fun `Mapping from Behov to Packet with nullable fields`() {
+        val behov = InternBehov(BehovId("01DSFVQY33P2A5K7GHNC96W3JJ"), "aktørId", BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1234", Kontekst.vedtak)), LocalDate.now())
         val packet = InternBehov.toPacket(behov)
 
         packet.getNullableBoolean(PacketKeys.HAR_AVTJENT_VERNE_PLIKT) shouldBe null

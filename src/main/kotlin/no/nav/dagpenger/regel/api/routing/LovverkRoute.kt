@@ -56,7 +56,7 @@ private const val UBRUKT_VEDTAK_ID = -9999
 
 private fun InternBehov.tilBehov(beregningsdato: LocalDate) =
     Behov(
-        regelkontekst = RegelKontekst("$UBRUKT_VEDTAK_ID", Kontekst.REVURDERING),
+        regelkontekst = RegelKontekst("$UBRUKT_VEDTAK_ID", Kontekst.revurdering),
         aktørId = this.aktørId,
         beregningsDato = beregningsdato,
         harAvtjentVerneplikt = this.harAvtjentVerneplikt,

@@ -14,7 +14,7 @@ internal class SubsumsjonTest {
     fun `Map to JSON string`() {
         Subsumsjon(
             behovId = BehovId("01DSFTA586H33ESMTYMY6QD4ZD"),
-            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.VEDTAK), 1, LocalDate.of(2019, 5, 9)),
+            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), 1, LocalDate.of(2019, 5, 9)),
             grunnlagResultat = emptyMap(),
             minsteinntektResultat = emptyMap(),
             periodeResultat = emptyMap(),
@@ -41,7 +41,7 @@ internal class SubsumsjonTest {
 
         subsumsjon?.faktum?.apply {
             aktorId shouldBe "aktorId"
-            regelkontekst shouldBe RegelKontekst("1", Kontekst.VEDTAK)
+            regelkontekst shouldBe RegelKontekst("1", Kontekst.vedtak)
             vedtakId shouldBe 1
             beregningsdato shouldBe LocalDate.of(2019, 5, 9)
             inntektsId shouldBe "inntektsId"

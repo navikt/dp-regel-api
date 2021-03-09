@@ -30,8 +30,8 @@ internal class KafkaDagpengerBehovProducerTest {
         KafkaDagpengerBehovProducer(producerConfig("APP", Kafka.instance.bootstrapServers, null), Topics.DAGPENGER_BEHOV_PACKET_EVENT).apply {
             val metadata = produceEvent(
                 InternBehov.fromBehov(
-                    behov = Behov(aktørId = "aktorId", regelkontekst = RegelKontekst("1", Kontekst.VEDTAK), beregningsDato = LocalDate.now()),
-                    behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("123", Kontekst.VEDTAK))
+                    behov = Behov(aktørId = "aktorId", regelkontekst = RegelKontekst("1", Kontekst.vedtak), beregningsDato = LocalDate.now()),
+                    behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("123", Kontekst.vedtak))
                 )
             ).get(5, TimeUnit.SECONDS)
 
