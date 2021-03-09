@@ -28,7 +28,7 @@ import java.time.LocalDate
 class LovverkRouteTest {
     val subsumsjonMock = Subsumsjon(
         behovId = BehovId("01DSFSRMWGYP0AVHAHY282W3GN"),
-        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), 1, LocalDate.now()),
+        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = mapOf("oppfyllerMinsteinntekt" to true),
         periodeResultat = emptyMap(),

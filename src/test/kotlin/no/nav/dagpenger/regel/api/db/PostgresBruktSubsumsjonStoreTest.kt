@@ -150,7 +150,7 @@ class PostgresBruktSubsumsjonStoreTest {
     val exampleDate = ZonedDateTime.now(oslo).minusHours(6)
     val subsumsjon = Subsumsjon(
         behovId = BehovId("01DSFT25TF56A7J8HBGDMEXAZB"),
-        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), 1, LocalDate.now()),
+        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),
         grunnlagResultat = emptyMap(),
         minsteinntektResultat = emptyMap(),
         periodeResultat = emptyMap(),

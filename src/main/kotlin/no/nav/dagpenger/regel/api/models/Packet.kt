@@ -8,7 +8,6 @@ internal object PacketKeys {
     const val ANTALL_BARN = "antallBarn"
     const val HAR_AVTJENT_VERNE_PLIKT = "harAvtjentVerneplikt"
     const val BEREGNINGS_DATO = "beregningsDato"
-    const val VEDTAK_ID = "vedtakId"
     const val KONTEKST_TYPE = "kontekstType"
     const val KONTEKST_ID = "kontekstId"
     const val AKTØR_ID = "aktørId"

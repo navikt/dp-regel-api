@@ -56,7 +56,7 @@ internal object JsonAdapter {
         val regelkontekst = if (faktum.has("vedtakId")) {
             RegelKontekst(faktum["vedtakId"].asText(), Kontekst.vedtak)
         } else {
-            json["regelkontekst"].let {
+            faktum["regelkontekst"].let {
                 RegelKontekst(it["id"].asText(), Kontekst.valueOf(it["type"].asText()))
             }
         }
@@ -64,7 +64,6 @@ internal object JsonAdapter {
         return Faktum(
             aktorId = faktum["aktorId"].asText(),
             regelkontekst = regelkontekst,
-            vedtakId = regelkontekst.id.toInt(),
             beregningsdato = faktum["beregningsdato"].asLocalDate(),
             inntektsId = faktum.getOrNull("inntektsId")?.textValue(),
             inntektAvvik = faktum.getOrNull("inntektAvvik")?.asBoolean(),

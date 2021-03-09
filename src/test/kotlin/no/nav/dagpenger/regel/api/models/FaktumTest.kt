@@ -37,7 +37,6 @@ internal class FaktumTest {
         Faktum.faktumFrom(packet).let {
             it.aktorId shouldBe "aktørId"
             it.regelkontekst shouldBe RegelKontekst("1", Kontekst.vedtak)
-            it.vedtakId shouldBe 1
             it.beregningsdato shouldBe LocalDate.of(2011, 7, 22)
             it.inntektsId shouldBe "inntektsId"
             it.harAvtjentVerneplikt shouldBe true
