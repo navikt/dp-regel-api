@@ -16,11 +16,11 @@ internal class BruktSubsumsjonStrategy(private val vaktmester: Vaktmester, priva
             }
             .forEach {
                 try {
-                    logger.info("Received $it ")
+                    logger.info("Mottatt $it ")
                     val internSubsumsjonBrukt = bruktSubsumsjonStore.eksternTilInternSubsumsjon(it)
                     bruktSubsumsjonStore.insertSubsumsjonBrukt(internSubsumsjonBrukt)
                     vaktmester.markerSomBrukt(internSubsumsjonBrukt)
-                    logger.info("Saved $it to database")
+                    logger.info("Lagret $it til database")
                 } catch (e: SubsumsjonBruktNotFoundException) {
                     logger.error("Fant ikke $it i databasen")
                 }
