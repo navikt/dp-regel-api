@@ -342,6 +342,31 @@ class PostgresSubsumsjonStoreTest {
         }
     }
 
+    @Test
+    fun `Skal kunne håndtere uppercase VEDTAK `() {
+        withMigratedDb {
+            with(DataSource.instance) {
+                val regelKontekst = RegelKontekst("1234", Kontekst.vedtak)
+                val behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(regelKontekst)
+                using(sessionOf(DataSource.instance)) { session ->
+                    session.run(
+                        queryOf(
+                            "INSERT INTO v1_behov_behandling_mapping(id, ekstern_id, kontekst) VALUES (:id, :ekstern_id, :kontekst)",
+                            mapOf(
+                                "id" to behandlingsId.id,
+                                "ekstern_id" to behandlingsId.regelKontekst.id,
+                                "kontekst" to "VEDTAK"
+                            )
+                        ).asUpdate
+                    )
+                }
+                val store = PostgresSubsumsjonStore(DataSource.instance)
+                val lagretBehandlingsId: BehandlingsId? = store.hentKoblingTilRegelKontekst(regelKontekst)
+                behandlingsId shouldBe lagretBehandlingsId
+            }
+        }
+    }
+
     private val subsumsjon = Subsumsjon(
         behovId = BehovId("01DSFST7S8HCXHRASYP9PC197W"),
         faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),

@@ -42,7 +42,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
             val id: String? = using(sessionOf(dataSource)) { session ->
                 session.run(
                     queryOf(
-                        "SELECT id FROM v1_behov_behandling_mapping WHERE kontekst = :kontekst AND ekstern_id = :ekstern_id",
+                        "SELECT id FROM v1_behov_behandling_mapping WHERE lower(kontekst) = lower(:kontekst) AND ekstern_id = :ekstern_id",
                         mapOf("kontekst" to regelKontekst.type.name, "ekstern_id" to regelKontekst.id)
                     ).map { row ->
                         row.string("id")
