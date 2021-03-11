@@ -15,6 +15,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verifyAll
+import no.finn.unleash.FakeUnleash
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -470,7 +471,8 @@ internal class BehovRequestMappingTest {
                 manueltGrunnlag = null,
                 lærling = null,
                 antallBarn = null
-            )
+            ),
+            FakeUnleash()
         )
         behov.regelverksdato shouldBe null
         behov.inntektsId shouldBe null

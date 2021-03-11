@@ -13,8 +13,11 @@ import io.ktor.routing.route
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
+import no.finn.unleash.Unleash
 import no.nav.dagpenger.regel.api.BadRequestException
+import no.nav.dagpenger.regel.api.FORHØYA_SATS_TOGGLE
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
+import no.nav.dagpenger.regel.api.forhøyaSats
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
@@ -26,11 +29,11 @@ import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
-internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
+internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProducer, unleash: Unleash) {
     route("/behov") {
         post {
             withContext(IO) {
-                mapRequestToBehov(call.receive()).apply {
+                mapRequestToBehov(call.receive(), unleash).apply {
                     store.opprettBehov(this).also {
                         producer.produceEvent(it)
                     }.also {
@@ -65,7 +68,7 @@ internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProduce
 
 private data class StatusResponse(val status: String)
 
-internal fun mapRequestToBehov(request: BehovRequest): Behov {
+internal fun mapRequestToBehov(request: BehovRequest, unleash: Unleash): Behov {
     val id = request.regelkontekst.id ?: "0"
     return Behov(
         regelkontekst = RegelKontekst(id, request.regelkontekst.type),
@@ -75,11 +78,11 @@ internal fun mapRequestToBehov(request: BehovRequest): Behov {
         oppfyllerKravTilFangstOgFisk = request.oppfyllerKravTilFangstOgFisk,
         bruktInntektsPeriode = request.bruktInntektsPeriode,
         manueltGrunnlag = request.manueltGrunnlag,
-        forrigeGrunnlag = request.forrigeGrunnlag,
+        forrigeGrunnlag = if (unleash.forhøyaSats()) request.forrigeGrunnlag else null,
         antallBarn = request.antallBarn ?: 0,
         inntektsId = request.inntektsId,
         lærling = request.lærling,
-        regelverksdato = request.regelverksdato
+        regelverksdato = if (unleash.forhøyaSats()) request.regelverksdato else null
     )
 }
 
