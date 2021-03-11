@@ -15,7 +15,6 @@ import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
 import no.nav.dagpenger.regel.api.BadRequestException
-import no.nav.dagpenger.regel.api.FORHØYA_SATS_TOGGLE
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.forhøyaSats
 import no.nav.dagpenger.regel.api.models.Behov

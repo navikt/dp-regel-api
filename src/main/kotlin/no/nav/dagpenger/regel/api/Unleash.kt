@@ -2,7 +2,11 @@ package no.nav.dagpenger.regel.api
 
 import no.finn.unleash.DefaultUnleash
 import no.finn.unleash.Unleash
+import no.finn.unleash.strategy.Strategy
 import no.finn.unleash.util.UnleashConfig
+
+const val FORHØYA_SATS_TOGGLE = "dp-regel-api.forhoyaSats"
+fun Unleash.forhøyaSats() = isEnabled(FORHØYA_SATS_TOGGLE)
 
 fun setupUnleash(unleashApiUrl: String): DefaultUnleash {
     val appName = "dp-regel-api"
@@ -12,34 +16,31 @@ fun setupUnleash(unleashApiUrl: String): DefaultUnleash {
         .unleashAPI(unleashApiUrl)
         .build()
 
-    return DefaultUnleash(unleashconfig)
+    return DefaultUnleash(unleashconfig, ByClusterStrategy(Cluster.current))
 }
 
-const val FORHØYA_SATS_TOGGLE = "dp-regel-api.forhoyaSats"
+class ByClusterStrategy(private val currentCluster: Cluster) : Strategy {
+    override fun getName(): String = "byCluster"
 
-fun Unleash.forhøyaSats() = isEnabled(FORHØYA_SATS_TOGGLE)
-/*
-import no.finn.unleash.strategy.Strategy;
-import java.util.Map;
+    override fun isEnabled(parameters: Map<String, String>?): Boolean {
+        val clustersParameter = parameters?.get("cluster") ?: return false
+        val alleClustere = clustersParameter.split(",").map { it.trim() }.map { it.toLowerCase() }.toList()
+        return alleClustere.contains(currentCluster.asString())
+    }
+}
 
-public class IsNotProdStrategy implements Strategy {
-    private final String env;
+enum class Cluster {
+    DEV_FSS, PROD_FSS, ANNET;
 
-    public IsNotProdStrategy(String env) {
-        this.env = env;
+    companion object {
+        val current: Cluster by lazy {
+            when (System.getenv("NAIS_CLUSTER_NAME")) {
+                "dev-fss" -> DEV_FSS
+                "prod-fss" -> PROD_FSS
+                else -> ANNET
+            }
+        }
     }
 
-    @Override
-    public String getName() {
-        return "isNotProd";
-    }
-
-    @Override
-    public boolean isEnabled(Map<String, String> map) {
-        return !isProd(this.env);
-    }
-
-    private boolean isProd(String environment) {
-        return "p".equalsIgnoreCase(environment);
-    }
-}*/
+    fun asString(): String = name.toLowerCase().replace("_", "-")
+}
