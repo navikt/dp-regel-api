@@ -16,6 +16,7 @@ data class Behov(
     val bruktInntektsPeriode: InntektsPeriode? = null,
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
+    val forrigeGrunnlag: Int? = null,
     val inntektsId: String? = null,
     val lærling: Boolean? = null,
     val regelverksdato: LocalDate? = null
@@ -31,6 +32,7 @@ data class InternBehov(
     val bruktInntektsPeriode: InntektsPeriode? = null,
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
+    val forrigeGrunnlag: Int? = null,
     val inntektsId: String? = null,
     val lærling: Boolean? = null,
     val regelverksdato: LocalDate? = null
@@ -57,6 +59,7 @@ data class InternBehov(
             internBehov.bruktInntektsPeriode?.let { this.putValue(PacketKeys.BRUKT_INNTEKTSPERIODE, it.toJson()) }
             internBehov.antallBarn?.let { this.putValue(PacketKeys.ANTALL_BARN, it) }
             internBehov.manueltGrunnlag?.let { this.putValue(PacketKeys.MANUELT_GRUNNLAG, it) }
+            internBehov.forrigeGrunnlag?.let { this.putValue(PacketKeys.FORRIGE_GRUNNLAG, it) }
             internBehov.inntektsId?.let { this.putValue(PacketKeys.INNTEKTS_ID, it) }
             internBehov.lærling?.let { this.putValue(PacketKeys.LÆRLING, it) }
             internBehov.regelverksdato?.let { this.putValue(PacketKeys.REGELVERKSDATO, it) }
@@ -69,6 +72,7 @@ data class InternBehov(
                 harAvtjentVerneplikt = behov.harAvtjentVerneplikt,
                 oppfyllerKravTilFangstOgFisk = behov.oppfyllerKravTilFangstOgFisk,
                 manueltGrunnlag = behov.manueltGrunnlag,
+                forrigeGrunnlag = behov.forrigeGrunnlag,
                 beregningsDato = behov.beregningsDato,
                 bruktInntektsPeriode = behov.bruktInntektsPeriode,
                 antallBarn = behov.antallBarn,

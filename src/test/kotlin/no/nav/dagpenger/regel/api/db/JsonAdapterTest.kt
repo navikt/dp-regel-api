@@ -16,6 +16,7 @@ class JsonAdapterTest {
             minsteinntektResultat shouldBe null
             faktum.inntektManueltRedigert shouldBe null
             faktum.regelverksdato shouldBe LocalDate.of(2020, 1, 1)
+            faktum.forrigeGrunnlag shouldBe 12364
         }
     }
 
@@ -157,7 +158,8 @@ class JsonAdapterTest {
     },
     "beregningsdato": "2021-03-03",
     "inntektManueltRedigert": null,
-    "regelverksdato": "2020-01-01"
+    "regelverksdato": "2020-01-01",
+    "forrigeGrunnlag": 12364
   },
   "behovId": "01EZYG0JSCG597XJEK4YXJQACM",
   "satsResultat": {

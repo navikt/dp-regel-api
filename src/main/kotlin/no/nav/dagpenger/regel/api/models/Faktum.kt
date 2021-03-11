@@ -14,6 +14,7 @@ data class Faktum(
     val oppfyllerKravTilFangstOgFisk: Boolean? = null,
     val antallBarn: Int? = null,
     val manueltGrunnlag: Int? = null,
+    val forrigeGrunnlag: Int? = null,
     val lærling: Boolean? = null,
     val bruktInntektsPeriode: InntektsPeriode? = null,
     val regelverksdato: LocalDate? = null
@@ -35,6 +36,7 @@ data class Faktum(
                 oppfyllerKravTilFangstOgFisk = packet.getNullableBoolean(PacketKeys.OPPFYLLER_KRAV_TIL_FANGST_OG_FISK),
                 antallBarn = packet.getNullableIntValue(PacketKeys.ANTALL_BARN),
                 manueltGrunnlag = packet.getNullableIntValue(PacketKeys.MANUELT_GRUNNLAG),
+                forrigeGrunnlag = packet.getNullableIntValue(PacketKeys.FORRIGE_GRUNNLAG),
                 lærling = packet.getNullableBoolean(PacketKeys.LÆRLING),
                 bruktInntektsPeriode = InntektsPeriode.fromPacket(packet),
                 regelverksdato = packet.getNullableLocalDate(PacketKeys.REGELVERKSDATO)

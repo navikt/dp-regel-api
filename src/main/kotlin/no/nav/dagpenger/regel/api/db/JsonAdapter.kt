@@ -2,7 +2,6 @@ package no.nav.dagpenger.regel.api.db
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
@@ -72,6 +71,7 @@ internal object JsonAdapter {
             oppfyllerKravTilFangstOgFisk = faktum.getOrNull("oppfyllerKravTilFangstOgFisk")?.asBoolean(),
             antallBarn = faktum.getOrNull("antallBarn")?.asInt(),
             manueltGrunnlag = faktum.getOrNull("manueltGrunnlag")?.asInt(),
+            forrigeGrunnlag = faktum.getOrNull("forrigeGrunnlag")?.asInt(),
             lærling = faktum.getOrNull("lærling")?.asBoolean(),
             bruktInntektsPeriode = faktum.getOrNull("bruktInntektsPeriode")?.asInntektsPeriode(),
             regelverksdato = faktum.getOrNull("regelverksdato")?.asLocalDate()

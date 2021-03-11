@@ -77,8 +77,8 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                     tx.run(
                         queryOf(
                             """INSERT INTO v2_behov(id, behandlings_id, aktor_id, beregnings_dato, oppfyller_krav_til_fangst_og_fisk, 
-                    |                                       avtjent_verne_plikt, brukt_opptjening_forste_maned, brukt_opptjening_siste_maned, antall_barn, manuelt_grunnlag, inntekts_id, laerling, regelverksdato, data) 
-                    |                  VALUES (:id, :behandlings_id, :aktor, :beregning, :fisk, :verneplikt, :forste, :siste, :barn, :grunnlag, :inntekt, :laerling, :regelverksdato, :data)""".trimMargin(),
+                    |                                       avtjent_verne_plikt, brukt_opptjening_forste_maned, brukt_opptjening_siste_maned, antall_barn, manuelt_grunnlag, forrige_grunnlag, inntekts_id, laerling, regelverksdato, data) 
+                    |                  VALUES (:id, :behandlings_id, :aktor, :beregning, :fisk, :verneplikt, :forste, :siste, :barn, :grunnlag, :forrige_grunnlag, :inntekt, :laerling, :regelverksdato, :data)""".trimMargin(),
                             mapOf(
                                 "id" to behov.behovId.id,
                                 "behandlings_id" to behov.behandlingsId.id,
@@ -90,6 +90,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                                 "siste" to behov.bruktInntektsPeriode?.sisteMåned?.atDay(1),
                                 "barn" to behov.antallBarn,
                                 "grunnlag" to behov.manueltGrunnlag,
+                                "forrige_grunnlag" to behov.forrigeGrunnlag,
                                 "inntekt" to behov.inntektsId,
                                 "laerling" to behov.lærling,
                                 "regelverksdato" to behov.regelverksdato,
@@ -134,6 +135,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                             },
                         antallBarn = row.intOrNull("antall_barn"),
                         manueltGrunnlag = row.intOrNull("manuelt_grunnlag"),
+                        forrigeGrunnlag = row.intOrNull("forrige_grunnlag"),
                         inntektsId = row.stringOrNull("inntekts_id"),
                         lærling = row.boolean("laerling"),
                         behandlingsId = BehandlingsId(

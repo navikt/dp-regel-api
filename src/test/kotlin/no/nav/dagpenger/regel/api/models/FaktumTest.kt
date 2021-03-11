@@ -19,6 +19,7 @@ internal class FaktumTest {
                 antallBarn = 1,
                 lærling = false,
                 manueltGrunnlag = 1,
+                forrigeGrunnlag = 4,
                 regelverksdato = LocalDate.of(2020, 1, 1)
             ),
             behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1", Kontekst.vedtak))
@@ -43,6 +44,7 @@ internal class FaktumTest {
             it.oppfyllerKravTilFangstOgFisk shouldBe true
             it.antallBarn shouldBe 1
             it.manueltGrunnlag shouldBe 1
+            it.forrigeGrunnlag shouldBe 4
             it.bruktInntektsPeriode shouldBe InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7))
             it.lærling shouldBe false
             it.regelverksdato shouldBe LocalDate.of(2020, 1, 1)

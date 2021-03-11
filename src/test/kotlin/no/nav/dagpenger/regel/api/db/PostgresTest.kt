@@ -63,7 +63,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            assertEquals(17, migrations, "Wrong number of migrations")
+            assertEquals(18, migrations, "Wrong number of migrations")
         }
     }
 
@@ -97,6 +97,7 @@ class PostgresSubsumsjonStoreTest {
                     beregningsDato = LocalDate.now(),
                     antallBarn = 1,
                     manueltGrunnlag = 11,
+                    forrigeGrunnlag = 234,
                     harAvtjentVerneplikt = false,
                     lærling = false,
                     bruktInntektsPeriode = InntektsPeriode(
@@ -105,18 +106,18 @@ class PostgresSubsumsjonStoreTest {
                     ),
                     regelverksdato = LocalDate.of(2020, 1, 1)
                 )
-                val internBehov = opprettBehov(behov)
-                val lagretInternBehov = getBehov(internBehov.behovId)
+                val lagretInternBehov = getBehov(opprettBehov(behov).behovId)
 
                 with(behov) {
-                    aktørId shouldBe lagretInternBehov.aktørId
-                    beregningsDato shouldBe lagretInternBehov.beregningsDato
-                    antallBarn shouldBe lagretInternBehov.antallBarn
-                    manueltGrunnlag shouldBe lagretInternBehov.manueltGrunnlag
-                    harAvtjentVerneplikt shouldBe lagretInternBehov.harAvtjentVerneplikt
-                    lærling shouldBe lagretInternBehov.lærling
-                    bruktInntektsPeriode shouldBe lagretInternBehov.bruktInntektsPeriode
-                    regelverksdato shouldBe lagretInternBehov.regelverksdato
+                    lagretInternBehov.aktørId shouldBe aktørId
+                    lagretInternBehov.beregningsDato shouldBe beregningsDato
+                    lagretInternBehov.antallBarn shouldBe antallBarn
+                    lagretInternBehov.manueltGrunnlag shouldBe manueltGrunnlag
+                    lagretInternBehov.forrigeGrunnlag shouldBe forrigeGrunnlag
+                    lagretInternBehov.harAvtjentVerneplikt shouldBe harAvtjentVerneplikt
+                    lagretInternBehov.lærling shouldBe lærling
+                    lagretInternBehov.bruktInntektsPeriode shouldBe bruktInntektsPeriode
+                    lagretInternBehov.regelverksdato shouldBe regelverksdato
                 }
             }
         }
