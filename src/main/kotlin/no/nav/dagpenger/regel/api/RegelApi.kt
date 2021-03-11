@@ -33,6 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
+import no.finn.unleash.Unleash
 import no.nav.dagpenger.ktor.auth.apiKeyAuth
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
 import no.nav.dagpenger.regel.api.auth.azureAdJWT
@@ -107,6 +108,7 @@ fun main() {
 
     )
 
+    val unleash = setupUnleash(config.application.unleashUrl)
     val app = embeddedServer(Netty, port = config.application.httpPort) {
         api(
             subsumsjonStore,
@@ -119,7 +121,8 @@ fun main() {
                 kafkaProducer as HealthCheck,
                 bruktSubsumsjonConsumer as HealthCheck
             ),
-            config
+            config,
+            unleash
         )
     }.also {
         it.start(wait = false)
@@ -139,7 +142,8 @@ internal fun Application.api(
     kafkaProducer: DagpengerBehovProducer,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     healthChecks: List<HealthCheck>,
-    config: Configuration
+    config: Configuration,
+    unleash: Unleash
 ) {
     install(DefaultHeaders)
 
@@ -205,7 +209,7 @@ internal fun Application.api(
         authenticate("X-API-KEY") {
             subsumsjon(subsumsjonStore)
             lovverk(subsumsjonStore, kafkaProducer)
-            behov(subsumsjonStore, kafkaProducer)
+            behov(subsumsjonStore, kafkaProducer, unleash)
         }
 
         authenticate("jwt") {
