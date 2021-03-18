@@ -89,6 +89,14 @@ internal class ManuellGrunnlagStrategy(private val delegate: SuccessStrategy) : 
             delegate.shouldHandle(packet)
 }
 
+internal class ForrigeGrunnlagStrategy(private val delegate: SuccessStrategy) : SubsumsjonPacketStrategy {
+    override fun handle(packet: Packet) = delegate.handle(packet)
+
+    override fun shouldHandle(packet: Packet) =
+        packet.hasFields(PacketKeys.FORRIGE_GRUNNLAG, PacketKeys.GRUNNLAG_RESULTAT, PacketKeys.SATS_RESULTAT) &&
+            delegate.shouldHandle(packet)
+}
+
 internal class ProblemStrategy(private val delegate: PendingBehovStrategy) : SubsumsjonPacketStrategy {
     override fun shouldHandle(packet: Packet) = packet.hasProblem() && delegate.shouldHandle(packet)
     override fun handle(packet: Packet) = delegate.handle(packet)
@@ -100,6 +108,7 @@ internal fun subsumsjonPacketStrategies(subsumsjonStore: SubsumsjonStore): List<
     return listOf(
         ProblemStrategy(pendingBehovStrategy),
         ManuellGrunnlagStrategy(successStrategy),
+        ForrigeGrunnlagStrategy(successStrategy),
         CompleteResultStrategy(successStrategy)
     )
 }
