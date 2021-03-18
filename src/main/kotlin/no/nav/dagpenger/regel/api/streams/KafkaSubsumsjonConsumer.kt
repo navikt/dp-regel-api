@@ -13,6 +13,7 @@ import org.apache.kafka.streams.kstream.Predicate
 import java.time.Duration
 
 private val LOGGER = KotlinLogging.logger {}
+private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class KafkaSubsumsjonConsumer(
     private val config: Configuration,
@@ -58,5 +59,8 @@ internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacke
             Predicate { _, packet -> !packet.hasProblem() }
         )
 
-    override fun onPacket(packet: Packet) = packetStrategies.forEach { it.run(packet) }
+    override fun onPacket(packet: Packet) {
+        sikkerlogg.info { "Mottok packet: ${packet.toJson()}" }
+        packetStrategies.forEach { it.run(packet) }
+    }
 }
