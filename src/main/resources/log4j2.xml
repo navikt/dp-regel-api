@@ -14,5 +14,8 @@
             <AppenderRef ref="ConsoleAppender"/>
             <AppenderRef ref="metrics"/>
         </Root>
+        <Logger name="tjenestekall" level="trace" additivity="false">
+            <AppenderRef ref="secureLog"/>
+        </Logger>
     </Loggers>
 </Configuration>
