@@ -60,7 +60,8 @@ internal class KafkaSubsumsjonConsumerTest {
         }
 
         fun runTest(strategies: List<SubsumsjonPacketStrategy>, packet: Packet, testBlock: () -> Unit) {
-            SubsumsjonPond(strategies, Configuration()).let {
+            val configuration = Configuration()
+            SubsumsjonPond(strategies, configuration, configuration.behovTopic).let {
                 TopologyTestDriver(it.buildTopology(), config).use { topologyTestDriver ->
                     val input = topologyTestDriver.createInputTopic(
                         Topics.DAGPENGER_BEHOV_PACKET_EVENT.name,

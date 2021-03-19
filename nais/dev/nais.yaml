@@ -18,6 +18,8 @@ spec:
   replicas:
     min: 2
     max: 3
+  kafka:
+    pool: nav-dev
   resources:
     limits:
       cpu: 500m

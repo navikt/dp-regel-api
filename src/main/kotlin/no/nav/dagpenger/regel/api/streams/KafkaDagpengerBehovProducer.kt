@@ -5,7 +5,7 @@ import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import no.nav.dagpenger.streams.KafkaCredential
+import no.nav.dagpenger.streams.KafkaAivenCredentials
 import no.nav.dagpenger.streams.Topic
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -13,10 +13,8 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.KafkaException
-import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.StringSerializer
-import java.io.File
 import java.util.Properties
 import java.util.concurrent.Future
 
@@ -25,7 +23,7 @@ private val LOGGER = KotlinLogging.logger {}
 internal fun producerConfig(
     appId: String,
     bootStapServerUrl: String,
-    credential: KafkaCredential? = null,
+    aivenCredentials: KafkaAivenCredentials? = null,
     keySerializer: String = StringSerializer::class.java.name,
     valueSerializer: String = StringSerializer::class.java.name
 ): Properties {
@@ -46,26 +44,15 @@ internal fun producerConfig(
             )
         )
 
-        credential?.let { credential ->
-            LOGGER.info { "Using user name ${credential.username} to authenticate against Kafka brokers " }
-            put(SaslConfigs.SASL_MECHANISM, "PLAIN")
-            put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT")
-            put(
-                SaslConfigs.SASL_JAAS_CONFIG,
-                "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${credential.username}\" password=\"${credential.password}\";"
-            )
-
-            val trustStoreLocation = System.getenv("NAV_TRUSTSTORE_PATH")
-            trustStoreLocation?.let {
-                try {
-                    put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL")
-                    put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, File(it).absolutePath)
-                    put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, System.getenv("NAV_TRUSTSTORE_PASSWORD"))
-                    LOGGER.info { "Configured '${SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG}' location " }
-                } catch (e: Exception) {
-                    LOGGER.error { "Failed to set '${SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG}' location " }
-                }
-            }
+        aivenCredentials?.let {
+            put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, it.securityProtocolConfig)
+            put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, it.sslEndpointIdentificationAlgorithmConfig)
+            put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, it.sslTruststoreTypeConfig)
+            put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, it.sslKeystoreTypeConfig)
+            put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, it.sslTruststoreLocationConfig)
+            put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, it.sslTruststorePasswordConfig)
+            put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, it.sslKeystoreLocationConfig)
+            put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, it.sslKeystorePasswordConfig)
         }
     }
 }
@@ -74,9 +61,9 @@ internal interface DagpengerBehovProducer {
     fun produceEvent(behov: InternBehov): Future<RecordMetadata>
 }
 
-internal class KafkaDagpengerBehovProducer(private val kafkaProps: Properties, private val behovTopic: Topic<String, Packet>) : DagpengerBehovProducer, HealthCheck {
+internal class KafkaDagpengerBehovProducer(private val kafkaProps: Properties, private val regelTopic: Topic<String, Packet>) : DagpengerBehovProducer, HealthCheck {
 
-    private val kafkaProducer = KafkaProducer<String, Packet>(kafkaProps, behovTopic.keySerde.serializer(), behovTopic.valueSerde.serializer())
+    private val kafkaProducer = KafkaProducer<String, Packet>(kafkaProps, regelTopic.keySerde.serializer(), regelTopic.valueSerde.serializer())
 
     init {
         Runtime.getRuntime().addShutdownHook(
@@ -91,9 +78,9 @@ internal class KafkaDagpengerBehovProducer(private val kafkaProps: Properties, p
 
     override fun status(): HealthStatus {
         try {
-            kafkaProducer.partitionsFor(behovTopic.name)
+            kafkaProducer.partitionsFor(regelTopic.name)
         } catch (e: KafkaException) {
-            LOGGER.error(e) { "Failed Kafka health check getting partion info for ${behovTopic.name}" }
+            LOGGER.error(e) { "Failed Kafka health check getting partion info for ${regelTopic.name}" }
             return HealthStatus.DOWN
         }
         return HealthStatus.UP
@@ -101,7 +88,7 @@ internal class KafkaDagpengerBehovProducer(private val kafkaProps: Properties, p
 
     override fun produceEvent(behov: InternBehov): Future<RecordMetadata> {
         return kafkaProducer.send(
-            ProducerRecord(behovTopic.name, behov.behovId.id, InternBehov.toPacket(behov)) // TODO: Use intern id as partition key instead, as it is unique per ektern id + kontekst
+            ProducerRecord(regelTopic.name, behov.behovId.id, InternBehov.toPacket(behov)) // TODO: Use intern id as partition key instead, as it is unique per ektern id + kontekst
         ) { metadata, exception ->
             exception?.let { LOGGER.error { "Failed to produce dagpenger behov" } }
             metadata?.let { LOGGER.info { "Produced dagpenger behov on topic ${metadata.topic()} to offset ${metadata.offset()} with the key ${behov.behovId}" } }

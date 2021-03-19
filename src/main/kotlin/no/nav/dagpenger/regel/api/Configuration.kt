@@ -23,6 +23,7 @@ private val localProperties = ConfigurationMap(
         "database.password" to "postgres",
         "vault.mountpath" to "postgresql/dev/",
         "kafka.bootstrap.servers" to "localhost:9092",
+        "KAFKA_BROKERS" to "localhost:9092",
         "application.profile" to "LOCAL",
         "application.httpPort" to "8092",
         "auth.secret" to "secret",
@@ -80,7 +81,8 @@ internal data class Configuration(
     val subsumsjonBruktTopic: String = config()[Key("kafka.subsumsjon.topic", stringType)],
     val behovTopic: Topic<String, Packet> = Topics.DAGPENGER_BEHOV_PACKET_EVENT.copy(
         name = config()[Key("behov.topic", stringType)]
-    )
+    ),
+    val regelTopic: Topic<String, Packet> = behovTopic.copy("teamdagpenger.regel.v1")
 ) {
 
     data class Auth(
@@ -106,6 +108,7 @@ internal data class Configuration(
 
     data class Kafka(
         val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)],
+        val aivenBrokers: String = config()[Key("KAFKA_BROKERS", stringType)],
         val user: String? = config().getOrNull(Key("srvdp.regel.api.username", stringType)),
         val password: String? = config().getOrNull(Key("srvdp.regel.api.password", stringType))
     ) {

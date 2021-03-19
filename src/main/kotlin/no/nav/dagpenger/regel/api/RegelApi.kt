@@ -52,6 +52,7 @@ import no.nav.dagpenger.regel.api.routing.metrics
 import no.nav.dagpenger.regel.api.routing.naischecks
 import no.nav.dagpenger.regel.api.routing.subsumsjon
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
+import no.nav.dagpenger.regel.api.streams.AivenKafkaSubsumsjonConsumer
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer
@@ -59,6 +60,7 @@ import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonConsumer
 import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
 import no.nav.dagpenger.regel.api.streams.producerConfig
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
+import no.nav.dagpenger.streams.KafkaAivenCredentials
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.fixedRateTimer
@@ -86,7 +88,18 @@ fun main() {
     )
 
     val kafkaConsumer =
-        KafkaSubsumsjonConsumer(config, SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), config)).also {
+        KafkaSubsumsjonConsumer(
+            config,
+            SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), config, config.behovTopic)
+        ).also {
+            it.start()
+        }
+
+    val aivenKafkaConsumer =
+        AivenKafkaSubsumsjonConsumer(
+            config,
+            SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), config, config.regelTopic)
+        ).also {
             it.start()
         }
 
@@ -101,11 +114,10 @@ fun main() {
     val kafkaProducer = KafkaDagpengerBehovProducer(
         producerConfig(
             config.application.id,
-            config.kafka.brokers,
-            config.kafka.credential()
+            config.kafka.aivenBrokers,
+            KafkaAivenCredentials()
         ),
-        config.behovTopic
-
+        config.regelTopic
     )
 
     val unleash = setupUnleash(config.application.unleashUrl)
@@ -118,6 +130,7 @@ fun main() {
                 subsumsjonStore as HealthCheck,
                 bruktSubsumsjonStore as HealthCheck,
                 kafkaConsumer as HealthCheck,
+                aivenKafkaConsumer as HealthCheck,
                 kafkaProducer as HealthCheck,
                 bruktSubsumsjonConsumer as HealthCheck
             ),
@@ -131,6 +144,7 @@ fun main() {
     Runtime.getRuntime().addShutdownHook(
         Thread {
             kafkaConsumer.stop()
+            aivenKafkaConsumer.stop()
             bruktSubsumsjonConsumer.cancel()
             app.stop(10000, 60000)
         }
