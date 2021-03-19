@@ -10,33 +10,23 @@ import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer.SERVICE_A
 import no.nav.dagpenger.streams.KafkaAivenCredentials
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.Topic
-import no.nav.dagpenger.streams.streamConfig
 import no.nav.dagpenger.streams.streamConfigAiven
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.kstream.Predicate
 import java.time.Duration
+import kotlin.system.exitProcess
 
 private val LOGGER = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class AivenKafkaSubsumsjonConsumer(
-    val config: Configuration,
-    subsumsjonPond: SubsumsjonPond
-) : KafkaSubsumsjonConsumer(config, subsumsjonPond) {
-    override fun getConfig() = streamConfigAiven(
-        appId = SERVICE_APP_ID,
-        bootStapServerUrl = config.kafka.aivenBrokers,
-        aivenCredentials = KafkaAivenCredentials()
-    )
-}
-internal open class KafkaSubsumsjonConsumer(
     private val config: Configuration,
     private val subsumsjonPond: SubsumsjonPond
 ) : HealthCheck {
 
     private val streams: KafkaStreams by lazy {
         KafkaStreams(subsumsjonPond.buildTopology(), this.getConfig()).apply {
-            setUncaughtExceptionHandler { _, _ -> System.exit(0) }
+            setUncaughtExceptionHandler { _, _ -> exitProcess(0) }
         }
     }
 
@@ -56,14 +46,18 @@ internal open class KafkaSubsumsjonConsumer(
             else -> HealthStatus.UP
         }
 
-    internal open fun getConfig() = streamConfig(
-        appId = config.application.id,
-        bootStapServerUrl = config.kafka.brokers,
-        credential = config.kafka.credential()
+    private fun getConfig() = streamConfigAiven(
+        appId = SERVICE_APP_ID,
+        bootStapServerUrl = config.kafka.aivenBrokers,
+        aivenCredentials = KafkaAivenCredentials()
     )
 }
 
-internal class SubsumsjonPond(private val packetStrategies: List<SubsumsjonPacketStrategy>, private val config: Configuration, topic: Topic<String, Packet>) : Pond(topic) {
+internal class SubsumsjonPond(
+    private val packetStrategies: List<SubsumsjonPacketStrategy>,
+    config: Configuration,
+    topic: Topic<String, Packet>
+) : Pond(topic) {
     override val SERVICE_APP_ID: String = config.application.id
 
     override fun filterPredicates(): List<Predicate<String, Packet>> =

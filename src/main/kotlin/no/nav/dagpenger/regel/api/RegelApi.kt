@@ -56,7 +56,6 @@ import no.nav.dagpenger.regel.api.streams.AivenKafkaSubsumsjonConsumer
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer
-import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonConsumer
 import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
 import no.nav.dagpenger.regel.api.streams.producerConfig
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
@@ -86,14 +85,6 @@ fun main() {
             MAINLOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
         }
     )
-
-    val kafkaConsumer =
-        KafkaSubsumsjonConsumer(
-            config,
-            SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), config, config.behovTopic)
-        ).also {
-            it.start()
-        }
 
     val aivenKafkaConsumer =
         AivenKafkaSubsumsjonConsumer(
@@ -129,7 +120,6 @@ fun main() {
             listOf(
                 subsumsjonStore as HealthCheck,
                 bruktSubsumsjonStore as HealthCheck,
-                kafkaConsumer as HealthCheck,
                 aivenKafkaConsumer as HealthCheck,
                 kafkaProducer as HealthCheck,
                 bruktSubsumsjonConsumer as HealthCheck
@@ -143,7 +133,6 @@ fun main() {
 
     Runtime.getRuntime().addShutdownHook(
         Thread {
-            kafkaConsumer.stop()
             aivenKafkaConsumer.stop()
             bruktSubsumsjonConsumer.cancel()
             app.stop(10000, 60000)

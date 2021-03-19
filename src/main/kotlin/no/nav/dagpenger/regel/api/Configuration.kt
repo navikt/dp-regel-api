@@ -10,9 +10,10 @@ import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
-import no.nav.dagpenger.streams.KafkaCredential
+import no.nav.dagpenger.streams.PacketDeserializer
+import no.nav.dagpenger.streams.PacketSerializer
 import no.nav.dagpenger.streams.Topic
-import no.nav.dagpenger.streams.Topics
+import org.apache.kafka.common.serialization.Serdes
 
 private val localProperties = ConfigurationMap(
     mapOf(
@@ -30,7 +31,6 @@ private val localProperties = ConfigurationMap(
         "auth.allowedKeys" to "secret1, secret2",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
         "unleash.url" to "https://localhost",
-        "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name,
         "azure.app.well.known.url" to "http://localhost/",
         "azure.app.client.id" to "default"
     )
@@ -46,7 +46,6 @@ private val devProperties = ConfigurationMap(
         "application.httpPort" to "8092",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
         "unleash.url" to "https://unleash.nais.io/api/",
-        "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -60,7 +59,6 @@ private val prodProperties = ConfigurationMap(
         "application.httpPort" to "8092",
         "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
         "unleash.url" to "https://unleash.nais.io/api/",
-        "behov.topic" to Topics.DAGPENGER_BEHOV_PACKET_EVENT.name
     )
 )
 
@@ -79,10 +77,11 @@ internal data class Configuration(
     val kafka: Kafka = Kafka(),
     val application: Application = Application(),
     val subsumsjonBruktTopic: String = config()[Key("kafka.subsumsjon.topic", stringType)],
-    val behovTopic: Topic<String, Packet> = Topics.DAGPENGER_BEHOV_PACKET_EVENT.copy(
-        name = config()[Key("behov.topic", stringType)]
-    ),
-    val regelTopic: Topic<String, Packet> = behovTopic.copy("teamdagpenger.regel.v1")
+    val regelTopic: Topic<String, Packet> = Topic(
+        name = "teamdagpenger.regel.v1",
+        keySerde = Serdes.String(),
+        valueSerde = Serdes.serdeFrom(PacketSerializer(), PacketDeserializer())
+    )
 ) {
 
     data class Auth(
@@ -111,13 +110,7 @@ internal data class Configuration(
         val aivenBrokers: String = config()[Key("KAFKA_BROKERS", stringType)],
         val user: String? = config().getOrNull(Key("srvdp.regel.api.username", stringType)),
         val password: String? = config().getOrNull(Key("srvdp.regel.api.password", stringType))
-    ) {
-        fun credential(): KafkaCredential? {
-            return if (user != null && password != null) {
-                KafkaCredential(user, password)
-            } else null
-        }
-    }
+    )
 
     data class Application(
         val id: String = config().getOrElse(Key("application.id", stringType), "dp-regel-api"),

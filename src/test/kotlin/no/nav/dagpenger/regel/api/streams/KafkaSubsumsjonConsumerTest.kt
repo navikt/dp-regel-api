@@ -12,7 +12,6 @@ import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.behovId
-import no.nav.dagpenger.streams.Topics
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TopologyTestDriver
 import org.junit.jupiter.api.Test
@@ -61,12 +60,12 @@ internal class KafkaSubsumsjonConsumerTest {
 
         fun runTest(strategies: List<SubsumsjonPacketStrategy>, packet: Packet, testBlock: () -> Unit) {
             val configuration = Configuration()
-            SubsumsjonPond(strategies, configuration, configuration.behovTopic).let {
+            SubsumsjonPond(strategies, configuration, configuration.regelTopic).let {
                 TopologyTestDriver(it.buildTopology(), config).use { topologyTestDriver ->
                     val input = topologyTestDriver.createInputTopic(
-                        Topics.DAGPENGER_BEHOV_PACKET_EVENT.name,
-                        Topics.DAGPENGER_BEHOV_PACKET_EVENT.keySerde.serializer(),
-                        Topics.DAGPENGER_BEHOV_PACKET_EVENT.valueSerde.serializer()
+                        configuration.regelTopic.name,
+                        configuration.regelTopic.keySerde.serializer(),
+                        configuration.regelTopic.valueSerde.serializer()
                     )
                     input.pipeInput(packet)
 
