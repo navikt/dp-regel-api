@@ -1,112 +1,77 @@
 package no.nav.dagpenger.regel.api.streams
 
-import io.prometheus.client.Summary
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import no.nav.dagpenger.plain.consumerConfig
 import no.nav.dagpenger.regel.api.Configuration
-import no.nav.dagpenger.regel.api.Vaktmester
-import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import no.nav.dagpenger.streams.KafkaCredential
-import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.common.errors.RetriableException
-import org.apache.kafka.common.serialization.StringDeserializer
-import java.sql.SQLTransientConnectionException
+import no.nav.dagpenger.streams.KafkaAivenCredentials
+import no.nav.dagpenger.streams.Topic
+import no.nav.dagpenger.streams.consumeTopic
+import no.nav.dagpenger.streams.streamConfigAiven
+import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.Topology
 import java.time.Duration
-import kotlin.coroutines.CoroutineContext
+import kotlin.system.exitProcess
 
-private val logger = KotlinLogging.logger { }
+private val LOGGER = KotlinLogging.logger {}
 
-private val summary: Summary = Summary.Builder()
-    .name("subsumsjon_brukt_consumer_timer")
-    .help("Tid brukt til å consumere  privat-dagpenger-subsumsjon-brukt topic")
-    .register()
+internal class KafkaSubsumsjonBruktConsumer(
+    private val config: Configuration,
+    private val bruktSubsumsjonStrategy: BruktSubsumsjonStrategy
+) : HealthCheck {
+    private val SERVICE_APP_ID = "kafka-subsumsjonbrukt-v1"
+    val subsumsjonBruktTopic = Topic(
+        config.subsumsjonBruktTopic,
+        keySerde = Serdes.StringSerde(),
+        valueSerde = Serdes.StringSerde()
+    )
 
-internal object KafkaSubsumsjonBruktConsumer :
-    HealthCheck,
-    CoroutineScope {
+    fun start() = streams.start().also { LOGGER.info { "Starting up ${config.application.id} kafka consumer" } }
 
-    const val SERVICE_APP_ID = "dp-regel-api-sub-brukt"
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.IO + job
-
-    lateinit var config: Configuration
-    lateinit var bruktSubsumsjonStrategy: BruktSubsumsjonStrategy
-    lateinit var job: Job
-
-    fun create(config: Configuration, bruktSubsumsjonStore: BruktSubsumsjonStore, vaktmester: Vaktmester) {
-        this.config = config
-        this.bruktSubsumsjonStrategy =
-            BruktSubsumsjonStrategy(vaktmester = vaktmester, bruktSubsumsjonStore = bruktSubsumsjonStore)
-        this.job = Job()
+    fun stop() = with(streams) {
+        close(Duration.ofSeconds(3))
+        cleanUp()
+    }.also {
+        LOGGER.info { "Shutting down ${config.application.id} kafka consumer" }
     }
 
-    override fun status(): HealthStatus {
-        return when (job.isActive) {
-            true -> HealthStatus.UP
-            false -> HealthStatus.DOWN
+    override fun status(): HealthStatus =
+        when (streams.state()) {
+            KafkaStreams.State.ERROR -> HealthStatus.DOWN
+            KafkaStreams.State.PENDING_SHUTDOWN -> HealthStatus.DOWN
+            else -> HealthStatus.UP
+        }
+
+    private val streams: KafkaStreams by lazy {
+        KafkaStreams(buildTopology(), getConfig()).apply {
+            setUncaughtExceptionHandler { _, _ -> exitProcess(0) }
         }
     }
 
-    fun stop() {
-        logger.info { "Stopping KafkaSubsumsjonBrukt consumer" }
-        job.cancel()
-    }
+    private fun getConfig() = streamConfigAiven(
+        appId = SERVICE_APP_ID,
+        bootStapServerUrl = config.kafka.aivenBrokers,
+        aivenCredentials = KafkaAivenCredentials()
+    )
 
-    fun listen() {
-        launch {
-            val creds = config.kafka.user?.let { u ->
-                config.kafka.password?.let { p ->
-                    KafkaCredential(username = u, password = p)
-                }
+    internal fun buildTopology(): Topology {
+        val builder = StreamsBuilder()
+        val stream = builder.consumeTopic(
+            Topic(
+                config.subsumsjonBruktTopic,
+                keySerde = Serdes.StringSerde(),
+                valueSerde = Serdes.StringSerde()
+            )
+        )
+        stream
+            .mapValues { _, value -> EksternSubsumsjonBrukt.fromJson(value) }
+            .filterNot { _, bruktSubsumsjon ->
+                "AVSLU" == bruktSubsumsjon.vedtakStatus && "AVBRUTT" == bruktSubsumsjon.utfall
             }
-            logger.info { "Starting KafkaSubsumsjonBruktConsumer" }
-            KafkaConsumer<String, String>(
-                consumerConfig(
-                    groupId = SERVICE_APP_ID,
-                    bootstrapServerUrl = config.kafka.brokers,
-                    credential = creds
-                ).also {
-                    it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
-                    it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-                }
-            ).use { consumer ->
-                try {
-                    consumer.subscribe(listOf(config.subsumsjonBruktTopic))
-                    while (job.isActive) {
-
-                        val records = consumer.poll(Duration.ofMillis(100))
-                        if (!records.isEmpty) {
-                            val timer = summary.startTimer()
-                            bruktSubsumsjonStrategy.handle(
-                                records.asSequence()
-                                    .map { r -> EksternSubsumsjonBrukt.fromJson(r.value()) }
-                                    .filterNotNull()
-                            )
-                            logger.info { " Brukte  ${timer.observeDuration()} sekunder på ${records.count()} events" }
-                        }
-                    }
-                } catch (e: Exception) {
-                    when (e) {
-                        is RetriableException,
-                        is SQLTransientConnectionException -> {
-                            logger.warn("Retriable exception, looping back", e)
-                        }
-                        else -> {
-                            logger.error("Unexpected exception while consuming messages. Stopping", e)
-                            stop()
-                        }
-                    }
-                }
-            }
-        }
+            .foreach { _, bruktSubsumsjon -> bruktSubsumsjonStrategy.handle(bruktSubsumsjon) }
+        return builder.build()
     }
 }

@@ -30,7 +30,6 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.finn.unleash.Unleash
@@ -53,6 +52,7 @@ import no.nav.dagpenger.regel.api.routing.naischecks
 import no.nav.dagpenger.regel.api.routing.subsumsjon
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
 import no.nav.dagpenger.regel.api.streams.AivenKafkaSubsumsjonConsumer
+import no.nav.dagpenger.regel.api.streams.BruktSubsumsjonStrategy
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer
@@ -94,14 +94,13 @@ fun main() {
             it.start()
         }
 
-    val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer.apply {
-        create(
-            config = config,
-            bruktSubsumsjonStore = bruktSubsumsjonStore,
-            vaktmester = vaktmester
-        )
-        listen()
+    val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer(
+        config,
+        BruktSubsumsjonStrategy(vaktmester = vaktmester, bruktSubsumsjonStore = bruktSubsumsjonStore)
+    ).also {
+        it.start()
     }
+
     val kafkaProducer = KafkaDagpengerBehovProducer(
         producerConfig(
             config.application.id,
@@ -134,7 +133,7 @@ fun main() {
     Runtime.getRuntime().addShutdownHook(
         Thread {
             aivenKafkaConsumer.stop()
-            bruktSubsumsjonConsumer.cancel()
+            bruktSubsumsjonConsumer.stop()
             app.stop(10000, 60000)
         }
     )

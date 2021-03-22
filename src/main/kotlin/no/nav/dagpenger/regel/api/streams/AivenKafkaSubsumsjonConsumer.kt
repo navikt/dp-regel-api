@@ -6,7 +6,6 @@ import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer.SERVICE_APP_ID
 import no.nav.dagpenger.streams.KafkaAivenCredentials
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.Topic
@@ -23,6 +22,7 @@ internal class AivenKafkaSubsumsjonConsumer(
     private val config: Configuration,
     private val subsumsjonPond: SubsumsjonPond
 ) : HealthCheck {
+    private val SERVICE_APP_ID = "dp-regel-api-sub-brukt"
 
     private val streams: KafkaStreams by lazy {
         KafkaStreams(subsumsjonPond.buildTopology(), this.getConfig()).apply {

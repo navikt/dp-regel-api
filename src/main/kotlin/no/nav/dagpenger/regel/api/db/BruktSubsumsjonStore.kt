@@ -26,10 +26,10 @@ data class EksternSubsumsjonBrukt(
 ) {
     companion object Mapper {
         private val LOGGER = KotlinLogging.logger { }
-        fun fromJson(json: String): EksternSubsumsjonBrukt? {
+        fun fromJson(json: String): EksternSubsumsjonBrukt {
             return runCatching {
                 jacksonObjectMapper.readValue(json, EksternSubsumsjonBrukt::class.java)
-            }.onFailure { e -> LOGGER.warn("Failed to convert string to object", e) }.getOrNull()
+            }.onFailure { e -> LOGGER.warn("Failed to convert string to object", e) }.getOrThrow()
         }
     }
 

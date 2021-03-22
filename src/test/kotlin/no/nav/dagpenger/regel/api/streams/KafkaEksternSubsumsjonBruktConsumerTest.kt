@@ -1,32 +1,28 @@
 package no.nav.dagpenger.regel.api.streams
 
 import io.kotest.matchers.shouldBe
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.Vaktmester
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.TopologyTestDriver
 import org.junit.jupiter.api.Test
-import org.testcontainers.containers.KafkaContainer
-import org.testcontainers.utility.DockerImageName
 import java.time.ZonedDateTime
-import java.util.concurrent.TimeUnit
-
-val LOGGER = KotlinLogging.logger { }
+import java.util.Properties
 
 class KafkaEksternSubsumsjonBruktConsumerTest {
-    private object Kafka {
-        val instance by lazy {
-            KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.3.1")).apply { this.start() }
-        }
+    val streamsConfig = Properties().apply {
+        this[StreamsConfig.APPLICATION_ID_CONFIG] = "test"
+        this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = "dummy:1234"
     }
 
     @Test
@@ -44,24 +40,13 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
                 every { this@apply.insertSubsumsjonBrukt(capture(lagretTilDb)) } returns 1
             }
             val vaktmester = mockk<Vaktmester>(relaxed = true).apply {
-                every { this@apply.markerSomBrukt(capture(markertSomBrukt)) }
+                every { this@apply.markerSomBrukt(capture(markertSomBrukt)) } just Runs
             }
-            val config = Configuration().run {
-                copy(kafka = kafka.copy(brokers = Kafka.instance.bootstrapServers))
-            }
-            KafkaSubsumsjonBruktConsumer.apply {
-                create(config, storeMock, vaktmester)
-                listen()
-            }
+            val config = Configuration()
 
-            val producer = KafkaProducer<String, String>(
-                producerConfig(
-                    appId = "test",
-                    bootStapServerUrl = Kafka.instance.bootstrapServers
-                ).also {
-                    it[ProducerConfig.ACKS_CONFIG] = "all"
-                }
-            )
+            val subsumsjonBruktConsumer =
+                KafkaSubsumsjonBruktConsumer(config, BruktSubsumsjonStrategy(vaktmester, storeMock))
+
             val bruktSubsumsjon =
                 EksternSubsumsjonBrukt(
                     id = "test",
@@ -69,17 +54,71 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
                     arenaTs = now,
                     ts = now.toInstant().toEpochMilli()
                 )
-            val metaData = producer.send(ProducerRecord(config.subsumsjonBruktTopic, "test", bruktSubsumsjon.toJson()))
-                .get(5, TimeUnit.SECONDS)
-            LOGGER.info("Producer produced $bruktSubsumsjon with meta $metaData")
-            metaData.topic() shouldBe config.subsumsjonBruktTopic
-            Thread.sleep(500)
+            TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
+                val topic = it.createInputTopic(
+                    subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
+                    subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
+                    subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer()
+                )
+                topic.pipeInput(bruktSubsumsjon.toJson())
+            }
 
             lagretTilDb.isCaptured shouldBe true
             markertSomBrukt.isCaptured shouldBe true
             lagretTilDb.captured.arenaTs shouldBe now.minusMinutes(5L)
             lagretTilDb.captured shouldBe markertSomBrukt.captured
         }
+    }
+
+    @Test
+    fun `skal filtrere ut avsluttede og avbrutte vedtak`() {
+        val now = ZonedDateTime.now()
+
+        val config = Configuration()
+
+        val bruktSubsumsjonStrategy = mockk<BruktSubsumsjonStrategy>(relaxed = true)
+
+        val subsumsjonBruktConsumer = KafkaSubsumsjonBruktConsumer(config, bruktSubsumsjonStrategy)
+
+        val brukteSubsumsjoner = sequenceOf(
+            EksternSubsumsjonBrukt(
+                id = "test",
+                eksternId = 1234678L,
+                arenaTs = now,
+                ts = now.toInstant().toEpochMilli(),
+                utfall = "AVBRUTT",
+                vedtakStatus = "AVSLU"
+            ),
+            EksternSubsumsjonBrukt(
+                id = "test",
+                eksternId = 1234678L,
+                arenaTs = now,
+                ts = now.toInstant().toEpochMilli(),
+                utfall = "NEI",
+                vedtakStatus = "AVSLU"
+            ),
+            EksternSubsumsjonBrukt(
+                id = "test",
+                eksternId = 1234678L,
+                arenaTs = now,
+                ts = now.toInstant().toEpochMilli(),
+                utfall = "JA",
+                vedtakStatus = "IVERK"
+            )
+        )
+
+        TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
+            val topic = it.createInputTopic(
+                subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
+                subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
+                subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer()
+            )
+            brukteSubsumsjoner.forEach { eksternSubsumsjonBrukt ->
+                topic.pipeInput(eksternSubsumsjonBrukt.toJson())
+            }
+        }
+
+        verify(exactly = 2) { bruktSubsumsjonStrategy.handle(any()) }
     }
 
     @Test

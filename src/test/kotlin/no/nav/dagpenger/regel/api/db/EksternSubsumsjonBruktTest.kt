@@ -23,7 +23,7 @@ class EksternSubsumsjonBruktTest {
         val eksternSubsumsjonBrukt = EksternSubsumsjonBrukt.fromJson(json)
 
         eksternSubsumsjonBrukt shouldNotBe null
-        eksternSubsumsjonBrukt!!.eksternId shouldBe 36774602L
+        eksternSubsumsjonBrukt.eksternId shouldBe 36774602L
 
         EksternSubsumsjonBrukt.fromJson(eksternSubsumsjonBrukt.toJson()) shouldBe eksternSubsumsjonBrukt
     }
