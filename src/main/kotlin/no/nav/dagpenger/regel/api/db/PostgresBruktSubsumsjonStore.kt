@@ -8,6 +8,7 @@ import kotliquery.using
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.RegelKontekst
+import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
@@ -71,6 +72,9 @@ class PostgresBruktSubsumsjonStore(
             )
         )
     }
+
+    override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon =
+        subsumsjonStore.getSubsumsjonByResult(subsumsjonId)
 
     override fun insertSubsumsjonBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt): Int {
         return using(sessionOf(dataSource)) { session ->

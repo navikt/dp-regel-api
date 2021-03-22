@@ -5,6 +5,7 @@ import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
+import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
 import no.nav.dagpenger.streams.KafkaAivenCredentials
 import no.nav.dagpenger.streams.Topic
 import no.nav.dagpenger.streams.consumeTopic
@@ -13,6 +14,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
+import org.apache.kafka.streams.kstream.Produced
 import java.time.Duration
 import kotlin.system.exitProcess
 
@@ -71,7 +73,18 @@ internal class KafkaSubsumsjonBruktConsumer(
             .filterNot { _, bruktSubsumsjon ->
                 "AVSLU" == bruktSubsumsjon.vedtakStatus && "AVBRUTT" == bruktSubsumsjon.utfall
             }
-            .foreach { _, bruktSubsumsjon -> bruktSubsumsjonStrategy.handle(bruktSubsumsjon) }
+            .mapValues { _, bruktSubsumsjon -> bruktSubsumsjonStrategy.handle(bruktSubsumsjon) }
+            .mapValues { _, faktum ->
+                jacksonObjectMapper.writeValueAsString(
+                    mapOf(
+                        "@event_name" to "Brukt_Inntekt",
+                        "inntektsId" to faktum.inntektsId,
+                        "aktorId" to faktum.aktorId,
+                        "kontekst" to faktum.regelkontekst,
+                    )
+                )
+            }
+            .to("topic", Produced.with(Serdes.StringSerde(), Serdes.StringSerde()))
         return builder.build()
     }
 }

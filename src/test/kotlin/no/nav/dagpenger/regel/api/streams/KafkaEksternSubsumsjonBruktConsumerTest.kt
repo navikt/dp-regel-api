@@ -8,14 +8,24 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.Vaktmester
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
+import no.nav.dagpenger.regel.api.models.BehovId
+import no.nav.dagpenger.regel.api.models.Faktum
+import no.nav.dagpenger.regel.api.models.Kontekst
+import no.nav.dagpenger.regel.api.models.RegelKontekst
+import no.nav.dagpenger.regel.api.models.Subsumsjon
+import no.nav.dagpenger.regel.api.models.ulidGenerator
+import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
+import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TopologyTestDriver
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.Properties
 
@@ -33,11 +43,22 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
             val markertSomBrukt = slot<InternSubsumsjonBrukt>()
             val storeMock = mockk<BruktSubsumsjonStore>(relaxed = false).apply {
                 every { this@apply.eksternTilInternSubsumsjon(any()) } returns InternSubsumsjonBrukt(
-                    id = "test",
+                    id = ulidGenerator.nextULID(),
                     behandlingsId = "b",
                     arenaTs = now.minusMinutes(5)
                 )
                 every { this@apply.insertSubsumsjonBrukt(capture(lagretTilDb)) } returns 1
+                every { this@apply.getSubsumsjonByResult(any()) } returns Subsumsjon(
+                    behovId = BehovId("01DSFT4J9SW8XDZ2ZJZMXD5XV7"),
+                    faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now(), inntektsId = "test"),
+                    grunnlagResultat = emptyMap(),
+                    minsteinntektResultat = mapOf(
+                        "subsumsjonsId" to ulidGenerator.nextULID()
+                    ),
+                    periodeResultat = emptyMap(),
+                    satsResultat = emptyMap(),
+                    problem = Problem(title = "problem")
+                )
             }
             val vaktmester = mockk<Vaktmester>(relaxed = true).apply {
                 every { this@apply.markerSomBrukt(capture(markertSomBrukt)) } just Runs
@@ -49,7 +70,7 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
 
             val bruktSubsumsjon =
                 EksternSubsumsjonBrukt(
-                    id = "test",
+                    id = ulidGenerator.nextULID(),
                     eksternId = 1234678L,
                     arenaTs = now,
                     ts = now.toInstant().toEpochMilli()
@@ -61,12 +82,25 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
                     subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer()
                 )
                 topic.pipeInput(bruktSubsumsjon.toJson())
-            }
 
-            lagretTilDb.isCaptured shouldBe true
-            markertSomBrukt.isCaptured shouldBe true
-            lagretTilDb.captured.arenaTs shouldBe now.minusMinutes(5L)
-            lagretTilDb.captured shouldBe markertSomBrukt.captured
+                val outTopic = it.createOutputTopic(
+                    "topic",
+                    Serdes.StringSerde().deserializer(),
+                    Serdes.StringSerde().deserializer()
+                )
+
+                val out = jacksonObjectMapper.readTree(outTopic.readValue())
+
+                out["@event_name"].asText() shouldBe "Brukt_Inntekt"
+                out["inntektsId"].asText() shouldBe "test"
+                out["aktorId"].asText() shouldBe "aktorId"
+                out["kontekst"].let { json -> RegelKontekst(json["id"].asText(), Kontekst.valueOf(json["type"].asText())) } shouldBe RegelKontekst("1", Kontekst.vedtak)
+
+                lagretTilDb.isCaptured shouldBe true
+                markertSomBrukt.isCaptured shouldBe true
+                lagretTilDb.captured.arenaTs shouldBe now.minusMinutes(5L)
+                lagretTilDb.captured shouldBe markertSomBrukt.captured
+            }
         }
     }
 
@@ -82,7 +116,7 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
 
         val brukteSubsumsjoner = sequenceOf(
             EksternSubsumsjonBrukt(
-                id = "test",
+                id = ulidGenerator.nextULID(),
                 eksternId = 1234678L,
                 arenaTs = now,
                 ts = now.toInstant().toEpochMilli(),
@@ -90,7 +124,7 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
                 vedtakStatus = "AVSLU"
             ),
             EksternSubsumsjonBrukt(
-                id = "test",
+                id = ulidGenerator.nextULID(),
                 eksternId = 1234678L,
                 arenaTs = now,
                 ts = now.toInstant().toEpochMilli(),
@@ -98,7 +132,7 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
                 vedtakStatus = "AVSLU"
             ),
             EksternSubsumsjonBrukt(
-                id = "test",
+                id = ulidGenerator.nextULID(),
                 eksternId = 1234678L,
                 arenaTs = now,
                 ts = now.toInstant().toEpochMilli(),
