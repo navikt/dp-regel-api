@@ -29,13 +29,13 @@ internal class KafkaSubsumsjonBruktConsumer(
         valueSerde = Serdes.StringSerde()
     )
 
-    fun start() = streams.start().also { LOGGER.info { "Starting up ${config.application.id} kafka consumer" } }
+    fun start() = streams.start().also { LOGGER.info { "Starting up $SERVICE_APP_ID kafka consumer" } }
 
     fun stop() = with(streams) {
         close(Duration.ofSeconds(3))
         cleanUp()
     }.also {
-        LOGGER.info { "Shutting down ${config.application.id} kafka consumer" }
+        LOGGER.info { "Shutting down $SERVICE_APP_ID kafka consumer" }
     }
 
     override fun status(): HealthStatus =
