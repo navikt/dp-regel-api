@@ -29,7 +29,7 @@ private val localProperties = ConfigurationMap(
         "application.httpPort" to "8092",
         "auth.secret" to "secret",
         "auth.allowedKeys" to "secret1, secret2",
-        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
+        "kafka.subsumsjon.topic" to "teamdagpenger.subsumsjonbrukt.v1",
         "unleash.url" to "https://localhost",
         "azure.app.well.known.url" to "http://localhost/",
         "azure.app.client.id" to "default"
@@ -44,7 +44,7 @@ private val devProperties = ConfigurationMap(
         "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
         "application.profile" to "DEV",
         "application.httpPort" to "8092",
-        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
+        "kafka.subsumsjon.topic" to "teamdagpenger.subsumsjonbrukt.v1",
         "unleash.url" to "https://unleash.nais.io/api/",
     )
 )
@@ -57,7 +57,7 @@ private val prodProperties = ConfigurationMap(
         "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
         "application.profile" to "PROD",
         "application.httpPort" to "8092",
-        "kafka.subsumsjon.topic" to "privat-dagpenger-subsumsjon-brukt",
+        "kafka.subsumsjon.topic" to "teamdagpenger.subsumsjonbrukt.v1",
         "unleash.url" to "https://unleash.nais.io/api/",
     )
 )
