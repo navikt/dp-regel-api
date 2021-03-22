@@ -9,12 +9,12 @@ import no.nav.dagpenger.streams.KafkaAivenCredentials
 import no.nav.dagpenger.streams.Topic
 import no.nav.dagpenger.streams.consumeTopic
 import no.nav.dagpenger.streams.streamConfigAiven
+import org.apache.kafka.common.errors.TopicAuthorizationException
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import java.time.Duration
-import kotlin.system.exitProcess
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -47,7 +47,10 @@ internal class KafkaSubsumsjonBruktConsumer(
 
     private val streams: KafkaStreams by lazy {
         KafkaStreams(buildTopology(), getConfig()).apply {
-            setUncaughtExceptionHandler { _, _ -> exitProcess(0) }
+            setUncaughtExceptionHandler { t, e ->
+                logUnexpectedError(t, e)
+                stop()
+            }
         }
     }
 
@@ -73,5 +76,17 @@ internal class KafkaSubsumsjonBruktConsumer(
             }
             .foreach { _, bruktSubsumsjon -> bruktSubsumsjonStrategy.handle(bruktSubsumsjon) }
         return builder.build()
+    }
+
+    private fun logUnexpectedError(t: Thread?, e: Throwable) {
+        when (e) {
+            is TopicAuthorizationException -> LOGGER.warn(
+                "TopicAuthorizationException in $SERVICE_APP_ID stream, stopping app"
+            )
+            else -> LOGGER.error(
+                "Uncaught exception in $SERVICE_APP_ID stream, thread: $t message:  ${e.message}",
+                e
+            )
+        }
     }
 }

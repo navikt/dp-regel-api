@@ -10,10 +10,10 @@ import no.nav.dagpenger.streams.KafkaAivenCredentials
 import no.nav.dagpenger.streams.Pond
 import no.nav.dagpenger.streams.Topic
 import no.nav.dagpenger.streams.streamConfigAiven
+import org.apache.kafka.common.errors.TopicAuthorizationException
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.kstream.Predicate
 import java.time.Duration
-import kotlin.system.exitProcess
 
 private val LOGGER = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
@@ -26,17 +26,20 @@ internal class AivenKafkaSubsumsjonConsumer(
 
     private val streams: KafkaStreams by lazy {
         KafkaStreams(subsumsjonPond.buildTopology(), this.getConfig()).apply {
-            setUncaughtExceptionHandler { _, _ -> exitProcess(0) }
+            setUncaughtExceptionHandler { t, e ->
+                logUnexpectedError(t, e)
+                stop()
+            }
         }
     }
 
-    fun start() = streams.start().also { LOGGER.info { "Starting up ${config.application.id} kafka consumer" } }
+    fun start() = streams.start().also { LOGGER.info { "Starting up $SERVICE_APP_ID kafka consumer" } }
 
     fun stop() = with(streams) {
         close(Duration.ofSeconds(3))
         cleanUp()
     }.also {
-        LOGGER.info { "Shutting down ${config.application.id} kafka consumer" }
+        LOGGER.info { "Shutting down  $SERVICE_APP_ID kafka consumer" }
     }
 
     override fun status(): HealthStatus =
@@ -51,6 +54,18 @@ internal class AivenKafkaSubsumsjonConsumer(
         bootStapServerUrl = config.kafka.aivenBrokers,
         aivenCredentials = KafkaAivenCredentials()
     )
+
+    private fun logUnexpectedError(t: Thread?, e: Throwable) {
+        when (e) {
+            is TopicAuthorizationException -> LOGGER.warn(
+                "TopicAuthorizationException in $SERVICE_APP_ID stream, stopping app"
+            )
+            else -> LOGGER.error(
+                "Uncaught exception in $SERVICE_APP_ID stream, thread: $t message:  ${e.message}",
+                e
+            )
+        }
+    }
 }
 
 internal class SubsumsjonPond(
