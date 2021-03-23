@@ -2,6 +2,7 @@ package no.nav.dagpenger.regel.api.db
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import mu.KotlinLogging
+import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.serder.EksternIdDeserializer
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
@@ -13,6 +14,7 @@ interface BruktSubsumsjonStore {
     fun listSubsumsjonBrukt(): List<InternSubsumsjonBrukt>
     fun subsumsjonBruktFraBehandlingsId(behandlingsId: String): List<InternSubsumsjonBrukt>
     fun eksternTilInternSubsumsjon(eksternSubsumsjonBrukt: EksternSubsumsjonBrukt): InternSubsumsjonBrukt
+    fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon
 }
 
 data class EksternSubsumsjonBrukt(

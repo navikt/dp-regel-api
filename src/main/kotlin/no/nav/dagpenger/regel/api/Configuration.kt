@@ -81,7 +81,8 @@ internal data class Configuration(
         name = "teamdagpenger.regel.v1",
         keySerde = Serdes.String(),
         valueSerde = Serdes.serdeFrom(PacketSerializer(), PacketDeserializer())
-    )
+    ),
+    val inntektBruktTopic: String = "teamdagpenger.inntektbrukt.v1",
 ) {
 
     data class Auth(
