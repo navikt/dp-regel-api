@@ -77,7 +77,7 @@ internal class KafkaSubsumsjonBruktConsumer(
             .mapValues { _, faktum ->
                 jacksonObjectMapper.writeValueAsString(
                     mapOf(
-                        "@event_name" to "Brukt_Inntekt",
+                        "@event_name" to "brukt_inntekt",
                         "inntektsId" to faktum.inntektsId,
                         "aktorId" to faktum.aktorId,
                         "kontekst" to faktum.regelkontekst,
