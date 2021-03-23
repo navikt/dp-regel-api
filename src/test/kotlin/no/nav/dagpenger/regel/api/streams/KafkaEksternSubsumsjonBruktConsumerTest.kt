@@ -84,7 +84,7 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
                 topic.pipeInput(bruktSubsumsjon.toJson())
 
                 val outTopic = it.createOutputTopic(
-                    "topic",
+                    "teamdagpenger.inntektbrukt.v1",
                     Serdes.StringSerde().deserializer(),
                     Serdes.StringSerde().deserializer()
                 )

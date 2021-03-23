@@ -84,7 +84,7 @@ internal class KafkaSubsumsjonBruktConsumer(
                     )
                 )
             }
-            .to("topic", Produced.with(Serdes.StringSerde(), Serdes.StringSerde()))
+            .to(config.inntektBruktTopic, Produced.with(Serdes.StringSerde(), Serdes.StringSerde()))
         return builder.build()
     }
 }
