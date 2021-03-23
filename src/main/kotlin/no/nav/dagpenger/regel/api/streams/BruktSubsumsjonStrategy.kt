@@ -23,7 +23,7 @@ internal class BruktSubsumsjonStrategy(
         return try {
             bruktSubsumsjonStore.getSubsumsjonByResult(SubsumsjonId(internSubsumsjonBrukt.id)).faktum
         } catch (e: SubsumsjonNotFoundException) {
-            logger.warn(e) { "Fant ikke subsumsjon med id ${internSubsumsjonBrukt.id}" }
+            logger.warn(e) { "Fant ikke subsumsjon med id ${internSubsumsjonBrukt.id}, ekstern id ${bruktSubsumsjon.eksternId}" }
             null
         }
     }
