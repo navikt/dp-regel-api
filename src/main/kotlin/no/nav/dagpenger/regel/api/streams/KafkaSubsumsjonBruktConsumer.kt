@@ -77,13 +77,14 @@ internal class KafkaSubsumsjonBruktConsumer(
                 "AVSLU" == bruktSubsumsjon.vedtakStatus && "AVBRUTT" == bruktSubsumsjon.utfall
             }
             .mapValues { _, bruktSubsumsjon -> bruktSubsumsjonStrategy.handle(bruktSubsumsjon) }
+            .filterNot { _, value -> value == null }
             .mapValues { _, faktum ->
                 jacksonObjectMapper.writeValueAsString(
                     mapOf(
                         "@event_name" to "brukt_inntekt",
-                        "inntektsId" to faktum.inntektsId,
-                        "aktorId" to faktum.aktorId,
-                        "kontekst" to faktum.regelkontekst,
+                        "inntektsId" to faktum?.inntektsId,
+                        "aktorId" to faktum?.aktorId,
+                        "kontekst" to faktum?.regelkontekst,
                     )
                 )
             }

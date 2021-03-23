@@ -13,6 +13,7 @@ import no.nav.dagpenger.regel.api.Vaktmester
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Kontekst
@@ -164,6 +165,58 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
                     Kontekst.valueOf(json["type"].asText())
                 )
             } shouldBe RegelKontekst("1", Kontekst.vedtak)
+
+            lagretTilDb.isCaptured shouldBe true
+            markertSomBrukt.isCaptured shouldBe true
+            lagretTilDb.captured.arenaTs shouldBe now.minusMinutes(5L)
+            lagretTilDb.captured shouldBe markertSomBrukt.captured
+        }
+    }
+
+    @Test
+    fun `skal håndtere nullverdier for subsumsjonsresultater`() {
+        val lagretTilDb = slot<InternSubsumsjonBrukt>()
+        val markertSomBrukt = slot<InternSubsumsjonBrukt>()
+
+        val storeMock = mockk<BruktSubsumsjonStore>(relaxed = false).apply {
+            every { this@apply.eksternTilInternSubsumsjon(any()) } returns InternSubsumsjonBrukt(
+                id = ulidGenerator.nextULID(),
+                behandlingsId = "b",
+                arenaTs = now.minusMinutes(5)
+            )
+            every { this@apply.insertSubsumsjonBrukt(capture(lagretTilDb)) } returns 1
+            every { this@apply.getSubsumsjonByResult(any()) } throws SubsumsjonNotFoundException("Fant ikke id")
+        }
+        val vaktmester = mockk<Vaktmester>(relaxed = true).apply {
+            every { this@apply.markerSomBrukt(capture(markertSomBrukt)) } just Runs
+        }
+        val config = Configuration()
+
+        val subsumsjonBruktConsumer =
+            KafkaSubsumsjonBruktConsumer(config, BruktSubsumsjonStrategy(vaktmester, storeMock))
+
+        val bruktSubsumsjon =
+            EksternSubsumsjonBrukt(
+                id = ulidGenerator.nextULID(),
+                eksternId = 1234678L,
+                arenaTs = now,
+                ts = now.toInstant().toEpochMilli()
+            )
+        TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
+            val topic = it.createInputTopic(
+                subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
+                subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
+                subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer()
+            )
+            topic.pipeInput(bruktSubsumsjon.toJson())
+
+            val outTopic = it.createOutputTopic(
+                "teamdagpenger.inntektbrukt.v1",
+                Serdes.StringSerde().deserializer(),
+                Serdes.StringSerde().deserializer()
+            )
+
+            outTopic.isEmpty shouldBe true
 
             lagretTilDb.isCaptured shouldBe true
             markertSomBrukt.isCaptured shouldBe true
