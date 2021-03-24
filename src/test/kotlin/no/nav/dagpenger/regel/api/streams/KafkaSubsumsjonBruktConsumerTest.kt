@@ -13,6 +13,7 @@ import no.nav.dagpenger.regel.api.Vaktmester
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
+import no.nav.dagpenger.regel.api.db.SubsumsjonBruktNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
@@ -29,7 +30,7 @@ import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.Properties
 
-class KafkaEksternSubsumsjonBruktConsumerTest {
+class KafkaSubsumsjonBruktConsumerTest {
     val streamsConfig = Properties().apply {
         this[StreamsConfig.APPLICATION_ID_CONFIG] = "test"
         this[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = "dummy:1234"
@@ -274,6 +275,43 @@ class KafkaEksternSubsumsjonBruktConsumerTest {
         }
 
         verify(exactly = 2) { bruktSubsumsjonStrategy.handle(any()) }
+    }
+
+    @Test
+    fun `Håndtere der ekstern id ikke finnes`() {
+
+        val storeMock = mockk<BruktSubsumsjonStore>(relaxed = false).apply {
+            every { this@apply.eksternTilInternSubsumsjon(any()) } throws SubsumsjonBruktNotFoundException("fant ikke")
+        }
+
+        val config = Configuration()
+
+        val subsumsjonBruktConsumer =
+            KafkaSubsumsjonBruktConsumer(config, BruktSubsumsjonStrategy(mockk(relaxed = true), storeMock))
+
+        val bruktSubsumsjon =
+            EksternSubsumsjonBrukt(
+                id = ulidGenerator.nextULID(),
+                eksternId = 1234678L,
+                arenaTs = now,
+                ts = now.toInstant().toEpochMilli()
+            )
+        TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
+            val topic = it.createInputTopic(
+                subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
+                subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
+                subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer()
+            )
+            topic.pipeInput(bruktSubsumsjon.toJson())
+
+            val outTopic = it.createOutputTopic(
+                "teamdagpenger.inntektbrukt.v1",
+                Serdes.StringSerde().deserializer(),
+                Serdes.StringSerde().deserializer()
+            )
+
+            outTopic.isEmpty shouldBe true
+        }
     }
 
     @Test
