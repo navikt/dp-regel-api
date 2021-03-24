@@ -28,7 +28,7 @@ internal class BruktSubsumsjonStrategy(
             logger.warn(e) { "Fant ikke subsumsjon med id ${bruktSubsumsjon.id}, ekstern id ${bruktSubsumsjon.eksternId}" }
             null
         } catch (e: SubsumsjonBruktNotFoundException) {
-            logger.warn(e) { "Fant ekstern id for ${bruktSubsumsjon.id}, ekstern id ${bruktSubsumsjon.eksternId}" }
+            logger.warn(e) { "Fant ikke ekstern id for ${bruktSubsumsjon.id}, ekstern id ${bruktSubsumsjon.eksternId}" }
             null
         }
     }
