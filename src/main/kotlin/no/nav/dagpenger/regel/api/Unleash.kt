@@ -1,12 +1,8 @@
 package no.nav.dagpenger.regel.api
 
 import no.finn.unleash.DefaultUnleash
-import no.finn.unleash.Unleash
 import no.finn.unleash.strategy.Strategy
 import no.finn.unleash.util.UnleashConfig
-
-const val FORHØYA_SATS_TOGGLE = "dp-regel-api.forhoyaSats"
-fun Unleash.forhøyaSats() = isEnabled(FORHØYA_SATS_TOGGLE)
 
 fun setupUnleash(unleashApiUrl: String): DefaultUnleash {
     val appName = "dp-regel-api"
