@@ -3,6 +3,7 @@ package no.nav.dagpenger.regel.api.routing
 import io.ktor.application.call
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.request.path
 import io.ktor.request.receive
 import io.ktor.response.header
 import io.ktor.response.respond
@@ -34,7 +35,7 @@ internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProduce
                     store.opprettBehov(this).also {
                         producer.produceEvent(it)
                     }.also {
-                        call.response.header(HttpHeaders.Location, "/behov/status/${it.behovId.id}")
+                        call.response.header(HttpHeaders.Location, "${call.request.path()}/status/${it.behovId.id}")
                         call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
                     }.also {
                         logger.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
@@ -50,7 +51,8 @@ internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProduce
 
                     when (val status = store.behovStatus(behovId)) {
                         is Status.Done -> {
-                            call.response.header(HttpHeaders.Location, "/subsumsjon/${status.behovId.id}")
+                            val rootPath = call.request.path().substringBefore("/behov")
+                            call.response.header(HttpHeaders.Location, "$rootPath/subsumsjon/${status.behovId.id}")
                             call.respond(HttpStatusCode.SeeOther)
                         }
                         is Status.Pending -> {
