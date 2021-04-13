@@ -2,7 +2,6 @@ package no.nav.dagpenger.regel.api.auth
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
-import com.auth0.jwt.interfaces.Claim
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.auth.jwt.JWTAuthenticationProvider
 import io.ktor.auth.jwt.JWTCredential
@@ -37,19 +36,6 @@ internal fun JWTAuthenticationProvider.Configuration.azureAdJWT(
             require(credentials.payload.audience.contains(clientId)) {
                 "Auth: Valid audience not found in claims"
             }
-
-            val roles: Claim? = credentials.payload.claims["roles"]
-
-            requireNotNull(roles) {
-                "Auth: Roles not found in claims"
-            }
-
-            require(
-                roles.asList(String::class.java).contains("access_as_application")
-            ) {
-                "Auth: Valid role not found in claims"
-            }
-
             JWTPrincipal(credentials.payload)
         } catch (e: Throwable) {
             LOGGER.error("Unauthorized", e)

@@ -20,8 +20,7 @@ internal object TestApplication {
 
     val testOAuthToken: String by lazy {
         mockOAuth2Server.issueToken(
-            issuerId = ISSUER_ID,
-            claims = mapOf("roles" to listOf("access_as_application"))
+            issuerId = ISSUER_ID
         ).serialize()
     }
 
