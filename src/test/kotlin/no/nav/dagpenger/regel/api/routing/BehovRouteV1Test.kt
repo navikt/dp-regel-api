@@ -27,6 +27,7 @@ import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import no.nav.dagpenger.regel.api.routing.TestApplication.handleAuthenticatedAzureAdRequest
 import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import org.apache.kafka.clients.producer.RecordMetadata
@@ -36,14 +37,14 @@ import java.time.YearMonth
 import java.time.ZonedDateTime
 import java.util.concurrent.Future
 
-class BehovRouteTest {
+class BehovRouteV1Test {
 
     @Test
     fun `401 on unauthorized requests`() {
         withMockAuthServerAndTestApplication(MockApi()) {
-            handleRequest(HttpMethod.Get, "/behov/status/id").response.status() shouldBe HttpStatusCode.Unauthorized
-            handleRequest(HttpMethod.Post, "/behov").response.status() shouldBe HttpStatusCode.Unauthorized
-            handleRequest(HttpMethod.Post, "/behov") { addHeader("X-API-KEY", "notvalid") }
+            handleRequest(HttpMethod.Get, "v1/behov/status/id").response.status() shouldBe HttpStatusCode.Unauthorized
+            handleRequest(HttpMethod.Post, "v1/behov").response.status() shouldBe HttpStatusCode.Unauthorized
+            handleRequest(HttpMethod.Post, "v1/behov") { addHeader(HttpHeaders.Authorization, "Bearer notvalid") }
                 .response.status() shouldBe HttpStatusCode.Unauthorized
         }
     }
@@ -61,7 +62,7 @@ class BehovRouteTest {
             )
         ) {
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG6P7969DP56BPW2EDS1RN")
+            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "v1/behov/status/01DSFG6P7969DP56BPW2EDS1RN")
                 .apply {
 
                     response.status() shouldBe HttpStatusCode.OK
@@ -70,16 +71,16 @@ class BehovRouteTest {
                     response.content shouldBe """{"status":"PENDING"}"""
                 }
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG798QNFAWXNFGZF0J2APX")
+            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "v1/behov/status/01DSFG798QNFAWXNFGZF0J2APX")
                 .apply {
                     response.status() shouldBe HttpStatusCode.SeeOther
                     withClue("Response should be handled") { requestHandled shouldBe true }
                     response.headers[HttpHeaders.Location] shouldNotBe null
-                    response.headers[HttpHeaders.Location] shouldBe "/subsumsjon/01DSFGCKM9TEZ94X872C7H4QB4"
+                    response.headers[HttpHeaders.Location] shouldBe "v1/subsumsjon/01DSFGCKM9TEZ94X872C7H4QB4"
                 }
 
             shouldThrow<BehovNotFoundException> {
-                handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG7JVZVVD2ZK7K7HG9SNVG")
+                handleAuthenticatedAzureAdRequest(HttpMethod.Get, "v1/behov/status/01DSFG7JVZVVD2ZK7K7HG9SNVG")
             }
         }
 
@@ -107,7 +108,7 @@ class BehovRouteTest {
             )
         ) {
 
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "v1/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 //language=JSON
                 setBody(
@@ -130,8 +131,8 @@ class BehovRouteTest {
                 withClue("Response should be handled") { requestHandled shouldBe true }
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
-                    location shouldStartWith "/behov/status/"
-                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
+                    location shouldStartWith "v1/behov/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "v1/behov/status/" }
                 }
             }
         }
@@ -172,7 +173,7 @@ class BehovRouteTest {
             )
         ) {
 
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "v1/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
@@ -193,8 +194,8 @@ class BehovRouteTest {
                 withClue("Response should be handled") { requestHandled shouldBe true }
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
-                    location shouldStartWith "/behov/status/"
-                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
+                    location shouldStartWith "v1/behov/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "v1/behov/status/" }
                 }
             }
         }
@@ -231,7 +232,7 @@ class BehovRouteTest {
             )
         ) {
 
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "v1/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
@@ -252,8 +253,8 @@ class BehovRouteTest {
                 withClue("Response should be handled") { requestHandled shouldBe true }
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
-                    location shouldStartWith "/behov/status/"
-                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
+                    location shouldStartWith "v1/behov/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "v1/behov/status/" }
                 }
             }
         }
@@ -293,7 +294,7 @@ class BehovRouteTest {
             )
         ) {
 
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "v1/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
@@ -316,8 +317,8 @@ class BehovRouteTest {
                 withClue("Response should be handled") { requestHandled shouldBe true }
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
-                    location shouldStartWith "/behov/status/"
-                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
+                    location shouldStartWith "v1/behov/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "v1/behov/status/" }
                 }
             }
         }
@@ -358,7 +359,7 @@ class BehovRouteTest {
             )
         ) {
 
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "v1/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
@@ -381,8 +382,8 @@ class BehovRouteTest {
                 withClue("Response should be handled") { requestHandled shouldBe true }
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
-                    location shouldStartWith "/behov/status/"
-                    withClue("Behov id should be present") { location shouldNotEndWith "/behov/status/" }
+                    location shouldStartWith "v1/behov/status/"
+                    withClue("Behov id should be present") { location shouldNotEndWith "v1/behov/status/" }
                 }
             }
         }
@@ -453,5 +454,28 @@ class BehovRouteTest {
                 TODO("Not yet implemented")
             }
         }
+    }
+}
+
+internal class BehovRequestMappingTest {
+    @Test
+    fun `Default values for fields not present in request`() {
+        val behov = mapRequestToBehov(
+            BehovRequest(
+                aktorId = "aktorId",
+                regelkontekst = BehovRequest.RegelKontekst("1", Kontekst.vedtak),
+                beregningsdato = LocalDate.of(2019, 11, 7),
+                harAvtjentVerneplikt = null,
+                oppfyllerKravTilFangstOgFisk = null,
+                bruktInntektsPeriode = null,
+                manueltGrunnlag = null,
+                lærling = null,
+                antallBarn = null
+            )
+        )
+        behov.regelverksdato shouldBe null
+        behov.inntektsId shouldBe null
+        behov.antallBarn shouldBe 0
+        behov.forrigeGrunnlag shouldBe null
     }
 }
