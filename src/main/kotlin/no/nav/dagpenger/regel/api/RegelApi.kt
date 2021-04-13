@@ -19,7 +19,6 @@ import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.request.path
 import io.ktor.response.respond
-import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
@@ -211,10 +210,9 @@ internal fun Application.api(
         }
 
         authenticate("jwt") {
-            route("/secured") {
-                get {
-                    call.respond(HttpStatusCode.OK, "Ok")
-                }
+            route("/v1") {
+                subsumsjon(subsumsjonStore)
+                behov(subsumsjonStore, kafkaProducer)
             }
         }
     }

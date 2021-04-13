@@ -43,6 +43,7 @@ spec:
           namespace: teamdagpenger
           cluster: prod-gcp
         - application: dp-regel-api-arena-adapter
+        - application: dp-proxy
 
   # required for on-premises only
   webproxy: true
