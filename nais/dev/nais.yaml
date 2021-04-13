@@ -42,6 +42,9 @@ spec:
         - application: dp-kalkulator-api
           namespace: teamdagpenger
           cluster: dev-gcp
+        - application: dp-mottak
+          namespace: teamdagpenger
+          cluster: dev-gcp
         - application: dp-regel-api-arena-adapter
         - application: dp-proxy
 
