@@ -31,15 +31,20 @@ internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProduce
     route("/behov") {
         post {
             withContext(IO) {
-                mapRequestToBehov(call.receive()).apply {
-                    store.opprettBehov(this).also {
-                        producer.produceEvent(it)
-                    }.also {
-                        call.response.header(HttpHeaders.Location, "${call.request.path()}/status/${it.behovId.id}")
-                        call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
-                    }.also {
-                        logger.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
+                runCatching {
+                    mapRequestToBehov(call.receive()).apply {
+                        store.opprettBehov(this).also {
+                            producer.produceEvent(it)
+                        }.also {
+                            call.response.header(HttpHeaders.Location, "${call.request.path()}/status/${it.behovId.id}")
+                            call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
+                        }.also {
+                            logger.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
+                        }
                     }
+                }.getOrElse {
+                    logger.error("Feii i opprettesle av behov", it)
+                    throw it
                 }
             }
         }
