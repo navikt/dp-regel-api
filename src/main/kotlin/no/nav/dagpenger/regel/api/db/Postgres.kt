@@ -41,12 +41,12 @@ internal fun hikariConfigFrom(config: Configuration) =
     }
 
 internal fun migrate(dataSource: HikariDataSource, initSql: String = ""): Int =
-    Flyway.configure().dataSource(dataSource).initSql(initSql).load().migrate()
+    Flyway.configure().dataSource(dataSource).initSql(initSql).load().migrate().migrations.size
 
 internal fun clean(dataSource: HikariDataSource) = Flyway.configure().dataSource(dataSource).load().clean()
 
 private enum class Role {
     ADMIN, USER;
 
-    override fun toString() = name.toLowerCase()
+    override fun toString() = name.lowercase()
 }

@@ -63,9 +63,7 @@ class BehovRouteTest {
 
             handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG6P7969DP56BPW2EDS1RN")
                 .apply {
-
                     response.status() shouldBe HttpStatusCode.OK
-                    withClue("Response should be handled") { requestHandled shouldBe true }
                     response.content shouldNotBe null
                     response.content shouldBe """{"status":"PENDING"}"""
                 }
@@ -73,7 +71,6 @@ class BehovRouteTest {
             handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG798QNFAWXNFGZF0J2APX")
                 .apply {
                     response.status() shouldBe HttpStatusCode.SeeOther
-                    withClue("Response should be handled") { requestHandled shouldBe true }
                     response.headers[HttpHeaders.Location] shouldNotBe null
                     response.headers[HttpHeaders.Location] shouldBe "/subsumsjon/01DSFGCKM9TEZ94X872C7H4QB4"
                 }
@@ -127,7 +124,6 @@ class BehovRouteTest {
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
-                withClue("Response should be handled") { requestHandled shouldBe true }
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
                     location shouldStartWith "/behov/status/"
@@ -190,7 +186,6 @@ class BehovRouteTest {
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
-                withClue("Response should be handled") { requestHandled shouldBe true }
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
                     location shouldStartWith "/behov/status/"
@@ -249,7 +244,7 @@ class BehovRouteTest {
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
-                withClue("Response should be handled") { requestHandled shouldBe true }
+
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
                     location shouldStartWith "/behov/status/"
@@ -313,7 +308,7 @@ class BehovRouteTest {
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
-                withClue("Response should be handled") { requestHandled shouldBe true }
+
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
                     location shouldStartWith "/behov/status/"
@@ -378,7 +373,7 @@ class BehovRouteTest {
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
-                withClue("Response should be handled") { requestHandled shouldBe true }
+
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
                     location shouldStartWith "/behov/status/"

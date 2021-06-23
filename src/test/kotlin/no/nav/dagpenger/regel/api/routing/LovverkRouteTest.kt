@@ -1,7 +1,6 @@
 package no.nav.dagpenger.regel.api.routing
 
 import de.huxhorn.sulky.ulid.ULID
-import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -72,7 +71,7 @@ class LovverkRouteTest {
         testApplicationRequest(subsumsjonStore)
             .apply {
                 response.status() shouldBe HttpStatusCode.OK
-                withClue("Response should be handled") { requestHandled shouldBe true }
+
                 response.content shouldBe """{"nyVurdering":false}"""
                 verify {
                     subsumsjonStore.getSubsumsjonerByResults(
@@ -95,7 +94,7 @@ class LovverkRouteTest {
         testApplicationRequest(subsumsjonStore)
             .apply {
                 response.status() shouldBe HttpStatusCode.OK
-                withClue("Response should be handled") { requestHandled shouldBe true }
+
                 response.content shouldBe """{"nyVurdering":true}"""
                 verify {
                     subsumsjonStore.getSubsumsjonerByResults(

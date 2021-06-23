@@ -21,7 +21,7 @@ apply {
 repositories {
     mavenCentral()
     jcenter()
-    maven("http://packages.confluent.io/maven/")
+    maven("https://packages.confluent.io/maven/")
     maven("https://jitpack.io")
 }
 
@@ -96,7 +96,6 @@ dependencies {
 
     runtimeOnly(Vault.javaDriver)
 
-    testImplementation(kotlin("test-junit5"))
     testImplementation(Ktor.ktorTest)
     testImplementation(Junit5.api)
     testImplementation(KoTest.assertions)
@@ -141,14 +140,6 @@ tasks.withType<Test> {
 
 tasks.withType<Wrapper> {
     gradleVersion = "6.0.1"
-}
-
-tasks.named("shadowJar") {
-    dependsOn("test")
-}
-
-tasks.named("jar") {
-    dependsOn("test")
 }
 
 tasks.named("compileKotlin") {

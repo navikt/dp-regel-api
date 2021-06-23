@@ -12,6 +12,7 @@ import no.nav.dagpenger.streams.Topic
 import no.nav.dagpenger.streams.streamConfigAiven
 import org.apache.kafka.common.errors.TopicAuthorizationException
 import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.kstream.Predicate
 import java.time.Duration
 
@@ -26,9 +27,10 @@ internal class AivenKafkaSubsumsjonConsumer(
 
     private val streams: KafkaStreams by lazy {
         KafkaStreams(subsumsjonPond.buildTopology(), this.getConfig()).apply {
-            setUncaughtExceptionHandler { t, e ->
-                logUnexpectedError(t, e)
+            setUncaughtExceptionHandler { exc ->
+                logUnexpectedError(exc)
                 stop()
+                StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_CLIENT
             }
         }
     }
@@ -55,13 +57,13 @@ internal class AivenKafkaSubsumsjonConsumer(
         aivenCredentials = KafkaAivenCredentials()
     )
 
-    private fun logUnexpectedError(t: Thread?, e: Throwable) {
+    private fun logUnexpectedError(e: Throwable) {
         when (e) {
             is TopicAuthorizationException -> LOGGER.warn(
                 "TopicAuthorizationException in $SERVICE_APP_ID stream, stopping app"
             )
             else -> LOGGER.error(
-                "Uncaught exception in $SERVICE_APP_ID stream, thread: $t message:  ${e.message}",
+                "Uncaught exception in $SERVICE_APP_ID stream, thread: ${Thread.currentThread()} message:  ${e.message}",
                 e
             )
         }

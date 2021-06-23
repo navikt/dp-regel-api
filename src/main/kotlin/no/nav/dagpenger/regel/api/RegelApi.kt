@@ -66,7 +66,6 @@ private val MAINLOGGER = KotlinLogging.logger {}
 
 fun main() {
     val config = Configuration()
-
     migrate(config)
     val dataSource = dataSourceFrom(config)
     val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
@@ -140,7 +139,8 @@ internal fun Application.api(
     kafkaProducer: DagpengerBehovProducer,
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     healthChecks: List<HealthCheck>,
-    config: Configuration
+    config: Configuration,
+    prometheusMeterRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
 ) {
     install(DefaultHeaders)
 
@@ -176,7 +176,7 @@ internal fun Application.api(
     install(Locations)
 
     install(MicrometerMetrics) {
-        registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, CollectorRegistry.defaultRegistry, Clock.SYSTEM)
+        registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, prometheusMeterRegistry, Clock.SYSTEM)
     }
 
     install(StatusPages) {

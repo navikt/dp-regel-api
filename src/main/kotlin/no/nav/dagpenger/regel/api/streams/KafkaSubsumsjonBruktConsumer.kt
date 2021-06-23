@@ -15,6 +15,7 @@ import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
+import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.apache.kafka.streams.kstream.Produced
 import java.time.Duration
 
@@ -49,9 +50,10 @@ internal class KafkaSubsumsjonBruktConsumer(
 
     private val streams: KafkaStreams by lazy {
         KafkaStreams(buildTopology(), getConfig()).apply {
-            setUncaughtExceptionHandler { t, e ->
-                logUnexpectedError(t, e)
+            setUncaughtExceptionHandler { exc ->
+                logUnexpectedError(exc)
                 stop()
+                StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_CLIENT
             }
         }
     }
@@ -92,13 +94,13 @@ internal class KafkaSubsumsjonBruktConsumer(
         return builder.build()
     }
 
-    private fun logUnexpectedError(t: Thread?, e: Throwable) {
+    private fun logUnexpectedError(e: Throwable) {
         when (e) {
             is TopicAuthorizationException -> LOGGER.warn(
                 "TopicAuthorizationException in $SERVICE_APP_ID stream, stopping app"
             )
             else -> LOGGER.error(
-                "Uncaught exception in $SERVICE_APP_ID stream, thread: $t message:  ${e.message}",
+                "Uncaught exception in $SERVICE_APP_ID stream, thread: ${Thread.currentThread()} message:  ${e.message}",
                 e
             )
         }

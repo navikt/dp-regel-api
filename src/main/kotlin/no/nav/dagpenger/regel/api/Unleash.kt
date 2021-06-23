@@ -20,7 +20,7 @@ class ByClusterStrategy(private val currentCluster: Cluster) : Strategy {
 
     override fun isEnabled(parameters: Map<String, String>?): Boolean {
         val clustersParameter = parameters?.get("cluster") ?: return false
-        val alleClustere = clustersParameter.split(",").map { it.trim() }.map { it.toLowerCase() }.toList()
+        val alleClustere = clustersParameter.split(",").map { it.trim() }.map { it.lowercase() }.toList()
         return alleClustere.contains(currentCluster.asString())
     }
 }
@@ -38,5 +38,5 @@ enum class Cluster {
         }
     }
 
-    fun asString(): String = name.toLowerCase().replace("_", "-")
+    fun asString(): String = name.lowercase().replace("_", "-")
 }
