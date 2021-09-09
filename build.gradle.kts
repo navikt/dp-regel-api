@@ -96,6 +96,7 @@ dependencies {
 
     runtimeOnly(Vault.javaDriver)
 
+    testImplementation(kotlin("test"))
     testImplementation(Ktor.ktorTest)
     testImplementation(Junit5.api)
     testImplementation(KoTest.assertions)
