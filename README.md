@@ -34,7 +34,7 @@ ctrl-c og docker-compose -f docker-compose.yml down
 
 ### Tilgang til Postgres databasen
 
-For utfyllende dokumentasjon se [Postgres i NAV](https://github.com/navikt/utvikling/blob/master/PostgreSQL.md)
+For utfyllende dokumentasjon se [Postgres i NAV](https://github.com/navikt/utvikling/blob/main/docs/teknisk/PostgreSQL.md)
 
 #### Tldr
 
@@ -54,13 +54,6 @@ vault login -method=oidc
 
 ```
 
-
-Hvis du får noe à la `connection refused`, må du før `vault login -method=oidc` legge til:
-```
-export HTTPS_PROXY="socks5://localhost:14122" 
-export NO_PROXY=".microsoftonline.com,.terraform.io,.hashicorp.com"
-```
-
 Preprod credentials:
 
 ```
@@ -74,9 +67,19 @@ Prod credentials:
 vault read postgresql/prod-fss/creds/dp-regel-api-admin
 
 ```
+Tilkobling via IntelliJ:
+```
+View -> ToolWindows -> Database
+New -> Datasource -> PostgresSQL
 
-Bruker/passord kombinasjonen kan brukes til å koble seg til de aktuelle databasene(Fra utvikler image...)
-F.eks
+Host: Spør i slack #postgres eller noen fra teamet
+Database: dp-regel-api
+Bruk brukernavn og passord fra "vault read" kommandoen over
+
+```
+
+
+Tilkobling via kommandolinja:
 
 ```
 
@@ -84,3 +87,27 @@ psql -d $DATABASE_NAME -h $DATABASE_HOST -U $GENERERT_BRUKER_NAVN
 
 ```
 
+###Spørringer:
+Finne behovene og aktørId for en gitt subsumsjonsId:
+```SQL
+select
+    *
+from v2_subsumsjon
+where data -> 'minsteinntektResultat' ->> 'subsumsjonsId' = 'subsumsjonsid'
+OR data -> 'satsResultat' ->> 'subsumsjonsId' = 'subsumsjonsid'
+OR data -> 'periodeResultat' ->> 'subsumsjonsId' = 'subsumsjonsid'
+OR data -> 'grunnlagResultat' ->> 'subsumsjonsId' = 'subsumsjonsid';
+```
+
+Finne sats, grunnlag og hvilke grunnbeløp brukt gitt en aktør
+```SQL
+select
+data -> 'satsResultat' ->> 'dagsats' as dagsats,
+data -> 'faktum' ->> 'beregningsdato' as beregningsdato,
+data -> 'faktum' ->> 'regelverksdato' as regelverksdato,
+data -> 'faktum' ->> 'manueltGrunnlag' as manueltgrunnlag,
+data -> 'grunnlagResultat' as grunnlag,
+brukt
+from v2_subsumsjon where behov_id in (
+select id from v2_behov where aktor_id = 'aktørId');
+```
