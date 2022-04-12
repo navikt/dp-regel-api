@@ -42,6 +42,11 @@ configurations {
 }
 
 dependencies {
+    constraints {
+        testRuntimeOnly("org.xerial.snappy:snappy-java:1.1.8.2") {
+            because("Required on M1 cpus")
+        }
+    }
     implementation(kotlin("stdlib-jdk8"))
     implementation(Dagpenger.Streams)
     implementation(Dagpenger.Events)
