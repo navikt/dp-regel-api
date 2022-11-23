@@ -26,6 +26,7 @@ import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
+import org.flywaydb.core.internal.configuration.ConfigUtils
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.testcontainers.containers.PostgreSQLContainer
@@ -54,11 +55,29 @@ internal object DataSource {
     }
 }
 
-internal fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
+internal fun withMigratedDb(block: () -> Unit) {
+    withCleanDb {
+        migrate(DataSource.instance)
+        block()
+    }
+}
 
-internal fun withMigratedDb(test: () -> Unit) =
-    DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
+internal fun withCleanDb(block: () -> Unit) {
+    setup()
+    clean(DataSource.instance).run {
+        block()
+    }.also {
+        tearDown()
+    }
+}
 
+private fun setup() {
+    System.setProperty(ConfigUtils.CLEAN_DISABLED, "false")
+}
+
+private fun tearDown() {
+    System.clearProperty(ConfigUtils.CLEAN_DISABLED)
+}
 internal class PostgresTest {
 
     @Test

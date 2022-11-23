@@ -16,7 +16,7 @@ class UlidTest {
     @Test
     fun `Should always have uppercase id`() {
         val uppercase = "01DSFVQY33P2A5K7GHNC96W3JJ"
-        val lowercase = uppercase.toLowerCase()
+        val lowercase = uppercase.lowercase()
         val upperUlid = Ulid(uppercase)
         val lowerUlid = Ulid(lowercase)
         assertEquals(uppercase, lowerUlid.id)
@@ -26,21 +26,21 @@ class UlidTest {
     @Test
     fun `Should not care about upper or lowercase when compared`() {
         val uppercase = "01DSFVQY33P2A5K7GHNC96W3JJ"
-        val lowercase = uppercase.toLowerCase()
+        val lowercase = uppercase.lowercase()
         val upperUlid = Ulid(uppercase)
         val lowerUlid = Ulid(lowercase)
-        assertTrue { upperUlid.equals(lowerUlid) }
-        assertTrue { lowerUlid.equals(upperUlid) }
+        assertTrue { upperUlid == lowerUlid }
+        assertTrue { lowerUlid == upperUlid }
     }
 
     @Test
     fun `Should care about being different when compared`() {
         val uppercase = "01DSFVQY33P2A5K7GHNC96W3JJ"
-        val lowercase = "01DSJ0E6KA3VP2XW0S5XNQNE6A".toLowerCase()
+        val lowercase = "01DSJ0E6KA3VP2XW0S5XNQNE6A".lowercase()
         val upperUlid = Ulid(uppercase)
         val lowerUlid = Ulid(lowercase)
-        assertFalse { upperUlid.equals(lowerUlid) }
-        assertFalse { lowerUlid.equals(upperUlid) }
+        assertFalse { upperUlid == lowerUlid }
+        assertFalse { lowerUlid == upperUlid }
     }
 
     @Test

@@ -10,7 +10,7 @@ plugins {
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 }
 
@@ -20,14 +20,13 @@ apply {
 
 repositories {
     mavenCentral()
-    jcenter()
     maven("https://packages.confluent.io/maven/")
     maven("https://jitpack.io")
 }
 
 application {
     applicationName = "dp-regel-api"
-    mainClassName = "no.nav.dagpenger.regel.api.RegelApiKt"
+    mainClass.set("no.nav.dagpenger.regel.api.RegelApiKt")
 }
 
 java {

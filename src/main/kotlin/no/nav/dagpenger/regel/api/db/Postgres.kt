@@ -6,6 +6,7 @@ import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.Profile
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
+import org.flywaydb.core.internal.configuration.ConfigUtils
 
 internal fun migrate(config: Configuration): Int {
     return when (config.application.profile) {
@@ -43,7 +44,9 @@ internal fun hikariConfigFrom(config: Configuration) =
 internal fun migrate(dataSource: HikariDataSource, initSql: String = ""): Int =
     Flyway.configure().dataSource(dataSource).initSql(initSql).load().migrate().migrations.size
 
-internal fun clean(dataSource: HikariDataSource) = Flyway.configure().dataSource(dataSource).load().clean()
+internal fun clean(dataSource: HikariDataSource) = Flyway.configure()
+    .cleanDisabled(System.getProperty(ConfigUtils.CLEAN_DISABLED)?.toBooleanStrict() ?: true)
+    .dataSource(dataSource).load().clean()
 
 private enum class Role {
     ADMIN, USER;

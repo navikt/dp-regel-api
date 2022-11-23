@@ -5,7 +5,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
-import io.kotest.property.arbitrary.bool
+import io.kotest.property.arbitrary.boolean
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.localDate
 import io.kotest.property.arbitrary.map
@@ -62,8 +62,8 @@ private val internBehovGenerator = arbitrary {
                 Kontekst.vedtak
             )
         ),
-        harAvtjentVerneplikt = Arb.bool().next(it),
-        oppfyllerKravTilFangstOgFisk = Arb.bool().next(it),
+        harAvtjentVerneplikt = Arb.boolean().next(it),
+        oppfyllerKravTilFangstOgFisk = Arb.boolean().next(it),
         manueltGrunnlag = Arb.int(0, 1000).next(it),
         antallBarn = Arb.int(0, 10).next(it),
         beregningsDato = LocalDate.now()
