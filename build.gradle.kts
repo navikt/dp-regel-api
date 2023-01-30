@@ -109,7 +109,7 @@ dependencies {
     testImplementation(TestContainers.postgresql)
     testImplementation(TestContainers.kafka)
     testImplementation(Kafka.streamTestUtils)
-    testImplementation("no.nav.security:mock-oauth2-server:0.3.1")
+    testImplementation("no.nav.security:mock-oauth2-server:0.5.7")
 
     testImplementation(Mockk.mockk)
 
@@ -144,7 +144,7 @@ tasks.withType<Test> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "6.0.1"
+    gradleVersion = "7.3.3"
 }
 
 tasks.named("compileKotlin") {
