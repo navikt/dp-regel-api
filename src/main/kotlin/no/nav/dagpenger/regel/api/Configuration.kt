@@ -9,7 +9,7 @@ import com.natpryce.konfig.listType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
+import no.nav.dagpenger.inntekt.ApiKeyVerifier
 import no.nav.dagpenger.streams.PacketDeserializer
 import no.nav.dagpenger.streams.PacketSerializer
 import no.nav.dagpenger.streams.Topic
@@ -88,7 +88,10 @@ internal data class Configuration(
     data class Auth(
         val secret: String = config()[Key("auth.secret", stringType)],
         val allowedKeys: List<String> = config()[Key("auth.allowedKeys", listType(stringType))],
-        val authApiKeyVerifier: AuthApiKeyVerifier = AuthApiKeyVerifier(secret, allowedKeys),
+        val authApiKeyVerifier: AuthApiKeyVerifier = AuthApiKeyVerifier(
+            apiKeyVerifier = ApiKeyVerifier(secret),
+            clients = allowedKeys
+        ),
         val azureAppClientId: String = config()[Key("azure.app.client.id", stringType)],
         val azureAppWellKnownUrl: String = config()[Key("azure.app.well.known.url", stringType)],
     )
@@ -98,26 +101,26 @@ internal data class Configuration(
         val port: String = config()[Key("database.port", stringType)],
         val name: String = config()[Key("database.name", stringType)],
         val user: String? = config().getOrNull(Key("database.user", stringType)),
-        val password: String? = config().getOrNull(Key("database.password", stringType))
+        val password: String? = config().getOrNull(Key("database.password", stringType)),
 
     )
 
     data class Vault(
-        val mountPath: String = config()[Key("vault.mountpath", stringType)]
+        val mountPath: String = config()[Key("vault.mountpath", stringType)],
     )
 
     data class Kafka(
         val brokers: String = config()[Key("kafka.bootstrap.servers", stringType)],
         val aivenBrokers: String = config()[Key("KAFKA_BROKERS", stringType)],
         val user: String? = config().getOrNull(Key("srvdp.regel.api.username", stringType)),
-        val password: String? = config().getOrNull(Key("srvdp.regel.api.password", stringType))
+        val password: String? = config().getOrNull(Key("srvdp.regel.api.password", stringType)),
     )
 
     data class Application(
         val id: String = config().getOrElse(Key("application.id", stringType), "dp-regel-api"),
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
         val httpPort: Int = config()[Key("application.httpPort", intType)],
-        val unleashUrl: String = config()[Key("unleash.url", stringType)]
+        val unleashUrl: String = config()[Key("unleash.url", stringType)],
     )
 }
 
