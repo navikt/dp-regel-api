@@ -1,7 +1,6 @@
 package no.nav.dagpenger.regel.api.routing
 
 import de.huxhorn.sulky.ulid.ULID
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.ktor.http.HttpMethod
@@ -121,8 +120,9 @@ internal class SubsumsjonRouteTest {
                 subsumsjonStore = storeMock
             )
         ) {
-            shouldThrow<SubsumsjonNotFoundException> {
-                handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/01DSFGJBRYVBX2CNJKHJ0BB2W9")
+
+            handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/01DSFGJBRYVBX2CNJKHJ0BB2W9").apply {
+                response.status() shouldBe HttpStatusCode.NotFound
             }
         }
 

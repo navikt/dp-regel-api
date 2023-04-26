@@ -5,7 +5,7 @@ import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.handleRequest
-import no.nav.dagpenger.ktor.auth.ApiKeyVerifier
+import no.nav.dagpenger.inntekt.ApiKeyVerifier
 import no.nav.dagpenger.regel.api.Configuration
 
 private val auth = Configuration().auth

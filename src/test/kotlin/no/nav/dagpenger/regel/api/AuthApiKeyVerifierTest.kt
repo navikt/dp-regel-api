@@ -1,5 +1,6 @@
 package no.nav.dagpenger.inntekt
 
+import no.nav.dagpenger.regel.api.AuthApiKeyVerifier
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

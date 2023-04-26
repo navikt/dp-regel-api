@@ -1,17 +1,17 @@
 package no.nav.dagpenger.regel.api.routing
 
-import io.ktor.application.call
 import io.ktor.http.ContentType
-import io.ktor.response.respondTextWriter
-import io.ktor.routing.Routing
-import io.ktor.routing.get
-import io.ktor.routing.route
+import io.ktor.server.application.call
+import io.ktor.server.response.respondTextWriter
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.exporter.common.TextFormat
 import io.prometheus.client.hotspot.DefaultExports
 
 fun Routing.metrics(
-    collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
+    collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry,
 ) {
     DefaultExports.initialize()
 

@@ -1,20 +1,20 @@
 package no.nav.dagpenger.regel.api.routing
 
-import io.ktor.application.call
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.path
-import io.ktor.request.receive
-import io.ktor.response.header
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.route
+import io.ktor.server.application.call
+import io.ktor.server.plugins.MissingRequestParameterException
+import io.ktor.server.request.path
+import io.ktor.server.request.receive
+import io.ktor.server.response.header
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import no.nav.dagpenger.regel.api.BadRequestException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
@@ -52,7 +52,7 @@ internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProduce
         route("/status") {
             get("/{behovId}") {
                 withContext(IO) {
-                    val behovId = BehovId(call.parameters["behovid"] ?: throw BadRequestException())
+                    val behovId = BehovId(call.parameters["behovid"] ?: throw MissingRequestParameterException("behovid"))
 
                     when (val status = store.behovStatus(behovId)) {
                         is Status.Done -> {
