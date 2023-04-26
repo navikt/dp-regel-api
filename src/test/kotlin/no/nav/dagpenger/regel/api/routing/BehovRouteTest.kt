@@ -1,6 +1,5 @@
 package no.nav.dagpenger.regel.api.routing
 
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -57,10 +56,9 @@ class BehovRouteTest {
 
         withMockAuthServerAndTestApplication(
             MockApi(
-                subsumsjonStore = storeMock
-            )
+                subsumsjonStore = storeMock,
+            ),
         ) {
-
             handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG6P7969DP56BPW2EDS1RN")
                 .apply {
                     response.status() shouldBe HttpStatusCode.OK
@@ -75,8 +73,8 @@ class BehovRouteTest {
                     response.headers[HttpHeaders.Location] shouldBe "/subsumsjon/01DSFGCKM9TEZ94X872C7H4QB4"
                 }
 
-            shouldThrow<BehovNotFoundException> {
-                handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG7JVZVVD2ZK7K7HG9SNVG")
+            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG7JVZVVD2ZK7K7HG9SNVG").apply {
+                response.status() shouldBe HttpStatusCode.NotFound
             }
         }
 
@@ -89,7 +87,6 @@ class BehovRouteTest {
 
     @Test
     fun `Valid json to behov endpoint should be accepted, saved and produce an event to Kafka`() {
-
         val subsumsjonStoreMock: SubsumsjonStore = mockedSubsumsjonStore()
 
         val produceSlot = slot<InternBehov>()
@@ -100,10 +97,9 @@ class BehovRouteTest {
         withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStoreMock,
-                kafkaMock
-            )
+                kafkaMock,
+            ),
         ) {
-
             handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 //language=JSON
@@ -120,7 +116,7 @@ class BehovRouteTest {
                 "antallBarn": 1,
                 "lærling": false
             }
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
@@ -164,10 +160,9 @@ class BehovRouteTest {
         withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStoreMock,
-                kafkaMock
-            )
+                kafkaMock,
+            ),
         ) {
-
             handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
@@ -182,7 +177,7 @@ class BehovRouteTest {
                 "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
                 "antallBarn": 1
             }
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
@@ -211,7 +206,6 @@ class BehovRouteTest {
 
     @Test
     fun `Valid json with regelkontekst to behov endpoint should be accepted, saved and produce an event to Kafka`() {
-
         val subsumsjonStoreMock: SubsumsjonStore = mockedSubsumsjonStore()
 
         val produceSlot = slot<InternBehov>()
@@ -222,10 +216,9 @@ class BehovRouteTest {
         withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStoreMock,
-                kafkaMock
-            )
+                kafkaMock,
+            ),
         ) {
-
             handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
@@ -240,7 +233,7 @@ class BehovRouteTest {
                 "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
                 "antallBarn": 1
             }
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
@@ -284,10 +277,9 @@ class BehovRouteTest {
         withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStoreMock,
-                kafkaMock
-            )
+                kafkaMock,
+            ),
         ) {
-
             handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
@@ -304,7 +296,7 @@ class BehovRouteTest {
                 "antallBarn": 1,
                 "regelverksdato": "2020-02-09"
             }
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
@@ -349,10 +341,9 @@ class BehovRouteTest {
         withMockAuthServerAndTestApplication(
             MockApi(
                 subsumsjonStoreMock,
-                kafkaMock
-            )
+                kafkaMock,
+            ),
         ) {
-
             handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
@@ -369,7 +360,7 @@ class BehovRouteTest {
                 "antallBarn": 1,
                 "regelverksdato": "2020-02-09"
             }
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted

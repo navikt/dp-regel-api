@@ -1,6 +1,5 @@
 package no.nav.dagpenger.regel.api.routing
 
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -77,8 +76,8 @@ class BehovRouteV1Test {
                     response.headers[HttpHeaders.Location] shouldBe "v1/subsumsjon/01DSFGCKM9TEZ94X872C7H4QB4"
                 }
 
-            shouldThrow<BehovNotFoundException> {
-                handleAuthenticatedAzureAdRequest(HttpMethod.Get, "v1/behov/status/01DSFG7JVZVVD2ZK7K7HG9SNVG")
+            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "v1/behov/status/01DSFG7JVZVVD2ZK7K7HG9SNVG").apply {
+                response.status() shouldBe HttpStatusCode.NotFound
             }
         }
 

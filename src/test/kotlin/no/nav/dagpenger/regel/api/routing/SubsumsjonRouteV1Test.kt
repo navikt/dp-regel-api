@@ -1,7 +1,6 @@
 package no.nav.dagpenger.regel.api.routing
 
 import de.huxhorn.sulky.ulid.ULID
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.ktor.http.HttpHeaders
@@ -123,8 +122,9 @@ internal class SubsumsjonRouteV1Test {
                 subsumsjonStore = storeMock
             )
         ) {
-            shouldThrow<SubsumsjonNotFoundException> {
-                handleAuthenticatedAzureAdRequest(HttpMethod.Get, "v1/subsumsjon/01DSFGJBRYVBX2CNJKHJ0BB2W9")
+
+            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "v1/subsumsjon/01DSFGJBRYVBX2CNJKHJ0BB2W9").apply {
+                response.status() shouldBe HttpStatusCode.NotFound
             }
         }
 

@@ -1,7 +1,7 @@
 package no.nav.dagpenger.regel.api.routing
 
-import io.ktor.application.Application
 import io.ktor.http.HttpMethod
+import io.ktor.server.application.Application
 import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.TestApplicationRequest

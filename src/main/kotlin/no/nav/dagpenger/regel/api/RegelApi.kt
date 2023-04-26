@@ -1,38 +1,37 @@
 package no.nav.dagpenger.regel.api
 
 import com.fasterxml.jackson.core.JacksonException
-import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.auth.Authentication
-import io.ktor.auth.authenticate
-import io.ktor.auth.jwt.jwt
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
-import io.ktor.features.StatusPages
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.jackson.JacksonConverter
-import io.ktor.locations.Locations
-import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.request.path
-import io.ktor.response.respond
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.locations.Locations
+import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.netty.Netty
-import io.ktor.util.pipeline.PipelineContext
+import io.ktor.server.plugins.BadRequestException
+import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.defaultheaders.DefaultHeaders
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.request.path
+import io.ktor.server.response.respond
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import no.nav.dagpenger.ktor.auth.apiKeyAuth
-import no.nav.dagpenger.regel.api.auth.AuthApiKeyVerifier
+import no.nav.dagpenger.inntekt.ApiKeyCredential
+import no.nav.dagpenger.inntekt.ApiKeyVerifier
+import no.nav.dagpenger.inntekt.ApiPrincipal
+import no.nav.dagpenger.inntekt.apiKeyAuth
+import no.nav.dagpenger.regel.api.Vaktmester.Companion.LOGGER
 import no.nav.dagpenger.regel.api.auth.azureAdJWT
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
@@ -140,14 +139,19 @@ internal fun Application.api(
     apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     healthChecks: List<HealthCheck>,
     config: Configuration,
-    prometheusMeterRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
+    prometheusMeterRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry,
 ) {
     install(DefaultHeaders)
 
     install(Authentication) {
         apiKeyAuth(name = "X-API-KEY") {
             apiKeyName = "X-API-KEY"
-            validate { creds -> apiAuthApiKeyVerifier.verify(creds) }
+            validate { apikeyCredential: ApiKeyCredential ->
+                when {
+                    apiAuthApiKeyVerifier.verify(apikeyCredential.value) -> ApiPrincipal(apikeyCredential)
+                    else -> null
+                }
+            }
         }
 
         jwt(name = "jwt") {
@@ -180,22 +184,27 @@ internal fun Application.api(
     }
 
     install(StatusPages) {
-        exception<BadRequestException> { cause ->
-            badRequest(cause)
+        exception<BadRequestException> { call, cause ->
+            LOGGER.warn("Request failed!", cause)
+            call.respond(HttpStatusCode.BadRequest)
         }
 
-        exception<JacksonException> { cause ->
-            badRequest(cause)
+        exception<JacksonException> { call, cause ->
+            LOGGER.warn("Request failed!", cause)
+            call.respond(HttpStatusCode.BadRequest)
         }
 
-        exception<BehovNotFoundException> { cause ->
-            notFound(cause)
+        exception<BehovNotFoundException> { call, cause ->
+            LOGGER.warn("Request failed!", cause)
+            call.respond(HttpStatusCode.NotFound)
         }
-        exception<SubsumsjonNotFoundException> { cause ->
-            notFound(cause)
+        exception<SubsumsjonNotFoundException> { call, cause ->
+            LOGGER.warn("Request failed!", cause)
+            call.respond(HttpStatusCode.NotFound)
         }
-        exception<IllegalUlidException> { cause ->
-            badRequest(cause)
+        exception<IllegalUlidException> { call, cause ->
+            LOGGER.warn("Request failed!", cause)
+            call.respond(HttpStatusCode.BadRequest)
         }
     }
 
@@ -218,20 +227,8 @@ internal fun Application.api(
     }
 }
 
-private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.errorHandler(
-    cause: T,
-    httpStatusCode: HttpStatusCode
-): Unit = withContext(Dispatchers.IO) {
-    call.respond(httpStatusCode)
-    throw cause
+internal data class AuthApiKeyVerifier(private val apiKeyVerifier: ApiKeyVerifier, private val clients: List<String>) {
+    fun verify(payload: String): Boolean {
+        return clients.map { apiKeyVerifier.verify(payload, it) }.firstOrNull { it } ?: false
+    }
 }
-
-private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.badRequest(
-    cause: T
-) = errorHandler(cause, HttpStatusCode.BadRequest)
-
-private suspend fun <T : Throwable> PipelineContext<Unit, ApplicationCall>.notFound(
-    cause: T
-) = errorHandler(cause, HttpStatusCode.NotFound)
-
-class BadRequestException : RuntimeException()

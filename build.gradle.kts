@@ -53,20 +53,24 @@ dependencies {
     implementation(Jackson.core)
     implementation(Jackson.kotlin)
     implementation(Jackson.jsr310)
-    implementation(Kafka.streams)
     implementation(Kafka.clients)
     implementation(Kafka.streams)
 
-    implementation(Ktor.server)
-    implementation(Ktor.serverNetty)
-    implementation(Ktor.auth)
-    implementation(Ktor.authJwt)
-    implementation(Ktor.locations)
-    implementation(Ktor.micrometerMetrics)
-    implementation(Ktor.library("jackson"))
-    implementation(Ktor.library("client-core"))
-    implementation(Ktor.library("client-cio"))
-    implementation(Dagpenger.Biblioteker.ktorUtils)
+    implementation(Ktor2.Server.library("netty"))
+    implementation(Ktor2.Server.library("default-headers"))
+    implementation(Ktor2.Server.library("call-logging"))
+    implementation(Ktor2.Server.library("status-pages"))
+    implementation(Ktor2.Server.library("auth"))
+    implementation(Ktor2.Server.library("auth-jwt"))
+    implementation(Ktor2.Server.library("locations"))
+    implementation(Ktor2.Server.library("metrics-micrometer"))
+    implementation(Ktor2.Server.library("content-negotiation"))
+    implementation("io.ktor:ktor-serialization-jackson:${Ktor2.version}")
+
+    implementation(Ktor2.Client.library("core"))
+    implementation(Ktor2.Client.library("cio"))
+    implementation(Ktor2.Client.library("apache"))
+
     implementation(Micrometer.prometheusRegistry)
 
     implementation(Log4j2.api)
@@ -80,9 +84,6 @@ dependencies {
     implementation(Ulid.ulid)
 
     implementation("no.finn.unleash:unleash-client-java:3.2.9")
-
-    implementation(Dagpenger.Streams)
-    implementation(Dagpenger.Events)
 
     implementation(Database.Flyway)
     implementation(Database.HikariCP)
@@ -101,7 +102,7 @@ dependencies {
     runtimeOnly(Vault.javaDriver)
 
     testImplementation(kotlin("test"))
-    testImplementation(Ktor.ktorTest)
+    testImplementation(Ktor2.Server.library("test-host"))
     testImplementation(Junit5.api)
     testImplementation(KoTest.assertions)
     testImplementation(KoTest.property)
