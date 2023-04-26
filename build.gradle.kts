@@ -53,7 +53,6 @@ dependencies {
     implementation(Jackson.core)
     implementation(Jackson.kotlin)
     implementation(Jackson.jsr310)
-    implementation(Kafka.streams)
     implementation(Kafka.clients)
     implementation(Kafka.streams)
 
@@ -80,9 +79,6 @@ dependencies {
     implementation(Ulid.ulid)
 
     implementation("no.finn.unleash:unleash-client-java:3.2.9")
-
-    implementation(Dagpenger.Streams)
-    implementation(Dagpenger.Events)
 
     implementation(Database.Flyway)
     implementation(Database.HikariCP)
