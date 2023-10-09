@@ -6,6 +6,9 @@ env:
   IMAGE: docker.pkg.github.com/${{ github.repository }}/dp-regel-api:${{ github.sha }}
 jobs:
   build:
+    permissions:
+      contents: "read"
+      id-token: "write"
     name: Build and publish Docker image
     runs-on: ubuntu-latest
     steps:
