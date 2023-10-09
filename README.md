@@ -72,7 +72,7 @@ Tilkobling via IntelliJ:
 View -> ToolWindows -> Database
 New -> Datasource -> PostgresSQL
 
-Host: Spør i slack #postgres eller noen fra teamet
+Host: dev-pg.intern.nav.no eller prod-pg.intern.nav.no for hhv test og prod
 Database: dp-regel-api
 Bruk brukernavn og passord fra "vault read" kommandoen over
 
