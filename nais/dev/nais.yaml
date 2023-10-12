@@ -16,13 +16,12 @@ spec:
     enabled: true
     path: /metrics
   replicas:
-    min: 2
+    min: 3
     max: 3
   kafka:
     pool: nav-dev
   resources:
     limits:
-      cpu: 500m
       memory: 512Mi
     requests:
       cpu: 200m
