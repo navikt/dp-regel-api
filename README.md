@@ -3,6 +3,12 @@
 
 API for å kjøre dagpengeregler
 
+
+## Arkitektur og dokumentasjon
+
+![Arkitektur og dokumentasjon](docs/README.md)
+
+
 ## Utvikling av applikasjonen
 
 For å kjøre enkelte av testene kreves det at Docker kjører.
