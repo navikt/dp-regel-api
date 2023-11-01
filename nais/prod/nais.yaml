@@ -22,10 +22,10 @@ spec:
     pool: nav-prod
   resources:
     limits:
-      memory: 2024Mi
+      memory: 4000Mi
     requests:
       cpu: 800m
-      memory: 1024Mi
+      memory: 4000Mi
   ingresses:
     - "https://dp-regel-api.nais.adeo.no"
   secureLogs:
