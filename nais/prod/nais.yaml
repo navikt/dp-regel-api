@@ -16,8 +16,8 @@ spec:
     enabled: true
     path: /metrics
   replicas:
-    min: 3
-    max: 3
+    min: 6
+    max: 6
   kafka:
     pool: nav-prod
   resources:
