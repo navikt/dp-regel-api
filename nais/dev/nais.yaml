@@ -16,16 +16,16 @@ spec:
     enabled: true
     path: /metrics
   replicas:
-    min: 6
-    max: 6
-  kafka:
-    pool: nav-dev
+    min: 3
+    max: 3
   resources:
     limits:
-      memory: 4000Mi
+      memory: 1024Mi
     requests:
-      cpu: 800m
-      memory: 4000Mi
+      cpu: 80m
+      memory: 512Mi
+  kafka:
+    pool: nav-dev
   ingresses:
     - "https://dp-regel-api.nais.preprod.local"
   secureLogs:
