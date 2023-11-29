@@ -84,7 +84,7 @@ dependencies {
 
     implementation(Ulid.ulid)
 
-    implementation("no.finn.unleash:unleash-client-java:3.2.9")
+    implementation("no.finn.unleash:unleash-client-java:4.4.1")
 
     implementation(Database.Flyway)
     implementation(Database.HikariCP)
