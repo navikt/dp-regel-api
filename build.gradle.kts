@@ -43,7 +43,7 @@ configurations {
 
 dependencies {
     constraints {
-        testRuntimeOnly("org.xerial.snappy:snappy-java:1.1.8.2") {
+        testRuntimeOnly("org.xerial.snappy:snappy-java:1.1.10.5") {
             because("Required on M1 cpus")
         }
     }
