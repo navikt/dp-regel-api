@@ -22,6 +22,7 @@ repositories {
     mavenCentral()
     maven("https://packages.confluent.io/maven/")
     maven("https://jitpack.io")
+    maven("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
 }
 
 application {
@@ -49,7 +50,7 @@ dependencies {
     }
     implementation(kotlin("stdlib-jdk8"))
     implementation(Dagpenger.Streams)
-    implementation(Dagpenger.Events)
+    implementation("com.github.navikt:dagpenger-events:20231204.ee1cc3")
 
     implementation(Jackson.core)
     implementation(Jackson.kotlin)
