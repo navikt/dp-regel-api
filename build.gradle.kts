@@ -43,7 +43,7 @@ configurations {
 
 dependencies {
     constraints {
-        testRuntimeOnly("org.xerial.snappy:snappy-java:1.1.8.2") {
+        testRuntimeOnly("org.xerial.snappy:snappy-java:1.1.10.5") {
             because("Required on M1 cpus")
         }
     }
@@ -84,7 +84,7 @@ dependencies {
 
     implementation(Ulid.ulid)
 
-    implementation("no.finn.unleash:unleash-client-java:3.2.9")
+    implementation("no.finn.unleash:unleash-client-java:4.4.1")
 
     implementation(Database.Flyway)
     implementation(Database.HikariCP)
@@ -111,7 +111,7 @@ dependencies {
     testImplementation(TestContainers.postgresql)
     testImplementation(TestContainers.kafka)
     testImplementation(Kafka.streamTestUtils)
-    testImplementation("no.nav.security:mock-oauth2-server:0.5.7")
+    testImplementation("no.nav.security:mock-oauth2-server:2.0.1")
 
     testImplementation(Mockk.mockk)
 
