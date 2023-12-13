@@ -44,13 +44,13 @@ configurations {
 
 dependencies {
     constraints {
-        testRuntimeOnly("org.xerial.snappy:snappy-java:1.1.8.2") {
+        testRuntimeOnly("org.xerial.snappy:snappy-java:1.1.10.5") {
             because("Required on M1 cpus")
         }
     }
     implementation(kotlin("stdlib-jdk8"))
     implementation(Dagpenger.Streams)
-    implementation("com.github.navikt:dagpenger-events:20231204.ee1cc3")
+    implementation("com.github.navikt:dagpenger-events:2023081713361692272216.01ab7c590338")
 
     implementation(Jackson.core)
     implementation(Jackson.kotlin)
@@ -85,7 +85,7 @@ dependencies {
 
     implementation(Ulid.ulid)
 
-    implementation("no.finn.unleash:unleash-client-java:3.2.9")
+    implementation("no.finn.unleash:unleash-client-java:4.4.1")
 
     implementation(Database.Flyway)
     implementation(Database.HikariCP)
@@ -112,7 +112,7 @@ dependencies {
     testImplementation(TestContainers.postgresql)
     testImplementation(TestContainers.kafka)
     testImplementation(Kafka.streamTestUtils)
-    testImplementation("no.nav.security:mock-oauth2-server:0.5.7")
+    testImplementation("no.nav.security:mock-oauth2-server:2.1.0")
 
     testImplementation(Mockk.mockk)
 
