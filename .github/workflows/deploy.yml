@@ -16,7 +16,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.10.0
+      - uses: gradle/gradle-build-action@v2.11.0
         with:
           arguments: check build
       - uses: nais/docker-build-push@v0
@@ -42,7 +42,7 @@ jobs:
     environment: dev-fss
     steps:
       - uses: actions/checkout@v4.1.1
-      - uses: nais/deploy/actions/deploy@v1
+      - uses: nais/deploy/actions/deploy@v2
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
@@ -58,7 +58,7 @@ jobs:
     environment: prod-fss
     steps:
       - uses: actions/checkout@v4.1.1
-      - uses: nais/deploy/actions/deploy@v1
+      - uses: nais/deploy/actions/deploy@v2
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
