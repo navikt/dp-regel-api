@@ -49,8 +49,9 @@ dependencies {
         }
     }
     implementation(kotlin("stdlib-jdk8"))
-    implementation(Dagpenger.Streams)
-    implementation("com.github.navikt:dagpenger-events:20231204.ee1cc3")
+    implementation("com.github.navikt:dagpenger-streams:20231220.ec218b")
+    implementation("com.github.navikt:dp-inntekt-kontrakter:1_20231220.55a8a9")
+    implementation("com.github.navikt:dagpenger-events:20231220.3050bf")
 
     implementation(Jackson.core)
     implementation(Jackson.kotlin)
@@ -137,13 +138,14 @@ tasks.withType<Test> {
         showStackTraces = true
         showStandardStreams = true
         exceptionFormat = TestExceptionFormat.FULL
-        events = setOf(
-            TestLogEvent.PASSED,
-            TestLogEvent.SKIPPED,
-            TestLogEvent.FAILED,
-            TestLogEvent.STANDARD_OUT,
-            TestLogEvent.STANDARD_ERROR
-        )
+        events =
+            setOf(
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.FAILED,
+                TestLogEvent.STANDARD_OUT,
+                TestLogEvent.STANDARD_ERROR,
+            )
     }
 }
 

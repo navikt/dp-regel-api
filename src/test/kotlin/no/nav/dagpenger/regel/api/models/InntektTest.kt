@@ -3,13 +3,12 @@ package no.nav.dagpenger.regel.api.models
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.dagpenger.events.Packet
-import no.nav.dagpenger.events.inntekt.v1.Inntekt
-import no.nav.dagpenger.events.inntekt.v1.KlassifisertInntektMåned
+import no.nav.dagpenger.inntekt.v1.Inntekt
+import no.nav.dagpenger.inntekt.v1.KlassifisertInntektMåned
 import org.junit.jupiter.api.Test
 import java.time.YearMonth
 
 internal class InntektsPeriodeTest {
-
     @Test
     fun `Mapping to JSON`() {
         InntektsPeriode(YearMonth.of(2019, 1), YearMonth.of(2019, 2)).toJson().let {
@@ -23,15 +22,16 @@ internal class InntektsPeriodeTest {
 
     @Test
     fun `Mapping from Packet`() {
-        val inntektsPeriode = Packet().apply {
-            putValue(
-                PacketKeys.BRUKT_INNTEKTSPERIODE,
-                mapOf(
-                    Pair("førsteMåned", "2019-01"),
-                    Pair("sisteMåned", "2019-02")
+        val inntektsPeriode =
+            Packet().apply {
+                putValue(
+                    PacketKeys.BRUKT_INNTEKTSPERIODE,
+                    mapOf(
+                        Pair("førsteMåned", "2019-01"),
+                        Pair("sisteMåned", "2019-02"),
+                    ),
                 )
-            )
-        }.let { InntektsPeriode.fromPacket(it) }
+            }.let { InntektsPeriode.fromPacket(it) }
 
         inntektsPeriode shouldNotBe null
         inntektsPeriode?.førsteMåned shouldBe YearMonth.of(2019, 1)
@@ -40,7 +40,6 @@ internal class InntektsPeriodeTest {
 }
 
 internal class InntektTest {
-
     @Test
     fun `Extension function harAvvik`() {
         val avvik = KlassifisertInntektMåned(YearMonth.now(), listOf(), true)
@@ -53,19 +52,20 @@ internal class InntektTest {
 
     @Test
     fun `Mapping from Packet`() {
-        val inntekt = inntektFrom(
-            Packet().apply {
-                putValue(
-                    PacketKeys.INNTEKT,
-                    mapOf(
-                        Pair("inntektsId", "id"),
-                        Pair("inntektsListe", listOf<String>()),
-                        Pair("manueltRedigert", true),
-                        Pair("sisteAvsluttendeKalenderMåned", YearMonth.now().toString())
+        val inntekt =
+            inntektFrom(
+                Packet().apply {
+                    putValue(
+                        PacketKeys.INNTEKT,
+                        mapOf(
+                            Pair("inntektsId", "id"),
+                            Pair("inntektsListe", listOf<String>()),
+                            Pair("manueltRedigert", true),
+                            Pair("sisteAvsluttendeKalenderMåned", YearMonth.now().toString()),
+                        ),
                     )
-                )
-            }
-        )
+                },
+            )
 
         inntekt shouldNotBe null
         inntekt?.let {
