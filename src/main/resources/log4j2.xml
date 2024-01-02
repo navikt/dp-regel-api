@@ -10,6 +10,7 @@
                 <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
             <JsonTemplateLayout eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json" stackTraceEnabled="true"/>
+            <DefaultRolloverStrategy max="2" />
         </RollingFile>
     </Appenders>
     <Loggers>
