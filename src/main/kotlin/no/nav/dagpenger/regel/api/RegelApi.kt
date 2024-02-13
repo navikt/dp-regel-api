@@ -222,6 +222,7 @@ internal fun Application.api(
             route("/v1") {
                 subsumsjon(subsumsjonStore)
                 behov(subsumsjonStore, kafkaProducer)
+                lovverk(subsumsjonStore, kafkaProducer)
             }
         }
     }
