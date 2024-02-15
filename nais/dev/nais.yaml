@@ -42,7 +42,7 @@ spec:
           cluster: dev-fss
         - application: dp-proxy
           namespace: teamdagpenger
-          cluster: prod-fss
+          cluster: dev-fss
   gcp:
     sqlInstances:
       - collation: nb_NO.UTF8
