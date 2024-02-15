@@ -34,8 +34,7 @@ internal class KafkaSubsumsjonConsumerTest {
             every { this@apply.run(match { it.behovId.id == "01DSFHJA5MJWPW7TV0GGCSBC54" }) } just Runs
         }
         runTest(listOf(mock, mock), packet) {
-            // todo fix me
-            verify(exactly = 0) { mock.run(match { it.behovId.id == "01DSFHJA5MJWPW7TV0GGCSBC54" }) }
+            verify(exactly = 2) { mock.run(match { it.behovId.id == "01DSFHJA5MJWPW7TV0GGCSBC54" }) }
         }
     }
 

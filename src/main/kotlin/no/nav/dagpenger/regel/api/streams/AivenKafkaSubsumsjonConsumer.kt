@@ -74,7 +74,7 @@ internal class SubsumsjonPond(
     private val packetStrategies: List<SubsumsjonPacketStrategy>,
     topic: Topic<String, Packet>
 ) : Pond(topic) {
-    override val SERVICE_APP_ID: String = "dp-regel-api-sub-strategy-v1"
+    override val SERVICE_APP_ID: String = Configuration.id
 
     override fun filterPredicates(): List<Predicate<String, Packet>> =
         listOf(
