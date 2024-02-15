@@ -23,7 +23,7 @@ internal class AivenKafkaSubsumsjonConsumer(
     private val config: Configuration,
     private val subsumsjonPond: SubsumsjonPond
 ) : HealthCheck {
-    private val SERVICE_APP_ID = "dp-regel-api-sub-brukt-v1"
+    private val SERVICE_APP_ID = "dp-regel-api-sub-brukt"
 
     private val streams: KafkaStreams by lazy {
         KafkaStreams(subsumsjonPond.buildTopology(), this.getConfig()).apply {
