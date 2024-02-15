@@ -83,7 +83,7 @@ internal class SubsumsjonPond(
         )
 
     override fun onPacket(packet: Packet) {
-        sikkerlogg.info { "Mottok packet: ${packet.toJson()} Men gjør ingenting med den" }
-//        packetStrategies.forEach { it.run(packet) }
+        sikkerlogg.info { "Mottok packet: ${packet.toJson()}" }
+        packetStrategies.forEach { it.run(packet) }
     }
 }
