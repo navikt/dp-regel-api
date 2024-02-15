@@ -75,7 +75,7 @@ internal class SubsumsjonPond(
     config: Configuration,
     topic: Topic<String, Packet>
 ) : Pond(topic) {
-    override val SERVICE_APP_ID: String = config.application.id
+    override val SERVICE_APP_ID: String = "dp-regel-api-sub-strategy-v1"
 
     override fun filterPredicates(): List<Predicate<String, Packet>> =
         listOf(
