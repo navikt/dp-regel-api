@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.dagpenger.events.Problem
+import no.nav.dagpenger.regel.api.db.PostgresTestSetup.withMigratedDb
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.models.Kontekst
@@ -20,11 +21,11 @@ class PostgresBruktSubsumsjonStoreTest {
 
     @Test
     fun `successfully inserts BruktSubsumsjon`() {
-        withMigratedDb {
-            val subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+        withMigratedDb { dataSource ->
+            val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
             with(
                 PostgresBruktSubsumsjonStore(
-                    dataSource = DataSource.instance,
+                    dataSource = dataSource,
                     subsumsjonStore = subsumsjonStore
                 )
             ) {
@@ -36,11 +37,11 @@ class PostgresBruktSubsumsjonStoreTest {
 
     @Test
     fun `inserting intern subsumsjon brukt also works`() {
-        withMigratedDb {
-            with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
+        withMigratedDb { dataSource ->
+            with(PostgresBruktSubsumsjonStore(dataSource = dataSource)) {
                 val internSubsumsjonBrukt = InternSubsumsjonBrukt(
                     id = subsumsjon.behovId.id,
-                    behandlingsId = PostgresSubsumsjonStore(DataSource.instance).opprettKoblingTilRegelkontekst(
+                    behandlingsId = PostgresSubsumsjonStore(dataSource).opprettKoblingTilRegelkontekst(
                         eksternId
                     ).id,
                     arenaTs = exampleDate
@@ -55,11 +56,11 @@ class PostgresBruktSubsumsjonStoreTest {
 
     @Test
     fun `successfully fetches inserted BruktSubsumsjon`() {
-        withMigratedDb {
-            val subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+        withMigratedDb { dataSource ->
+            val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
             with(
                 PostgresBruktSubsumsjonStore(
-                    dataSource = DataSource.instance,
+                    dataSource = dataSource,
                     subsumsjonStore = subsumsjonStore
                 )
             ) {
@@ -79,11 +80,11 @@ class PostgresBruktSubsumsjonStoreTest {
 
     @Test
     fun `successfully fetches inserted BruktSubsumsjonV2`() {
-        withMigratedDb {
-            val subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+        withMigratedDb { dataSource ->
+            val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
             with(
                 PostgresBruktSubsumsjonStore(
-                    dataSource = DataSource.instance,
+                    dataSource = dataSource,
                     subsumsjonStore = subsumsjonStore
                 )
             ) {
@@ -99,11 +100,11 @@ class PostgresBruktSubsumsjonStoreTest {
 
     @Test
     fun `trying to insert duplicate ids keeps what's already in the db`() {
-        withMigratedDb {
-            val subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+        withMigratedDb { dataSource ->
+            val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
             with(
                 PostgresBruktSubsumsjonStore(
-                    dataSource = DataSource.instance,
+                    dataSource = dataSource,
                     subsumsjonStore = subsumsjonStore
                 )
             ) {
@@ -118,11 +119,11 @@ class PostgresBruktSubsumsjonStoreTest {
 
     @Test
     fun `trying to fetch subsumsjon to an non existing extern id should fail`() {
-        withMigratedDb {
-            val subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+        withMigratedDb { dataSource ->
+            val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
             with(
                 PostgresBruktSubsumsjonStore(
-                    dataSource = DataSource.instance,
+                    dataSource = dataSource,
                     subsumsjonStore = subsumsjonStore
                 )
             ) {

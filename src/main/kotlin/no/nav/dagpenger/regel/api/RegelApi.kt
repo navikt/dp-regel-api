@@ -27,19 +27,15 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import mu.KotlinLogging
-import no.nav.dagpenger.inntekt.ApiKeyCredential
 import no.nav.dagpenger.inntekt.ApiKeyVerifier
-import no.nav.dagpenger.inntekt.ApiPrincipal
-import no.nav.dagpenger.inntekt.apiKeyAuth
 import no.nav.dagpenger.regel.api.Vaktmester.Companion.LOGGER
 import no.nav.dagpenger.regel.api.auth.azureAdJWT
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
+import no.nav.dagpenger.regel.api.db.PostgresDataSourceBuilder
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
-import no.nav.dagpenger.regel.api.db.dataSourceFrom
-import no.nav.dagpenger.regel.api.db.migrate
 import no.nav.dagpenger.regel.api.models.IllegalUlidException
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.routing.behov
@@ -64,12 +60,10 @@ import kotlin.concurrent.fixedRateTimer
 private val MAINLOGGER = KotlinLogging.logger {}
 
 fun main() {
-    val config = Configuration()
-    migrate(config)
-    val dataSource = dataSourceFrom(config)
-    val subsumsjonStore = PostgresSubsumsjonStore(dataSource)
-    val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource)
-    val vaktmester = Vaktmester(dataSource = dataSource, subsumsjonStore = subsumsjonStore)
+    PostgresDataSourceBuilder.runMigration()
+    val subsumsjonStore = PostgresSubsumsjonStore(PostgresDataSourceBuilder.dataSource)
+    val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(PostgresDataSourceBuilder.dataSource)
+    val vaktmester = Vaktmester(dataSource = PostgresDataSourceBuilder.dataSource, subsumsjonStore = subsumsjonStore)
 
     fixedRateTimer(
         name = "vaktmester",
@@ -84,14 +78,14 @@ fun main() {
 
     val aivenKafkaConsumer =
         AivenKafkaSubsumsjonConsumer(
-            config,
-            SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), config, config.regelTopic)
+            Configuration,
+            SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), Configuration.regelTopic)
         ).also {
             it.start()
         }
 
     val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer(
-        config,
+        Configuration,
         BruktSubsumsjonStrategy(vaktmester = vaktmester, bruktSubsumsjonStore = bruktSubsumsjonStore)
     ).also {
         it.start()
@@ -99,18 +93,17 @@ fun main() {
 
     val kafkaProducer = KafkaDagpengerBehovProducer(
         producerConfig(
-            config.application.id,
-            config.kafka.aivenBrokers,
+            Configuration.id,
+            Configuration.aivenBrokers,
             KafkaAivenCredentials()
         ),
-        config.regelTopic
+        Configuration.regelTopic
     )
 
-    val app = embeddedServer(Netty, port = config.application.httpPort) {
+    val app = embeddedServer(Netty, port = Configuration.httpPort) {
         api(
             subsumsjonStore,
             kafkaProducer,
-            config.auth.authApiKeyVerifier,
             listOf(
                 subsumsjonStore as HealthCheck,
                 bruktSubsumsjonStore as HealthCheck,
@@ -118,7 +111,7 @@ fun main() {
                 kafkaProducer as HealthCheck,
                 bruktSubsumsjonConsumer as HealthCheck
             ),
-            config
+            Configuration
         )
     }.also {
         it.start(wait = false)
@@ -136,7 +129,6 @@ fun main() {
 internal fun Application.api(
     subsumsjonStore: SubsumsjonStore,
     kafkaProducer: DagpengerBehovProducer,
-    apiAuthApiKeyVerifier: AuthApiKeyVerifier,
     healthChecks: List<HealthCheck>,
     config: Configuration,
     prometheusMeterRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry,
@@ -144,21 +136,11 @@ internal fun Application.api(
     install(DefaultHeaders)
 
     install(Authentication) {
-        apiKeyAuth(name = "X-API-KEY") {
-            apiKeyName = "X-API-KEY"
-            validate { apikeyCredential: ApiKeyCredential ->
-                when {
-                    apiAuthApiKeyVerifier.verify(apikeyCredential.value) -> ApiPrincipal(apikeyCredential)
-                    else -> null
-                }
-            }
-        }
-
         jwt(name = "jwt") {
             azureAdJWT(
-                providerUrl = config.auth.azureAppWellKnownUrl,
-                realm = config.application.id,
-                clientId = config.auth.azureAppClientId
+                providerUrl = config.azureAppWellKnownUrl,
+                realm = config.id,
+                clientId = config.azureAppClientId
             )
         }
     }
@@ -212,7 +194,7 @@ internal fun Application.api(
         naischecks(healthChecks)
         metrics()
 
-        authenticate("X-API-KEY", "jwt") {
+        authenticate("jwt") {
             subsumsjon(subsumsjonStore)
             lovverk(subsumsjonStore, kafkaProducer)
             behov(subsumsjonStore, kafkaProducer)

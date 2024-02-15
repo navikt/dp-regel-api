@@ -60,7 +60,7 @@ internal class KafkaSubsumsjonBruktConsumer(
 
     private fun getConfig() = streamConfigAiven(
         appId = SERVICE_APP_ID,
-        bootStapServerUrl = config.kafka.aivenBrokers,
+        bootStapServerUrl = config.aivenBrokers,
         aivenCredentials = KafkaAivenCredentials()
     )
 

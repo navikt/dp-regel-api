@@ -26,6 +26,7 @@ import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import no.nav.dagpenger.regel.api.routing.TestApplication.handleAuthenticatedAzureAdRequest
 import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import org.apache.kafka.clients.producer.RecordMetadata
@@ -59,21 +60,21 @@ class BehovRouteTest {
                 subsumsjonStore = storeMock,
             ),
         ) {
-            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG6P7969DP56BPW2EDS1RN")
+            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/behov/status/01DSFG6P7969DP56BPW2EDS1RN")
                 .apply {
                     response.status() shouldBe HttpStatusCode.OK
                     response.content shouldNotBe null
                     response.content shouldBe """{"status":"PENDING"}"""
                 }
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG798QNFAWXNFGZF0J2APX")
+            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/behov/status/01DSFG798QNFAWXNFGZF0J2APX")
                 .apply {
                     response.status() shouldBe HttpStatusCode.SeeOther
                     response.headers[HttpHeaders.Location] shouldNotBe null
                     response.headers[HttpHeaders.Location] shouldBe "/subsumsjon/01DSFGCKM9TEZ94X872C7H4QB4"
                 }
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/behov/status/01DSFG7JVZVVD2ZK7K7HG9SNVG").apply {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/behov/status/01DSFG7JVZVVD2ZK7K7HG9SNVG").apply {
                 response.status() shouldBe HttpStatusCode.NotFound
             }
         }
@@ -100,7 +101,7 @@ class BehovRouteTest {
                 kafkaMock,
             ),
         ) {
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 //language=JSON
                 setBody(
@@ -163,7 +164,7 @@ class BehovRouteTest {
                 kafkaMock,
             ),
         ) {
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
@@ -219,7 +220,7 @@ class BehovRouteTest {
                 kafkaMock,
             ),
         ) {
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
@@ -280,7 +281,7 @@ class BehovRouteTest {
                 kafkaMock,
             ),
         ) {
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
@@ -344,7 +345,7 @@ class BehovRouteTest {
                 kafkaMock,
             ),
         ) {
-            handleAuthenticatedRequest(HttpMethod.Post, "/behov") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "/behov") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """

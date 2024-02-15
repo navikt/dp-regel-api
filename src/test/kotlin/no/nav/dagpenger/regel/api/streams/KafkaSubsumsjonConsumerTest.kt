@@ -59,8 +59,8 @@ internal class KafkaSubsumsjonConsumerTest {
         }
 
         fun runTest(strategies: List<SubsumsjonPacketStrategy>, packet: Packet, testBlock: () -> Unit) {
-            val configuration = Configuration()
-            SubsumsjonPond(strategies, configuration, configuration.regelTopic).let {
+            val configuration = Configuration
+            SubsumsjonPond(strategies, configuration.regelTopic).let {
                 TopologyTestDriver(it.buildTopology(), config).use { topologyTestDriver ->
                     val input = topologyTestDriver.createInputTopic(
                         configuration.regelTopic.name,

@@ -86,8 +86,6 @@ dependencies {
 
     implementation(Ulid.ulid)
 
-    implementation("no.finn.unleash:unleash-client-java:3.2.9")
-
     implementation(Database.Flyway)
     implementation(Database.HikariCP)
     implementation(Database.Postgres)

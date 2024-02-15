@@ -53,7 +53,7 @@ internal class AivenKafkaSubsumsjonConsumer(
 
     private fun getConfig() = streamConfigAiven(
         appId = SERVICE_APP_ID,
-        bootStapServerUrl = config.kafka.aivenBrokers,
+        bootStapServerUrl = config.aivenBrokers,
         aivenCredentials = KafkaAivenCredentials()
     )
 
@@ -72,7 +72,6 @@ internal class AivenKafkaSubsumsjonConsumer(
 
 internal class SubsumsjonPond(
     private val packetStrategies: List<SubsumsjonPacketStrategy>,
-    config: Configuration,
     topic: Topic<String, Packet>
 ) : Pond(topic) {
     override val SERVICE_APP_ID: String = "dp-regel-api-sub-strategy-v1"

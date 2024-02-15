@@ -67,7 +67,7 @@ class KafkaSubsumsjonBruktConsumerTest {
         val vaktmester = mockk<Vaktmester>(relaxed = true).apply {
             every { this@apply.markerSomBrukt(capture(markertSomBrukt)) } just Runs
         }
-        val config = Configuration()
+        val config = Configuration
 
         val subsumsjonBruktConsumer =
             KafkaSubsumsjonBruktConsumer(config, BruktSubsumsjonStrategy(vaktmester, storeMock))
@@ -129,7 +129,7 @@ class KafkaSubsumsjonBruktConsumerTest {
         val vaktmester = mockk<Vaktmester>(relaxed = true).apply {
             every { this@apply.markerSomBrukt(capture(markertSomBrukt)) } just Runs
         }
-        val config = Configuration()
+        val config = Configuration
 
         val subsumsjonBruktConsumer =
             KafkaSubsumsjonBruktConsumer(config, BruktSubsumsjonStrategy(vaktmester, storeMock))
@@ -191,7 +191,7 @@ class KafkaSubsumsjonBruktConsumerTest {
         val vaktmester = mockk<Vaktmester>(relaxed = true).apply {
             every { this@apply.markerSomBrukt(capture(markertSomBrukt)) } just Runs
         }
-        val config = Configuration()
+        val config = Configuration
 
         val subsumsjonBruktConsumer =
             KafkaSubsumsjonBruktConsumer(config, BruktSubsumsjonStrategy(vaktmester, storeMock))
@@ -230,7 +230,7 @@ class KafkaSubsumsjonBruktConsumerTest {
     fun `skal filtrere ut avsluttede og avbrutte vedtak`() {
         val now = ZonedDateTime.now()
 
-        val config = Configuration()
+        val config = Configuration
 
         val bruktSubsumsjonStrategy = mockk<BruktSubsumsjonStrategy>(relaxed = true)
 
@@ -284,7 +284,7 @@ class KafkaSubsumsjonBruktConsumerTest {
             every { this@apply.eksternTilInternSubsumsjon(any()) } throws SubsumsjonBruktNotFoundException("fant ikke")
         }
 
-        val config = Configuration()
+        val config = Configuration
 
         val subsumsjonBruktConsumer =
             KafkaSubsumsjonBruktConsumer(config, BruktSubsumsjonStrategy(mockk(relaxed = true), storeMock))

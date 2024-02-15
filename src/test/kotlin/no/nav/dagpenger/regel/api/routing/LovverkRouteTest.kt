@@ -19,6 +19,7 @@ import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import no.nav.dagpenger.regel.api.routing.TestApplication.handleAuthenticatedAzureAdRequest
 import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import org.junit.jupiter.api.Test
@@ -119,7 +120,7 @@ class LovverkRouteTest {
                 kafkaDagpengerBehovProducer = behovProducer
             )
         ) {
-            handleAuthenticatedRequest(HttpMethod.Post, "/lovverk/vurdering/minsteinntekt") {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "/lovverk/vurdering/minsteinntekt") {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(jsonRequestBody)
             }

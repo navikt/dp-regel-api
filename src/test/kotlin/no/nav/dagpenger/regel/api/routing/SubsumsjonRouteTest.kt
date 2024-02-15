@@ -19,6 +19,7 @@ import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
+import no.nav.dagpenger.regel.api.routing.TestApplication.handleAuthenticatedAzureAdRequest
 import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -56,7 +57,7 @@ internal class SubsumsjonRouteTest {
             )
         ) {
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/01DSFGFVF3C1D1QQR69C7BRJT5")
+            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/subsumsjon/01DSFGFVF3C1D1QQR69C7BRJT5")
                 .apply {
                     response.status() shouldBe HttpStatusCode.OK
                     response.content shouldNotBe null
@@ -94,7 +95,7 @@ internal class SubsumsjonRouteTest {
             )
         ) {
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/result/$id")
+            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/subsumsjon/result/$id")
                 .apply {
                     response.status() shouldBe HttpStatusCode.OK
                     response.content shouldNotBe null
@@ -121,7 +122,7 @@ internal class SubsumsjonRouteTest {
             )
         ) {
 
-            handleAuthenticatedRequest(HttpMethod.Get, "/subsumsjon/01DSFGJBRYVBX2CNJKHJ0BB2W9").apply {
+            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/subsumsjon/01DSFGJBRYVBX2CNJKHJ0BB2W9").apply {
                 response.status() shouldBe HttpStatusCode.NotFound
             }
         }

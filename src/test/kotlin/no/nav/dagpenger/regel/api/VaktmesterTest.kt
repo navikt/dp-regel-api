@@ -9,13 +9,12 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
-import no.nav.dagpenger.regel.api.db.DataSource
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.JsonAdapter
 import no.nav.dagpenger.regel.api.db.PostgresBruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
+import no.nav.dagpenger.regel.api.db.PostgresTestSetup.withMigratedDb
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
-import no.nav.dagpenger.regel.api.db.withMigratedDb
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
@@ -51,9 +50,9 @@ internal class VaktmesterTest {
 
     @Test
     fun `Skal markere subsumsjoner som brukt`() {
-        withMigratedDb {
-            val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
-            val subsumsjonStore = PostgresSubsumsjonStore(dataSource = DataSource.instance)
+        withMigratedDb { dataSource ->
+            val bruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource = dataSource)
+            val subsumsjonStore = PostgresSubsumsjonStore(dataSource = dataSource)
             val internBehov = subsumsjonStore.opprettBehov(behov)
             subsumsjonStore.insertSubsumsjon(bruktSubsumsjon.copy(behovId = internBehov.behovId))
             val marker = bruktSubsumsjonStore.eksternTilInternSubsumsjon(
@@ -64,9 +63,9 @@ internal class VaktmesterTest {
                     ts = ZonedDateTime.now().toEpochSecond()
                 )
             )
-            val vaktmester = Vaktmester(dataSource = DataSource.instance)
+            val vaktmester = Vaktmester(dataSource = dataSource)
             vaktmester.markerSomBrukt(marker)
-            using(sessionOf(DataSource.instance)) { session ->
+            using(sessionOf(dataSource)) { session ->
                 val brukteSubsumsjoner = session.run(
                     queryOf(
                         "SELECT * FROM v2_subsumsjon WHERE brukt = true",
@@ -82,15 +81,15 @@ internal class VaktmesterTest {
     @Test
     fun `Skal ikke slette brukte subsumsjoner`() {
 
-        withMigratedDb {
-            val vaktmester = Vaktmester(dataSource = DataSource.instance)
-            val internBehov = with(PostgresSubsumsjonStore(DataSource.instance)) {
+        withMigratedDb { dataSource ->
+            val vaktmester = Vaktmester(dataSource = dataSource)
+            val internBehov = with(PostgresSubsumsjonStore(dataSource)) {
                 val internBehov = opprettBehov(behov)
                 insertSubsumsjon(bruktSubsumsjon.copy(behovId = internBehov.behovId))
                 return@with internBehov
             }
             with(
-                PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
+                PostgresBruktSubsumsjonStore(dataSource = dataSource)
             ) {
                 val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
@@ -107,7 +106,7 @@ internal class VaktmesterTest {
 
             vaktmester.rydd()
 
-            with(PostgresSubsumsjonStore(DataSource.instance)) {
+            with(PostgresSubsumsjonStore(dataSource)) {
                 getBehov((internBehov.behovId)) shouldNotBe null
                 getSubsumsjon((internBehov.behovId)) shouldNotBe null
             }
@@ -116,8 +115,8 @@ internal class VaktmesterTest {
 
     @Test
     fun `Skal slette ubrukte subsumsjoner eldre enn 6 måneder`() {
-        withMigratedDb {
-            val (ubruktInternBehov, bruktInternBehov) = with(PostgresSubsumsjonStore(DataSource.instance)) {
+        withMigratedDb { dataSource ->
+            val (ubruktInternBehov, bruktInternBehov) = with(PostgresSubsumsjonStore(dataSource)) {
                 val ubruktInternBehov = opprettBehov(behov)
                 val bruktInternBehov = opprettBehov(behov)
 
@@ -132,10 +131,10 @@ internal class VaktmesterTest {
                 return@with (ubruktInternBehov to bruktInternBehov)
             }
             val vaktmester = Vaktmester(
-                dataSource = DataSource.instance,
-                subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+                dataSource = dataSource,
+                subsumsjonStore = PostgresSubsumsjonStore(dataSource)
             )
-            with(PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)) {
+            with(PostgresBruktSubsumsjonStore(dataSource = dataSource)) {
                 val bruktSub = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
                         id = minsteinntektSubsumsjonId,
@@ -150,7 +149,7 @@ internal class VaktmesterTest {
             }
             vaktmester.rydd()
 
-            with(PostgresSubsumsjonStore(DataSource.instance)) {
+            with(PostgresSubsumsjonStore(dataSource)) {
                 assertThrows<BehovNotFoundException> { getBehov((ubruktInternBehov.behovId)) }
                 getBehov((bruktInternBehov.behovId)) shouldNotBe null
 
@@ -163,12 +162,12 @@ internal class VaktmesterTest {
     @Test
     fun `Skal ikke slette ubrukte subsumsjoner yngre enn 3 måneder`() {
 
-        withMigratedDb {
+        withMigratedDb { dataSource ->
             val vaktmester = Vaktmester(
-                dataSource = DataSource.instance,
-                subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+                dataSource = dataSource,
+                subsumsjonStore = PostgresSubsumsjonStore(dataSource)
             )
-            val (ubruktInternBehov, bruktInternBehov) = with(PostgresSubsumsjonStore(DataSource.instance)) {
+            val (ubruktInternBehov, bruktInternBehov) = with(PostgresSubsumsjonStore(dataSource)) {
                 val ubruktInternBehov = opprettBehov(behov)
                 val bruktInternBehov = opprettBehov(behov)
 
@@ -177,7 +176,7 @@ internal class VaktmesterTest {
                 return@with (ubruktInternBehov to bruktInternBehov)
             }
             with(
-                PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
+                PostgresBruktSubsumsjonStore(dataSource = dataSource)
             ) {
                 val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                     EksternSubsumsjonBrukt(
@@ -193,7 +192,7 @@ internal class VaktmesterTest {
             }
             vaktmester.rydd()
 
-            with(PostgresSubsumsjonStore(DataSource.instance)) {
+            with(PostgresSubsumsjonStore(dataSource)) {
                 getBehov(ubruktInternBehov.behovId) shouldNotBe null
                 getBehov(bruktInternBehov.behovId) shouldNotBe null
                 getSubsumsjon(ubruktInternBehov.behovId) shouldNotBe null
@@ -204,13 +203,13 @@ internal class VaktmesterTest {
 
     @Test
     fun `markerer allerede eksisterende brukte subsumsjoner`() {
-        withMigratedDb {
+        withMigratedDb { dataSource ->
             runBlocking {
                 val vaktmester = Vaktmester(
-                    dataSource = DataSource.instance,
-                    subsumsjonStore = PostgresSubsumsjonStore(DataSource.instance)
+                    dataSource = dataSource,
+                    subsumsjonStore = PostgresSubsumsjonStore(dataSource)
                 )
-                with(PostgresSubsumsjonStore(DataSource.instance)) {
+                with(PostgresSubsumsjonStore(dataSource)) {
                     val ubruktInternBehov = opprettBehov(behov)
                     val bruktInternBehov = opprettBehov(behov)
 
@@ -218,7 +217,7 @@ internal class VaktmesterTest {
                     insertSubsumsjon(bruktSubsumsjon.copy(behovId = bruktInternBehov.behovId))
                 }
                 with(
-                    PostgresBruktSubsumsjonStore(dataSource = DataSource.instance)
+                    PostgresBruktSubsumsjonStore(dataSource = dataSource)
                 ) {
                     val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
                         EksternSubsumsjonBrukt(
@@ -232,7 +231,7 @@ internal class VaktmesterTest {
                     insertSubsumsjonBrukt(subsumsjonBruktV2)
                 }
                 vaktmester.markerBrukteSubsumsjoner()
-                using(sessionOf(DataSource.instance)) { session ->
+                using(sessionOf(dataSource)) { session ->
                     val brukteSubsumsjoner = session.run(
                         queryOf(
                             "SELECT * FROM v2_subsumsjon WHERE brukt = true",
