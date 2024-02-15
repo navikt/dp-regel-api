@@ -80,14 +80,14 @@ fun main() {
             Configuration,
             SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), Configuration.regelTopic)
         ).also {
-//            it.start()
+            it.start()
         }
 
     val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer(
         Configuration,
         BruktSubsumsjonStrategy(vaktmester = vaktmester, bruktSubsumsjonStore = bruktSubsumsjonStore)
     ).also {
-//        it.start()
+        it.start()
     }
 
     val kafkaProducer = KafkaDagpengerBehovProducer(
