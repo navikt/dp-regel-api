@@ -27,7 +27,6 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 import mu.KotlinLogging
-import no.nav.dagpenger.inntekt.ApiKeyVerifier
 import no.nav.dagpenger.regel.api.Vaktmester.Companion.LOGGER
 import no.nav.dagpenger.regel.api.auth.azureAdJWT
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
@@ -207,11 +206,5 @@ internal fun Application.api(
                 lovverk(subsumsjonStore, kafkaProducer)
             }
         }
-    }
-}
-
-internal data class AuthApiKeyVerifier(private val apiKeyVerifier: ApiKeyVerifier, private val clients: List<String>) {
-    fun verify(payload: String): Boolean {
-        return clients.map { apiKeyVerifier.verify(payload, it) }.firstOrNull { it } ?: false
     }
 }

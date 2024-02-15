@@ -91,16 +91,10 @@ dependencies {
     implementation(Database.Postgres)
     implementation(Database.Kotlinquery)
     implementation(Konfig.konfig)
-    implementation(Database.VaultJdbc) {
-        exclude(module = "slf4j-simple")
-        exclude(module = "slf4j-api")
-    }
 
     implementation(Prometheus.common)
     implementation(Prometheus.hotspot)
     implementation(Prometheus.log4j2)
-
-    runtimeOnly(Vault.javaDriver)
 
     testImplementation(kotlin("test"))
     testImplementation(Ktor2.Server.library("test-host"))
