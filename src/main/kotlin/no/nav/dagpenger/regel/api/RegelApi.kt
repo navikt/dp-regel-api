@@ -212,7 +212,7 @@ internal fun Application.api(
         naischecks(healthChecks)
         metrics()
 
-        authenticate("X-API-KEY") {
+        authenticate("X-API-KEY", "jwt") {
             subsumsjon(subsumsjonStore)
             lovverk(subsumsjonStore, kafkaProducer)
             behov(subsumsjonStore, kafkaProducer)
