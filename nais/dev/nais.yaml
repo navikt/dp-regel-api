@@ -27,10 +27,8 @@ spec:
   kafka:
     pool: nav-dev
   ingresses:
-    - "https://dp-regel-api.nais.preprod.local"
+    - https://dp-regel-api.intern.dev.nav.no
   secureLogs:
-    enabled: true
-  vault:
     enabled: true
   azure:
     application:
@@ -38,14 +36,30 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        - application: dp-kalkulator-api
-          namespace: teamdagpenger
-          cluster: dev-gcp
         - application: dp-mottak
-          namespace: teamdagpenger
-          cluster: dev-gcp
         - application: dp-regel-api-arena-adapter
+          namespace: teamdagpenger
+          cluster: dev-fss
         - application: dp-proxy
-
-  # required for on-premises only
-  webproxy: true
+          namespace: teamdagpenger
+          cluster: prod-fss
+  gcp:
+    sqlInstances:
+      - collation: nb_NO.UTF8
+        databases:
+          - envVarPrefix: DB
+            name: regel
+        diskAutoresize: true
+        diskType: SSD
+        highAvailability: false
+        insights:
+          enabled: true
+          queryStringLength: 4500
+          recordApplicationTags: true
+          recordClientAddress: true
+        maintenance:
+          day: 1
+          hour: 4
+        pointInTimeRecovery: false
+        tier:	db-custom-1-3840
+        type: POSTGRES_15
