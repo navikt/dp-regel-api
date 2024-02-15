@@ -25,8 +25,8 @@ private val defaultProperties = ConfigurationMap(
 internal object Configuration {
     val config: Configuration = systemProperties() overriding EnvironmentVariables overriding defaultProperties
 
-    val azureAppClientId: String = config[Key("azure.app.client.id", stringType)]
-    val azureAppWellKnownUrl: String = config[Key("azure.app.well.known.url", stringType)]
+    val azureAppClientId: String by lazy { config[Key("azure.app.client.id", stringType)] }
+    val azureAppWellKnownUrl: String by lazy { config[Key("azure.app.well.known.url", stringType)] }
 
     val aivenBrokers: String = config[Key("KAFKA_BROKERS", stringType)]
     val subsumsjonBruktTopic: String = "teamdagpenger.subsumsjonbrukt.v1"
