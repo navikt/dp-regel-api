@@ -11,7 +11,7 @@ import no.nav.dagpenger.regel.api.models.SubsumsjonId
 
 internal class BruktSubsumsjonStrategy(
     private val vaktmester: Vaktmester,
-    private val bruktSubsumsjonStore: BruktSubsumsjonStore
+    private val bruktSubsumsjonStore: BruktSubsumsjonStore,
 ) {
     private val logger = KotlinLogging.logger { }
 

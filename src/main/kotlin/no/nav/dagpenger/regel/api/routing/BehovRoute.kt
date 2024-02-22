@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:max-line-length")
+
 package no.nav.dagpenger.regel.api.routing
 
 import io.ktor.http.HttpHeaders
@@ -27,7 +29,10 @@ import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
-internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
+internal fun Route.behov(
+    store: SubsumsjonStore,
+    producer: DagpengerBehovProducer,
+) {
     route("/behov") {
         post {
             withContext(IO) {
@@ -39,7 +44,9 @@ internal fun Route.behov(store: SubsumsjonStore, producer: DagpengerBehovProduce
                             call.response.header(HttpHeaders.Location, "${call.request.path()}/status/${it.behovId.id}")
                             call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
                         }.also {
-                            logger.info("Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.")
+                            logger.info(
+                                "Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.",
+                            )
                         }
                     }
                 }.getOrElse {
@@ -86,7 +93,7 @@ internal fun mapRequestToBehov(request: BehovRequest): Behov {
         antallBarn = request.antallBarn ?: 0,
         inntektsId = request.inntektsId,
         lærling = request.lærling,
-        regelverksdato = request.regelverksdato
+        regelverksdato = request.regelverksdato,
     )
 }
 
@@ -102,7 +109,7 @@ internal data class BehovRequest(
     val antallBarn: Int?,
     val inntektsId: String? = null,
     val lærling: Boolean?,
-    val regelverksdato: LocalDate? = null
+    val regelverksdato: LocalDate? = null,
 ) {
     data class RegelKontekst(val id: String? = null, val type: Kontekst)
 }

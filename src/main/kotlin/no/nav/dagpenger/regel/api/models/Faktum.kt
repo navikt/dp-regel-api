@@ -17,17 +17,18 @@ data class Faktum(
     val forrigeGrunnlag: Int? = null,
     val lærling: Boolean? = null,
     val bruktInntektsPeriode: InntektsPeriode? = null,
-    val regelverksdato: LocalDate? = null
+    val regelverksdato: LocalDate? = null,
 ) {
     companion object Mapper {
         fun faktumFrom(packet: Packet): Faktum {
             val inntekt = inntektFrom(packet)
             return Faktum(
                 aktorId = packet.getStringValue(PacketKeys.AKTØR_ID),
-                regelkontekst = RegelKontekst(
-                    packet.getStringValue(PacketKeys.KONTEKST_ID),
-                    Kontekst.valueOf(packet.getStringValue(PacketKeys.KONTEKST_TYPE))
-                ),
+                regelkontekst =
+                    RegelKontekst(
+                        packet.getStringValue(PacketKeys.KONTEKST_ID),
+                        Kontekst.valueOf(packet.getStringValue(PacketKeys.KONTEKST_TYPE)),
+                    ),
                 beregningsdato = packet.getLocalDate(PacketKeys.BEREGNINGS_DATO),
                 inntektsId = inntekt?.inntektsId,
                 inntektAvvik = inntekt?.harAvvik(),
@@ -39,7 +40,7 @@ data class Faktum(
                 forrigeGrunnlag = packet.getNullableIntValue(PacketKeys.FORRIGE_GRUNNLAG),
                 lærling = packet.getNullableBoolean(PacketKeys.LÆRLING),
                 bruktInntektsPeriode = InntektsPeriode.fromPacket(packet),
-                regelverksdato = packet.getNullableLocalDate(PacketKeys.REGELVERKSDATO)
+                regelverksdato = packet.getNullableLocalDate(PacketKeys.REGELVERKSDATO),
             )
         }
     }

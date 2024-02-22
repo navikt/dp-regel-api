@@ -37,10 +37,9 @@ import java.time.ZonedDateTime
 import java.util.concurrent.Future
 
 class BehovRouteTest {
-
     @Test
     fun `401 on unauthorized requests`() {
-        withMockAuthServerAndTestApplication(MockApi()) {
+        withMockAuthServerAndTestApplication(mockApi()) {
             handleRequest(HttpMethod.Get, "/behov/status/id").response.status() shouldBe HttpStatusCode.Unauthorized
             handleRequest(HttpMethod.Post, "/behov").response.status() shouldBe HttpStatusCode.Unauthorized
             handleRequest(HttpMethod.Post, "/behov") { addHeader("X-API-KEY", "notvalid") }
@@ -56,7 +55,7 @@ class BehovRouteTest {
         every { storeMock.behovStatus(BehovId("01DSFG7JVZVVD2ZK7K7HG9SNVG")) } throws BehovNotFoundException("not found")
 
         withMockAuthServerAndTestApplication(
-            MockApi(
+            mockApi(
                 subsumsjonStore = storeMock,
             ),
         ) {
@@ -91,12 +90,13 @@ class BehovRouteTest {
         val subsumsjonStoreMock: SubsumsjonStore = mockedSubsumsjonStore()
 
         val produceSlot = slot<InternBehov>()
-        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
-            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
-        }
+        val kafkaMock =
+            mockk<DagpengerBehovProducer>(relaxed = true).apply {
+                every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+            }
 
         withMockAuthServerAndTestApplication(
-            MockApi(
+            mockApi(
                 subsumsjonStoreMock,
                 kafkaMock,
             ),
@@ -106,17 +106,17 @@ class BehovRouteTest {
                 //language=JSON
                 setBody(
                     """
-            {
-                "aktorId": "1234",
-                "regelkontekst": {"id": "1", "type": "vedtak"},
-                "beregningsdato": "2019-01-08",
-                "manueltGrunnlag": 54200,
-                "harAvtjentVerneplikt": true,
-                "oppfyllerKravTilFangstOgFisk": true,
-                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
-                "antallBarn": 1,
-                "lærling": false
-            }
+                    {
+                        "aktorId": "1234",
+                        "regelkontekst": {"id": "1", "type": "vedtak"},
+                        "beregningsdato": "2019-01-08",
+                        "manueltGrunnlag": 54200,
+                        "harAvtjentVerneplikt": true,
+                        "oppfyllerKravTilFangstOgFisk": true,
+                        "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
+                        "antallBarn": 1,
+                        "lærling": false
+                    }
                     """.trimIndent(),
                 )
             }.apply {
@@ -154,12 +154,13 @@ class BehovRouteTest {
         val subsumsjonStoreMock: SubsumsjonStore = mockedSubsumsjonStore()
 
         val produceSlot = slot<InternBehov>()
-        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
-            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
-        }
+        val kafkaMock =
+            mockk<DagpengerBehovProducer>(relaxed = true).apply {
+                every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+            }
 
         withMockAuthServerAndTestApplication(
-            MockApi(
+            mockApi(
                 subsumsjonStoreMock,
                 kafkaMock,
             ),
@@ -168,16 +169,16 @@ class BehovRouteTest {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
-            {
-                "regelkontekst" : { "type" : "vedtak"},
-                "aktorId": "1234",
-                "beregningsdato": "2019-01-08",
-                "manueltGrunnlag": 54200,
-                "harAvtjentVerneplikt": true,
-                "oppfyllerKravTilFangstOgFisk": true,
-                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
-                "antallBarn": 1
-            }
+                    {
+                        "regelkontekst" : { "type" : "vedtak"},
+                        "aktorId": "1234",
+                        "beregningsdato": "2019-01-08",
+                        "manueltGrunnlag": 54200,
+                        "harAvtjentVerneplikt": true,
+                        "oppfyllerKravTilFangstOgFisk": true,
+                        "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
+                        "antallBarn": 1
+                    }
                     """.trimIndent(),
                 )
             }.apply {
@@ -210,12 +211,13 @@ class BehovRouteTest {
         val subsumsjonStoreMock: SubsumsjonStore = mockedSubsumsjonStore()
 
         val produceSlot = slot<InternBehov>()
-        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
-            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
-        }
+        val kafkaMock =
+            mockk<DagpengerBehovProducer>(relaxed = true).apply {
+                every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+            }
 
         withMockAuthServerAndTestApplication(
-            MockApi(
+            mockApi(
                 subsumsjonStoreMock,
                 kafkaMock,
             ),
@@ -224,16 +226,16 @@ class BehovRouteTest {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
-            {
-                "regelkontekst" : { "type" : "vedtak", "id" : "45678" },
-                "aktorId": "1234",
-                "beregningsdato": "2019-01-08",
-                "manueltGrunnlag": 54200,
-                "harAvtjentVerneplikt": true,
-                "oppfyllerKravTilFangstOgFisk": true,
-                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
-                "antallBarn": 1
-            }
+                    {
+                        "regelkontekst" : { "type" : "vedtak", "id" : "45678" },
+                        "aktorId": "1234",
+                        "beregningsdato": "2019-01-08",
+                        "manueltGrunnlag": 54200,
+                        "harAvtjentVerneplikt": true,
+                        "oppfyllerKravTilFangstOgFisk": true,
+                        "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
+                        "antallBarn": 1
+                    }
                     """.trimIndent(),
                 )
             }.apply {
@@ -271,12 +273,13 @@ class BehovRouteTest {
         val subsumsjonStoreMock: SubsumsjonStore = mockedSubsumsjonStore()
 
         val produceSlot = slot<InternBehov>()
-        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
-            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
-        }
+        val kafkaMock =
+            mockk<DagpengerBehovProducer>(relaxed = true).apply {
+                every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+            }
 
         withMockAuthServerAndTestApplication(
-            MockApi(
+            mockApi(
                 subsumsjonStoreMock,
                 kafkaMock,
             ),
@@ -285,18 +288,18 @@ class BehovRouteTest {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
-            {
-                "regelkontekst" : { "type" : "vedtak", "id" : "45678" },
-                "aktorId": "1234",
-                "vedtakId": 1,
-                "beregningsdato": "2019-01-08",
-                "manueltGrunnlag": 54200,
-                "harAvtjentVerneplikt": true,
-                "oppfyllerKravTilFangstOgFisk": true,
-                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
-                "antallBarn": 1,
-                "regelverksdato": "2020-02-09"
-            }
+                    {
+                        "regelkontekst" : { "type" : "vedtak", "id" : "45678" },
+                        "aktorId": "1234",
+                        "vedtakId": 1,
+                        "beregningsdato": "2019-01-08",
+                        "manueltGrunnlag": 54200,
+                        "harAvtjentVerneplikt": true,
+                        "oppfyllerKravTilFangstOgFisk": true,
+                        "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
+                        "antallBarn": 1,
+                        "regelverksdato": "2020-02-09"
+                    }
                     """.trimIndent(),
                 )
             }.apply {
@@ -335,12 +338,13 @@ class BehovRouteTest {
         val subsumsjonStoreMock: SubsumsjonStore = mockedSubsumsjonStore()
 
         val produceSlot = slot<InternBehov>()
-        val kafkaMock = mockk<DagpengerBehovProducer>(relaxed = true).apply {
-            every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
-        }
+        val kafkaMock =
+            mockk<DagpengerBehovProducer>(relaxed = true).apply {
+                every { this@apply.produceEvent(behov = capture(produceSlot)) } returns mockk<Future<RecordMetadata>>()
+            }
 
         withMockAuthServerAndTestApplication(
-            MockApi(
+            mockApi(
                 subsumsjonStoreMock,
                 kafkaMock,
             ),
@@ -349,18 +353,18 @@ class BehovRouteTest {
                 addHeader(HttpHeaders.ContentType, "application/json")
                 setBody(
                     """
-            {
-                "regelkontekst" : { "type" : "vedtak", "id" : "45678" },
-                "aktorId": "1234",
-                "vedtakId": 1,
-                "beregningsdato": "2019-01-08",
-                "forrigeGrunnlag": 32200,
-                "harAvtjentVerneplikt": true,
-                "oppfyllerKravTilFangstOgFisk": true,
-                "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
-                "antallBarn": 1,
-                "regelverksdato": "2020-02-09"
-            }
+                    {
+                        "regelkontekst" : { "type" : "vedtak", "id" : "45678" },
+                        "aktorId": "1234",
+                        "vedtakId": 1,
+                        "beregningsdato": "2019-01-08",
+                        "forrigeGrunnlag": 32200,
+                        "harAvtjentVerneplikt": true,
+                        "oppfyllerKravTilFangstOgFisk": true,
+                        "bruktInntektsPeriode":{"førsteMåned":"2011-07","sisteMåned":"2011-07"},
+                        "antallBarn": 1,
+                        "regelverksdato": "2020-02-09"
+                    }
                     """.trimIndent(),
                 )
             }.apply {
@@ -396,7 +400,10 @@ class BehovRouteTest {
 
     private fun mockedSubsumsjonStore(): SubsumsjonStore {
         return object : SubsumsjonStore {
-            override fun insertSubsumsjon(subsumsjon: Subsumsjon, created: ZonedDateTime): Int {
+            override fun insertSubsumsjon(
+                subsumsjon: Subsumsjon,
+                created: ZonedDateTime,
+            ): Int {
                 TODO("not implemented")
             }
 

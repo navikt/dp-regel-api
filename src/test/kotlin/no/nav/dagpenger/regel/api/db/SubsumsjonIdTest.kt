@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 
 internal class SubsumsjonIdTest {
-
     @Test
     fun `Subsumsjon id should be in ULID format`() {
         val id = ULID().nextULID()

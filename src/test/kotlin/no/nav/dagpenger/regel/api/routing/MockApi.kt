@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:function-naming")
+
 package no.nav.dagpenger.regel.api.routing
 
 import io.ktor.server.application.Application
@@ -9,18 +11,17 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 
-internal fun MockApi(
+internal fun mockApi(
     subsumsjonStore: SubsumsjonStore = mockk(),
     kafkaDagpengerBehovProducer: DagpengerBehovProducer = mockk(),
     healthChecks: List<HealthCheck> = mockk(),
-): Application.() -> Unit {
-    return fun Application.() {
+): Application.() -> Unit =
+    fun Application.() {
         api(
             subsumsjonStore = subsumsjonStore,
             kafkaProducer = kafkaDagpengerBehovProducer,
             healthChecks = healthChecks,
             config = Configuration,
-            prometheusMeterRegistry = CollectorRegistry(true)
+            prometheusMeterRegistry = CollectorRegistry(true),
         )
     }
-}

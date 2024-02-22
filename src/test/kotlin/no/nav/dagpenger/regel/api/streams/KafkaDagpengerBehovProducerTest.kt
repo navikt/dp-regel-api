@@ -24,16 +24,24 @@ private object Kafka {
 }
 
 internal class KafkaDagpengerBehovProducerTest {
-
     @Test
     fun `Produce packet should success`() {
-        KafkaDagpengerBehovProducer(producerConfig("APP", Kafka.instance.bootstrapServers, null), Topics.DAGPENGER_BEHOV_PACKET_EVENT).apply {
-            val metadata = produceEvent(
-                InternBehov.fromBehov(
-                    behov = Behov(aktørId = "aktorId", regelkontekst = RegelKontekst("1", Kontekst.vedtak), beregningsDato = LocalDate.now()),
-                    behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("123", Kontekst.vedtak))
-                )
-            ).get(5, TimeUnit.SECONDS)
+        KafkaDagpengerBehovProducer(
+            producerConfig("APP", Kafka.instance.bootstrapServers, null),
+            Topics.DAGPENGER_BEHOV_PACKET_EVENT,
+        ).apply {
+            val metadata =
+                produceEvent(
+                    InternBehov.fromBehov(
+                        behov =
+                            Behov(
+                                aktørId = "aktorId",
+                                regelkontekst = RegelKontekst("1", Kontekst.vedtak),
+                                beregningsDato = LocalDate.now(),
+                            ),
+                        behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("123", Kontekst.vedtak)),
+                    ),
+                ).get(5, TimeUnit.SECONDS)
 
             metadata shouldNotBe null
             metadata.hasOffset() shouldBe true
@@ -44,7 +52,10 @@ internal class KafkaDagpengerBehovProducerTest {
 
     @Test
     fun `Test kafka health`() {
-        KafkaDagpengerBehovProducer(producerConfig("APP", Kafka.instance.bootstrapServers, null), Topics.DAGPENGER_BEHOV_PACKET_EVENT).apply {
+        KafkaDagpengerBehovProducer(
+            producerConfig("APP", Kafka.instance.bootstrapServers, null),
+            Topics.DAGPENGER_BEHOV_PACKET_EVENT,
+        ).apply {
             this.status() shouldBe HealthStatus.UP
         }
     }

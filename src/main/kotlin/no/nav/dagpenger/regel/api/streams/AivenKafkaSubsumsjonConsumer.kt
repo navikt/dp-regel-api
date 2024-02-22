@@ -21,9 +21,9 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class AivenKafkaSubsumsjonConsumer(
     private val config: Configuration,
-    private val subsumsjonPond: SubsumsjonPond
+    private val subsumsjonPond: SubsumsjonPond,
 ) : HealthCheck {
-    private val SERVICE_APP_ID = "dp-regel-api-sub-brukt"
+    private val serviceAppId = "dp-regel-api-sub-brukt"
 
     private val streams: KafkaStreams by lazy {
         KafkaStreams(subsumsjonPond.buildTopology(), this.getConfig()).apply {
@@ -35,14 +35,15 @@ internal class AivenKafkaSubsumsjonConsumer(
         }
     }
 
-    fun start() = streams.start().also { LOGGER.info { "Starting up $SERVICE_APP_ID kafka consumer" } }
+    fun start() = streams.start().also { LOGGER.info { "Starting up $serviceAppId kafka consumer" } }
 
-    fun stop() = with(streams) {
-        close(Duration.ofSeconds(3))
-        cleanUp()
-    }.also {
-        LOGGER.info { "Shutting down  $SERVICE_APP_ID kafka consumer" }
-    }
+    fun stop() =
+        with(streams) {
+            close(Duration.ofSeconds(3))
+            cleanUp()
+        }.also {
+            LOGGER.info { "Shutting down  $serviceAppId kafka consumer" }
+        }
 
     override fun status(): HealthStatus =
         when (streams.state()) {
@@ -51,35 +52,39 @@ internal class AivenKafkaSubsumsjonConsumer(
             else -> HealthStatus.UP
         }
 
-    private fun getConfig() = streamConfigAiven(
-        appId = SERVICE_APP_ID,
-        bootStapServerUrl = config.aivenBrokers,
-        aivenCredentials = KafkaAivenCredentials()
-    )
+    private fun getConfig() =
+        streamConfigAiven(
+            appId = serviceAppId,
+            bootStapServerUrl = config.aivenBrokers,
+            aivenCredentials = KafkaAivenCredentials(),
+        )
 
     private fun logUnexpectedError(e: Throwable) {
         when (e) {
-            is TopicAuthorizationException -> LOGGER.warn(
-                "TopicAuthorizationException in $SERVICE_APP_ID stream, stopping app"
-            )
-            else -> LOGGER.error(
-                "Uncaught exception in $SERVICE_APP_ID stream, thread: ${Thread.currentThread()} message:  ${e.message}",
-                e
-            )
+            is TopicAuthorizationException ->
+                LOGGER.warn(
+                    "TopicAuthorizationException in $serviceAppId stream, stopping app",
+                )
+            else ->
+                LOGGER.error(
+                    "Uncaught exception in $serviceAppId stream, thread: ${Thread.currentThread()} message:  ${e.message}",
+                    e,
+                )
         }
     }
 }
 
 internal class SubsumsjonPond(
     private val packetStrategies: List<SubsumsjonPacketStrategy>,
-    topic: Topic<String, Packet>
+    topic: Topic<String, Packet>,
 ) : Pond(topic) {
+    @Suppress("ktlint:standard:property-naming")
     override val SERVICE_APP_ID: String = Configuration.id
 
     override fun filterPredicates(): List<Predicate<String, Packet>> =
         listOf(
             Predicate { _, packet -> packet.hasField(PacketKeys.BEHOV_ID) },
-            Predicate { _, packet -> !packet.hasProblem() }
+            Predicate { _, packet -> !packet.hasProblem() },
         )
 
     override fun onPacket(packet: Packet) {

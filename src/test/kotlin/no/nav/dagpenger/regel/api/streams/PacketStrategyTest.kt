@@ -28,11 +28,12 @@ internal class PendingBehovStrategyTest {
     private val pendingBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "01DSFGYP7GT9KYD5AEMEKY286H") }
     private val doneBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "01DSFGZ8QX8GFDZCZAKF1T759X") }
     private val notFoundBehov = Packet().apply { putValue(PacketKeys.BEHOV_ID, "01DSFGZHPEAPY7B7Y6P4MZG6FS") }
-    private val storeMock = mockk<SubsumsjonStore>().apply {
-        every { this@apply.behovStatus(pendingBehov.behovId) } returns Status.Pending
-        every { this@apply.behovStatus(doneBehov.behovId) } returns Status.Done(BehovId("01DSFH2NMN315S00QVQY3C1T35"))
-        every { this@apply.behovStatus(notFoundBehov.behovId) } throws BehovNotFoundException("notfound")
-    }
+    private val storeMock =
+        mockk<SubsumsjonStore>().apply {
+            every { this@apply.behovStatus(pendingBehov.behovId) } returns Status.Pending
+            every { this@apply.behovStatus(doneBehov.behovId) } returns Status.Done(BehovId("01DSFH2NMN315S00QVQY3C1T35"))
+            every { this@apply.behovStatus(notFoundBehov.behovId) } throws BehovNotFoundException("notfound")
+        }
 
     @Test
     internal fun `Criteria for handling packets`() {
@@ -70,7 +71,6 @@ internal class PendingBehovStrategyTest {
 
     @Test
     fun `Should time spent processing a packet through whole processing`() {
-
         val subsumsjon = mockk<Subsumsjon>()
         mockkObject(Subsumsjon.Mapper).apply {
             every { Subsumsjon.subsumsjonFrom(any()) } returns subsumsjon
@@ -92,14 +92,16 @@ internal class PendingBehovStrategyTest {
 internal class SuccessStrategyTest {
     @Test
     fun `Should delegate to PendingBehovStrategy if criterias are matched`() {
-        val packet = Packet().apply {
-            this.putValue(PacketKeys.KONTEKST_TYPE, Kontekst.vedtak.name)
-        }
+        val packet =
+            Packet().apply {
+                this.putValue(PacketKeys.KONTEKST_TYPE, Kontekst.vedtak.name)
+            }
 
-        val pendingBehovStrategy = mockk<PendingBehovStrategy>().apply {
-            every { this@apply.handle(packet) } just Runs
-            every { this@apply.shouldHandle(packet) } returns true
-        }
+        val pendingBehovStrategy =
+            mockk<PendingBehovStrategy>().apply {
+                every { this@apply.handle(packet) } just Runs
+                every { this@apply.shouldHandle(packet) } returns true
+            }
 
         SuccessStrategy(pendingBehovStrategy).run(packet)
 
@@ -125,10 +127,11 @@ internal class ProblemStrategyTest {
     fun `Should delegate to PendingBehovStrategy if criterias are matched`() {
         val packet = Packet().apply { addProblem(Problem(title = "problem")) }
 
-        val pendingBehovStrategy = mockk<PendingBehovStrategy>().apply {
-            every { this@apply.handle(packet) } just Runs
-            every { this@apply.shouldHandle(packet) } returns true
-        }
+        val pendingBehovStrategy =
+            mockk<PendingBehovStrategy>().apply {
+                every { this@apply.handle(packet) } just Runs
+                every { this@apply.shouldHandle(packet) } returns true
+            }
 
         ProblemStrategy(pendingBehovStrategy).run(packet)
 
@@ -153,15 +156,17 @@ internal class ManuellGrunnlagStrategyTest {
 
     @Test
     fun `Should delegate to SuccessStrategy if criterias are matched`() {
-        val packet = Packet().apply {
-            this.putValue(PacketKeys.MANUELT_GRUNNLAG, thing)
-            this.putValue(PacketKeys.GRUNNLAG_RESULTAT, thing)
-            this.putValue(PacketKeys.SATS_RESULTAT, thing)
-        }
-        val successStrategy = mockk<SuccessStrategy>().apply {
-            every { this@apply.handle(packet) } just Runs
-            every { this@apply.shouldHandle(packet) } returns true
-        }
+        val packet =
+            Packet().apply {
+                this.putValue(PacketKeys.MANUELT_GRUNNLAG, thing)
+                this.putValue(PacketKeys.GRUNNLAG_RESULTAT, thing)
+                this.putValue(PacketKeys.SATS_RESULTAT, thing)
+            }
+        val successStrategy =
+            mockk<SuccessStrategy>().apply {
+                every { this@apply.handle(packet) } just Runs
+                every { this@apply.shouldHandle(packet) } returns true
+            }
 
         ManuellGrunnlagStrategy(successStrategy).run(packet)
 
@@ -186,16 +191,18 @@ internal class CompleteStrategyTest {
 
     @Test
     fun `Should delegate to SuccessStrategy if criterias are matched`() {
-        val packet = Packet().apply {
-            this.putValue(PacketKeys.GRUNNLAG_RESULTAT, thing)
-            this.putValue(PacketKeys.SATS_RESULTAT, thing)
-            this.putValue(PacketKeys.PERIODE_RESULTAT, thing)
-            this.putValue(PacketKeys.MINSTEINNTEKT_RESULTAT, thing)
-        }
-        val successStrategy = mockk<SuccessStrategy>().apply {
-            every { this@apply.shouldHandle(packet) } returns true
-            every { this@apply.handle(packet) } just Runs
-        }
+        val packet =
+            Packet().apply {
+                this.putValue(PacketKeys.GRUNNLAG_RESULTAT, thing)
+                this.putValue(PacketKeys.SATS_RESULTAT, thing)
+                this.putValue(PacketKeys.PERIODE_RESULTAT, thing)
+                this.putValue(PacketKeys.MINSTEINNTEKT_RESULTAT, thing)
+            }
+        val successStrategy =
+            mockk<SuccessStrategy>().apply {
+                every { this@apply.shouldHandle(packet) } returns true
+                every { this@apply.handle(packet) } just Runs
+            }
 
         CompleteResultStrategy(successStrategy).run(packet)
 

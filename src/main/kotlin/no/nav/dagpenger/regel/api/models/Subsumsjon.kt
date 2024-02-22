@@ -12,10 +12,9 @@ data class Subsumsjon(
     val minsteinntektResultat: Map<String, Any>?,
     val periodeResultat: Map<String, Any>?,
     val satsResultat: Map<String, Any>?,
-    val problem: Problem?
+    val problem: Problem?,
 ) {
     companion object Mapper {
-
         fun toJson(subsumsjon: Subsumsjon): String = jacksonObjectMapper.writeValueAsString(subsumsjon)
 
         fun subsumsjonFrom(packet: Packet): Subsumsjon =
@@ -26,7 +25,7 @@ data class Subsumsjon(
                 grunnlagResultat = grunnlagResultatFrom(packet),
                 periodeResultat = mapFrom(PacketKeys.PERIODE_RESULTAT, packet),
                 satsResultat = mapFrom(PacketKeys.SATS_RESULTAT, packet),
-                problem = packet.getProblem()
+                problem = packet.getProblem(),
             )
     }
 
@@ -53,7 +52,9 @@ internal fun grunnlagResultatFrom(packet: Packet): Map<String, Any>? =
         }
     }?.toMap()
 
-internal fun mapFrom(packetKey: String, packet: Packet): Map<String, Any>? =
-    packet.hasField(packetKey).takeIf { it }?.let { packet.getMapValue(packetKey) }
+internal fun mapFrom(
+    packetKey: String,
+    packet: Packet,
+): Map<String, Any>? = packet.hasField(packetKey).takeIf { it }?.let { packet.getMapValue(packetKey) }
 
 internal class SubsumsjonSerDerException(message: String, cause: Throwable) : RuntimeException(message, cause)

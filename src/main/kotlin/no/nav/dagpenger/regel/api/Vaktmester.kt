@@ -13,16 +13,17 @@ import no.nav.dagpenger.regel.api.db.PostgresSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import javax.sql.DataSource
 
-private val deletedCounter = Counter.build()
-    .name("subsumsjoner_slettet")
-    .help("Antall subsumsjoner slettet fra databasen")
-    .register()
+private val deletedCounter =
+    Counter.build()
+        .name("subsumsjoner_slettet")
+        .help("Antall subsumsjoner slettet fra databasen")
+        .register()
 
 class Vaktmester(
     val dataSource: DataSource,
     val subsumsjonStore: SubsumsjonStore = PostgresSubsumsjonStore(dataSource = dataSource),
     val bruktSubsumsjonStore: BruktSubsumsjonStore = PostgresBruktSubsumsjonStore(dataSource = dataSource),
-    private val lifeSpanInDays: Int = 180
+    private val lifeSpanInDays: Int = 180,
 ) {
     companion object {
         val LOGGER = KotlinLogging.logger { }
@@ -30,12 +31,13 @@ class Vaktmester(
 
     fun rydd() {
         using(sessionOf(dataSource)) { session ->
-            val subsumsjonerSomSkalSlettes = session.run(
-                queryOf(
-                    """SELECT data FROM v2_subsumsjon WHERE brukt = false AND created < (now() - (make_interval(days := :days)))""",
-                    mapOf("days" to lifeSpanInDays)
-                ).map { JsonAdapter.fromJson(it.string("data")) }.asList
-            )
+            val subsumsjonerSomSkalSlettes =
+                session.run(
+                    queryOf(
+                        """SELECT data FROM v2_subsumsjon WHERE brukt = false AND created < (now() - (make_interval(days := :days)))""",
+                        mapOf("days" to lifeSpanInDays),
+                    ).map { JsonAdapter.fromJson(it.string("data")) }.asList,
+                )
             subsumsjonerSomSkalSlettes.forEach {
                 subsumsjonStore.delete(it)
                 deletedCounter.inc()

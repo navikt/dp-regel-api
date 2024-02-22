@@ -27,25 +27,27 @@ import java.time.LocalDate
 import java.time.ZonedDateTime
 
 internal class VaktmesterTest {
-
-    val behov = Behov(
-        aktørId = "1234",
-        beregningsDato = LocalDate.now(),
-        regelkontekst = RegelKontekst("9876", Kontekst.vedtak)
-    )
+    val behov =
+        Behov(
+            aktørId = "1234",
+            beregningsDato = LocalDate.now(),
+            regelkontekst = RegelKontekst("9876", Kontekst.vedtak),
+        )
 
     val minsteinntektSubsumsjonId = ULID().nextULID()
-    val bruktSubsumsjon = Subsumsjon(
-        behovId = BehovId("01DSFT4J9SW8XDZ2ZJZMXD5XV7"),
-        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),
-        grunnlagResultat = emptyMap(),
-        minsteinntektResultat = mapOf(
-            "subsumsjonsId" to minsteinntektSubsumsjonId
-        ),
-        periodeResultat = emptyMap(),
-        satsResultat = emptyMap(),
-        problem = Problem(title = "problem")
-    )
+    val bruktSubsumsjon =
+        Subsumsjon(
+            behovId = BehovId("01DSFT4J9SW8XDZ2ZJZMXD5XV7"),
+            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),
+            grunnlagResultat = emptyMap(),
+            minsteinntektResultat =
+                mapOf(
+                    "subsumsjonsId" to minsteinntektSubsumsjonId,
+                ),
+            periodeResultat = emptyMap(),
+            satsResultat = emptyMap(),
+            problem = Problem(title = "problem"),
+        )
     val ubruktSubsumsjon = bruktSubsumsjon.copy(minsteinntektResultat = emptyMap())
 
     @Test
@@ -55,23 +57,25 @@ internal class VaktmesterTest {
             val subsumsjonStore = PostgresSubsumsjonStore(dataSource = dataSource)
             val internBehov = subsumsjonStore.opprettBehov(behov)
             subsumsjonStore.insertSubsumsjon(bruktSubsumsjon.copy(behovId = internBehov.behovId))
-            val marker = bruktSubsumsjonStore.eksternTilInternSubsumsjon(
-                EksternSubsumsjonBrukt(
-                    id = minsteinntektSubsumsjonId,
-                    eksternId = behov.regelkontekst.id.toLong(),
-                    arenaTs = ZonedDateTime.now(),
-                    ts = ZonedDateTime.now().toEpochSecond()
+            val marker =
+                bruktSubsumsjonStore.eksternTilInternSubsumsjon(
+                    EksternSubsumsjonBrukt(
+                        id = minsteinntektSubsumsjonId,
+                        eksternId = behov.regelkontekst.id.toLong(),
+                        arenaTs = ZonedDateTime.now(),
+                        ts = ZonedDateTime.now().toEpochSecond(),
+                    ),
                 )
-            )
             val vaktmester = Vaktmester(dataSource = dataSource)
             vaktmester.markerSomBrukt(marker)
             using(sessionOf(dataSource)) { session ->
-                val brukteSubsumsjoner = session.run(
-                    queryOf(
-                        "SELECT * FROM v2_subsumsjon WHERE brukt = true",
-                        emptyMap()
-                    ).map { r -> JsonAdapter.fromJson(r.string("data")) }.asList
-                )
+                val brukteSubsumsjoner =
+                    session.run(
+                        queryOf(
+                            "SELECT * FROM v2_subsumsjon WHERE brukt = true",
+                            emptyMap(),
+                        ).map { r -> JsonAdapter.fromJson(r.string("data")) }.asList,
+                    )
                 brukteSubsumsjoner.size shouldBe 1
                 brukteSubsumsjoner.first().minsteinntektResultat?.get("subsumsjonsId") shouldBe minsteinntektSubsumsjonId
             }
@@ -80,26 +84,26 @@ internal class VaktmesterTest {
 
     @Test
     fun `Skal ikke slette brukte subsumsjoner`() {
-
         withMigratedDb { dataSource ->
             val vaktmester = Vaktmester(dataSource = dataSource)
-            val internBehov = with(PostgresSubsumsjonStore(dataSource)) {
-                val internBehov = opprettBehov(behov)
-                insertSubsumsjon(bruktSubsumsjon.copy(behovId = internBehov.behovId))
-                return@with internBehov
-            }
+            val internBehov =
+                with(PostgresSubsumsjonStore(dataSource)) {
+                    val internBehov = opprettBehov(behov)
+                    insertSubsumsjon(bruktSubsumsjon.copy(behovId = internBehov.behovId))
+                    return@with internBehov
+                }
             with(
-                PostgresBruktSubsumsjonStore(dataSource = dataSource)
+                PostgresBruktSubsumsjonStore(dataSource = dataSource),
             ) {
-                val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
-                    EksternSubsumsjonBrukt(
-                        id = minsteinntektSubsumsjonId,
-                        eksternId = behov.regelkontekst.id.toLong(),
-                        arenaTs = ZonedDateTime.now(),
-                        ts = ZonedDateTime.now().toEpochSecond()
-
+                val subsumsjonBruktV2 =
+                    eksternTilInternSubsumsjon(
+                        EksternSubsumsjonBrukt(
+                            id = minsteinntektSubsumsjonId,
+                            eksternId = behov.regelkontekst.id.toLong(),
+                            arenaTs = ZonedDateTime.now(),
+                            ts = ZonedDateTime.now().toEpochSecond(),
+                        ),
                     )
-                )
                 insertSubsumsjonBrukt(subsumsjonBruktV2)
                 vaktmester.markerSomBrukt(subsumsjonBruktV2)
             }
@@ -116,34 +120,36 @@ internal class VaktmesterTest {
     @Test
     fun `Skal slette ubrukte subsumsjoner eldre enn 6 måneder`() {
         withMigratedDb { dataSource ->
-            val (ubruktInternBehov, bruktInternBehov) = with(PostgresSubsumsjonStore(dataSource)) {
-                val ubruktInternBehov = opprettBehov(behov)
-                val bruktInternBehov = opprettBehov(behov)
+            val (ubruktInternBehov, bruktInternBehov) =
+                with(PostgresSubsumsjonStore(dataSource)) {
+                    val ubruktInternBehov = opprettBehov(behov)
+                    val bruktInternBehov = opprettBehov(behov)
 
-                insertSubsumsjon(
-                    ubruktSubsumsjon.copy(behovId = ubruktInternBehov.behovId),
-                    created = ZonedDateTime.now().minusMonths(7)
-                )
-                insertSubsumsjon(
-                    bruktSubsumsjon.copy(behovId = bruktInternBehov.behovId),
-                    ZonedDateTime.now().minusMonths(7)
-                )
-                return@with (ubruktInternBehov to bruktInternBehov)
-            }
-            val vaktmester = Vaktmester(
-                dataSource = dataSource,
-                subsumsjonStore = PostgresSubsumsjonStore(dataSource)
-            )
-            with(PostgresBruktSubsumsjonStore(dataSource = dataSource)) {
-                val bruktSub = eksternTilInternSubsumsjon(
-                    EksternSubsumsjonBrukt(
-                        id = minsteinntektSubsumsjonId,
-                        eksternId = behov.regelkontekst.id.toLong(),
-                        arenaTs = ZonedDateTime.now(),
-                        ts = ZonedDateTime.now().toEpochSecond()
-
+                    insertSubsumsjon(
+                        ubruktSubsumsjon.copy(behovId = ubruktInternBehov.behovId),
+                        created = ZonedDateTime.now().minusMonths(7),
                     )
+                    insertSubsumsjon(
+                        bruktSubsumsjon.copy(behovId = bruktInternBehov.behovId),
+                        ZonedDateTime.now().minusMonths(7),
+                    )
+                    return@with (ubruktInternBehov to bruktInternBehov)
+                }
+            val vaktmester =
+                Vaktmester(
+                    dataSource = dataSource,
+                    subsumsjonStore = PostgresSubsumsjonStore(dataSource),
                 )
+            with(PostgresBruktSubsumsjonStore(dataSource = dataSource)) {
+                val bruktSub =
+                    eksternTilInternSubsumsjon(
+                        EksternSubsumsjonBrukt(
+                            id = minsteinntektSubsumsjonId,
+                            eksternId = behov.regelkontekst.id.toLong(),
+                            arenaTs = ZonedDateTime.now(),
+                            ts = ZonedDateTime.now().toEpochSecond(),
+                        ),
+                    )
                 insertSubsumsjonBrukt(bruktSub)
                 vaktmester.markerSomBrukt(bruktSub)
             }
@@ -161,32 +167,33 @@ internal class VaktmesterTest {
 
     @Test
     fun `Skal ikke slette ubrukte subsumsjoner yngre enn 3 måneder`() {
-
         withMigratedDb { dataSource ->
-            val vaktmester = Vaktmester(
-                dataSource = dataSource,
-                subsumsjonStore = PostgresSubsumsjonStore(dataSource)
-            )
-            val (ubruktInternBehov, bruktInternBehov) = with(PostgresSubsumsjonStore(dataSource)) {
-                val ubruktInternBehov = opprettBehov(behov)
-                val bruktInternBehov = opprettBehov(behov)
-
-                insertSubsumsjon(ubruktSubsumsjon.copy(behovId = ubruktInternBehov.behovId))
-                insertSubsumsjon(bruktSubsumsjon.copy(behovId = bruktInternBehov.behovId))
-                return@with (ubruktInternBehov to bruktInternBehov)
-            }
-            with(
-                PostgresBruktSubsumsjonStore(dataSource = dataSource)
-            ) {
-                val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
-                    EksternSubsumsjonBrukt(
-                        id = minsteinntektSubsumsjonId,
-                        eksternId = behov.regelkontekst.id.toLong(),
-                        arenaTs = ZonedDateTime.now(),
-                        ts = ZonedDateTime.now().toEpochSecond()
-
-                    )
+            val vaktmester =
+                Vaktmester(
+                    dataSource = dataSource,
+                    subsumsjonStore = PostgresSubsumsjonStore(dataSource),
                 )
+            val (ubruktInternBehov, bruktInternBehov) =
+                with(PostgresSubsumsjonStore(dataSource)) {
+                    val ubruktInternBehov = opprettBehov(behov)
+                    val bruktInternBehov = opprettBehov(behov)
+
+                    insertSubsumsjon(ubruktSubsumsjon.copy(behovId = ubruktInternBehov.behovId))
+                    insertSubsumsjon(bruktSubsumsjon.copy(behovId = bruktInternBehov.behovId))
+                    return@with (ubruktInternBehov to bruktInternBehov)
+                }
+            with(
+                PostgresBruktSubsumsjonStore(dataSource = dataSource),
+            ) {
+                val subsumsjonBruktV2 =
+                    eksternTilInternSubsumsjon(
+                        EksternSubsumsjonBrukt(
+                            id = minsteinntektSubsumsjonId,
+                            eksternId = behov.regelkontekst.id.toLong(),
+                            arenaTs = ZonedDateTime.now(),
+                            ts = ZonedDateTime.now().toEpochSecond(),
+                        ),
+                    )
                 insertSubsumsjonBrukt(subsumsjonBruktV2)
                 vaktmester.markerSomBrukt(subsumsjonBruktV2)
             }
@@ -205,10 +212,11 @@ internal class VaktmesterTest {
     fun `markerer allerede eksisterende brukte subsumsjoner`() {
         withMigratedDb { dataSource ->
             runBlocking {
-                val vaktmester = Vaktmester(
-                    dataSource = dataSource,
-                    subsumsjonStore = PostgresSubsumsjonStore(dataSource)
-                )
+                val vaktmester =
+                    Vaktmester(
+                        dataSource = dataSource,
+                        subsumsjonStore = PostgresSubsumsjonStore(dataSource),
+                    )
                 with(PostgresSubsumsjonStore(dataSource)) {
                     val ubruktInternBehov = opprettBehov(behov)
                     val bruktInternBehov = opprettBehov(behov)
@@ -217,27 +225,28 @@ internal class VaktmesterTest {
                     insertSubsumsjon(bruktSubsumsjon.copy(behovId = bruktInternBehov.behovId))
                 }
                 with(
-                    PostgresBruktSubsumsjonStore(dataSource = dataSource)
+                    PostgresBruktSubsumsjonStore(dataSource = dataSource),
                 ) {
-                    val subsumsjonBruktV2 = eksternTilInternSubsumsjon(
-                        EksternSubsumsjonBrukt(
-                            id = minsteinntektSubsumsjonId,
-                            eksternId = behov.regelkontekst.id.toLong(),
-                            arenaTs = ZonedDateTime.now(),
-                            ts = ZonedDateTime.now().toEpochSecond()
-
+                    val subsumsjonBruktV2 =
+                        eksternTilInternSubsumsjon(
+                            EksternSubsumsjonBrukt(
+                                id = minsteinntektSubsumsjonId,
+                                eksternId = behov.regelkontekst.id.toLong(),
+                                arenaTs = ZonedDateTime.now(),
+                                ts = ZonedDateTime.now().toEpochSecond(),
+                            ),
                         )
-                    )
                     insertSubsumsjonBrukt(subsumsjonBruktV2)
                 }
                 vaktmester.markerBrukteSubsumsjoner()
                 using(sessionOf(dataSource)) { session ->
-                    val brukteSubsumsjoner = session.run(
-                        queryOf(
-                            "SELECT * FROM v2_subsumsjon WHERE brukt = true",
-                            emptyMap()
-                        ).map { r -> JsonAdapter.fromJson(r.string("data")) }.asList
-                    )
+                    val brukteSubsumsjoner =
+                        session.run(
+                            queryOf(
+                                "SELECT * FROM v2_subsumsjon WHERE brukt = true",
+                                emptyMap(),
+                            ).map { r -> JsonAdapter.fromJson(r.string("data")) }.asList,
+                        )
                     brukteSubsumsjoner.size shouldBe 1
                     brukteSubsumsjoner.first().minsteinntektResultat?.get("subsumsjonsId") shouldBe minsteinntektSubsumsjonId
                 }

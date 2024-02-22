@@ -25,7 +25,7 @@ internal fun producerConfig(
     bootStapServerUrl: String,
     aivenCredentials: KafkaAivenCredentials? = null,
     keySerializer: String = StringSerializer::class.java.name,
-    valueSerializer: String = StringSerializer::class.java.name
+    valueSerializer: String = StringSerializer::class.java.name,
 ): Properties {
     return Properties().apply {
         putAll(
@@ -35,13 +35,15 @@ internal fun producerConfig(
                 ProducerConfig.ACKS_CONFIG to "all",
                 ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
                 ProducerConfig.RETRIES_CONFIG to Int.MAX_VALUE.toString(),
-                ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION to "5", // kafka 2.0 >= 1.1 so we can keep this as 5 instead of 1
+                // kafka 2.0 >= 1.1 so we can keep this as 5 instead of 1
+                ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION to "5",
                 ProducerConfig.COMPRESSION_TYPE_CONFIG to "snappy",
                 ProducerConfig.LINGER_MS_CONFIG to "20",
-                ProducerConfig.BATCH_SIZE_CONFIG to 32.times(1024).toString(), // 32Kb (default is 16 Kb)
+                // 32Kb (default is 16 Kb)
+                ProducerConfig.BATCH_SIZE_CONFIG to 32.times(1024).toString(),
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to keySerializer,
-                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to valueSerializer
-            )
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to valueSerializer,
+            ),
         )
 
         aivenCredentials?.let {
@@ -61,9 +63,12 @@ internal interface DagpengerBehovProducer {
     fun produceEvent(behov: InternBehov): Future<RecordMetadata>
 }
 
-internal class KafkaDagpengerBehovProducer(private val kafkaProps: Properties, private val regelTopic: Topic<String, Packet>) : DagpengerBehovProducer, HealthCheck {
-
-    private val kafkaProducer = KafkaProducer<String, Packet>(kafkaProps, regelTopic.keySerde.serializer(), regelTopic.valueSerde.serializer())
+internal class KafkaDagpengerBehovProducer(
+    private val kafkaProps: Properties,
+    private val regelTopic: Topic<String, Packet>,
+) : DagpengerBehovProducer, HealthCheck {
+    private val kafkaProducer =
+        KafkaProducer<String, Packet>(kafkaProps, regelTopic.keySerde.serializer(), regelTopic.valueSerde.serializer())
 
     init {
         Runtime.getRuntime().addShutdownHook(
@@ -72,7 +77,7 @@ internal class KafkaDagpengerBehovProducer(private val kafkaProps: Properties, p
                 kafkaProducer.flush()
                 kafkaProducer.close()
                 LOGGER.info("done! ")
-            }
+            },
         )
     }
 
@@ -88,10 +93,20 @@ internal class KafkaDagpengerBehovProducer(private val kafkaProps: Properties, p
 
     override fun produceEvent(behov: InternBehov): Future<RecordMetadata> {
         return kafkaProducer.send(
-            ProducerRecord(regelTopic.name, behov.behovId.id, InternBehov.toPacket(behov)) // TODO: Use intern id as partition key instead, as it is unique per ektern id + kontekst
+            ProducerRecord(
+                regelTopic.name,
+                behov.behovId.id,
+                // TODO: Use intern id as partition key instead, as it is unique per ektern id + kontekst
+                InternBehov.toPacket(behov),
+            ),
         ) { metadata, exception ->
             exception?.let { LOGGER.error { "Failed to produce dagpenger behov" } }
-            metadata?.let { LOGGER.info { "Produced dagpenger behov on topic ${metadata.topic()} to offset ${metadata.offset()} with the key ${behov.behovId}" } }
+            metadata?.let {
+                LOGGER.info {
+                    "Produced dagpenger behov on topic ${metadata.topic()} to offset ${metadata.offset()}" +
+                        " with the key ${behov.behovId}"
+                }
+            }
         }
     }
 }

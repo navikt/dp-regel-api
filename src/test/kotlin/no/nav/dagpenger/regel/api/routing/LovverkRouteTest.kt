@@ -26,37 +26,40 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class LovverkRouteTest {
-    val subsumsjonMock = Subsumsjon(
-        behovId = BehovId("01DSFSRMWGYP0AVHAHY282W3GN"),
-        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),
-        grunnlagResultat = emptyMap(),
-        minsteinntektResultat = mapOf("oppfyllerMinsteinntekt" to true),
-        periodeResultat = emptyMap(),
-        satsResultat = emptyMap(),
-        problem = null
-    )
+    val subsumsjonMock =
+        Subsumsjon(
+            behovId = BehovId("01DSFSRMWGYP0AVHAHY282W3GN"),
+            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),
+            grunnlagResultat = emptyMap(),
+            minsteinntektResultat = mapOf("oppfyllerMinsteinntekt" to true),
+            periodeResultat = emptyMap(),
+            satsResultat = emptyMap(),
+            problem = null,
+        )
 
-    val behov = InternBehov(
-        aktørId = "abc",
-        behandlingsId = mockk(),
-        beregningsDato = LocalDate.of(2020, 1, 13)
-    )
+    val behov =
+        InternBehov(
+            aktørId = "abc",
+            behandlingsId = mockk(),
+            beregningsDato = LocalDate.of(2020, 1, 13),
+        )
 
-    val subsumsjonStore = mockk<SubsumsjonStore>().apply {
-        every { behovStatus(any()) } returns Status.Done(BehovId(ULID().nextULID()))
-        every { getSubsumsjonerByResults(any()) } returns listOf(subsumsjonMock)
-        every { opprettBehov(any()) } returns behov
-        every { getBehov(any()) } returns behov
-    }
+    val subsumsjonStore =
+        mockk<SubsumsjonStore>().apply {
+            every { behovStatus(any()) } returns Status.Done(BehovId(ULID().nextULID()))
+            every { getSubsumsjonerByResults(any()) } returns listOf(subsumsjonMock)
+            every { opprettBehov(any()) } returns behov
+            every { getBehov(any()) } returns behov
+        }
 
     private val behovProducer = mockk<DagpengerBehovProducer>(relaxed = true)
 
     @Test
     fun `401 on unauthorized requests`() {
-        withMockAuthServerAndTestApplication(MockApi()) {
+        withMockAuthServerAndTestApplication(mockApi()) {
             handleRequest(
                 HttpMethod.Post,
-                "lovverk/vurdering/minsteinntekt"
+                "lovverk/vurdering/minsteinntekt",
             ).response.status() shouldBe HttpStatusCode.Unauthorized
             handleRequest(HttpMethod.Post, "lovverk/vurdering/minsteinntekt") { addHeader("X-API-KEY", "notvalid") }
                 .response.status() shouldBe HttpStatusCode.Unauthorized
@@ -78,8 +81,8 @@ class LovverkRouteTest {
                     subsumsjonStore.getSubsumsjonerByResults(
                         listOf(
                             SubsumsjonId(subsumsjonId1),
-                            SubsumsjonId(subsumsjonId2)
-                        )
+                            SubsumsjonId(subsumsjonId2),
+                        ),
                     )
                 }
             }
@@ -101,8 +104,8 @@ class LovverkRouteTest {
                     subsumsjonStore.getSubsumsjonerByResults(
                         listOf(
                             SubsumsjonId(subsumsjonId1),
-                            SubsumsjonId(subsumsjonId2)
-                        )
+                            SubsumsjonId(subsumsjonId2),
+                        ),
                     )
                 }
             }
@@ -115,10 +118,10 @@ class LovverkRouteTest {
 
     fun testApplicationRequest(subsumsjonStore: SubsumsjonStore) =
         withMockAuthServerAndTestApplication(
-            MockApi(
+            mockApi(
                 subsumsjonStore = subsumsjonStore,
-                kafkaDagpengerBehovProducer = behovProducer
-            )
+                kafkaDagpengerBehovProducer = behovProducer,
+            ),
         ) {
             handleAuthenticatedAzureAdRequest(HttpMethod.Post, "/lovverk/vurdering/minsteinntekt") {
                 addHeader(HttpHeaders.ContentType, "application/json")
@@ -127,9 +130,10 @@ class LovverkRouteTest {
         }
 
     val jsonRequestBody =
-        """{
-    "beregningsdato": "2020-01-13",
-    "subsumsjonIder": ["$subsumsjonId1", "$subsumsjonId2"]
-     }
+        """
+        {
+        "beregningsdato": "2020-01-13",
+        "subsumsjonIder": ["$subsumsjonId1", "$subsumsjonId2"]
+         }
         """.trimIndent()
 }

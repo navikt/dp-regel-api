@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:max-line-length")
+
 package no.nav.dagpenger.regel.api.db
 
 import io.prometheus.client.Counter
@@ -22,13 +24,13 @@ private val LOGGER = KotlinLogging.logger {}
 
 class PostgresBruktSubsumsjonStore(
     private val dataSource: DataSource,
-    val subsumsjonStore: SubsumsjonStore = PostgresSubsumsjonStore(dataSource)
+    val subsumsjonStore: SubsumsjonStore = PostgresSubsumsjonStore(dataSource),
 ) : BruktSubsumsjonStore, HealthCheck {
-
     companion object {
-        val insertCounter = Counter.build().name("subsumsjon_brukt_insert")
-            .namespace("no_nav_dagpenger")
-            .help("Hvor mange subsumsjoner fra vedtak lytter").register()
+        val insertCounter =
+            Counter.build().name("subsumsjon_brukt_insert")
+                .namespace("no_nav_dagpenger")
+                .help("Hvor mange subsumsjoner fra vedtak lytter").register()
     }
 
     override fun status(): HealthStatus {
@@ -47,57 +49,60 @@ class PostgresBruktSubsumsjonStore(
             session.run(
                 queryOf(
                     """SELECT * FROM v2_subsumsjon_brukt""",
-                    emptyMap()
+                    emptyMap(),
                 ).map { r ->
                     extractInternSubsumsjonBrukt(r)
-                }.asList
+                }.asList,
             )
         }
     }
 
     override fun eksternTilInternSubsumsjon(eksternSubsumsjonBrukt: EksternSubsumsjonBrukt): InternSubsumsjonBrukt {
-        val behandlingsId = subsumsjonStore.hentKoblingTilRegelKontekst(
-            RegelKontekst(
-                eksternSubsumsjonBrukt.eksternId.toString(),
-                Kontekst.vedtak
-            )
-        ) ?: throw SubsumsjonBruktNotFoundException("Could not find susbsumsjon based on $eksternSubsumsjonBrukt")
+        val behandlingsId =
+            subsumsjonStore.hentKoblingTilRegelKontekst(
+                RegelKontekst(
+                    eksternSubsumsjonBrukt.eksternId.toString(),
+                    Kontekst.vedtak,
+                ),
+            ) ?: throw SubsumsjonBruktNotFoundException("Could not find susbsumsjon based on $eksternSubsumsjonBrukt")
         return InternSubsumsjonBrukt(
             id = eksternSubsumsjonBrukt.id,
             behandlingsId = behandlingsId.id,
             arenaTs = eksternSubsumsjonBrukt.arenaTs,
-            created = ZonedDateTime.ofInstant(
-                Instant.ofEpochMilli(eksternSubsumsjonBrukt.ts),
-                ZoneOffset.UTC
-            )
+            created =
+                ZonedDateTime.ofInstant(
+                    Instant.ofEpochMilli(eksternSubsumsjonBrukt.ts),
+                    ZoneOffset.UTC,
+                ),
         )
     }
 
-    override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon =
-        subsumsjonStore.getSubsumsjonByResult(subsumsjonId)
+    override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon = subsumsjonStore.getSubsumsjonByResult(subsumsjonId)
 
     override fun insertSubsumsjonBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt): Int {
         return using(sessionOf(dataSource)) { session ->
             session.run(
                 when (internSubsumsjonBrukt.created) {
-                    null -> queryOf(
-                        """INSERT INTO v2_subsumsjon_brukt(id, behandlings_id, arena_ts) VALUES (:id, :behandling, :arena) ON CONFLICT DO NOTHING""",
-                        mapOf(
-                            "id" to internSubsumsjonBrukt.id,
-                            "behandling" to internSubsumsjonBrukt.behandlingsId,
-                            "arena" to internSubsumsjonBrukt.arenaTs
-                        )
-                    ).asUpdate
-                    else -> queryOf(
-                        """INSERT INTO v2_subsumsjon_brukt(id, behandlings_id, arena_ts, created) VALUES (:id, :behandling, :arena, :created) ON CONFLICT DO NOTHING""",
-                        mapOf(
-                            "id" to internSubsumsjonBrukt.id,
-                            "behandling" to internSubsumsjonBrukt.behandlingsId,
-                            "arena" to internSubsumsjonBrukt.arenaTs,
-                            "created" to internSubsumsjonBrukt.created
-                        )
-                    ).asUpdate
-                }
+                    null ->
+                        queryOf(
+                            """INSERT INTO v2_subsumsjon_brukt(id, behandlings_id, arena_ts) VALUES (:id, :behandling, :arena) ON CONFLICT DO NOTHING""",
+                            mapOf(
+                                "id" to internSubsumsjonBrukt.id,
+                                "behandling" to internSubsumsjonBrukt.behandlingsId,
+                                "arena" to internSubsumsjonBrukt.arenaTs,
+                            ),
+                        ).asUpdate
+                    else ->
+                        queryOf(
+                            """INSERT INTO v2_subsumsjon_brukt(id, behandlings_id, arena_ts, created) VALUES (:id, :behandling, :arena, :created) ON CONFLICT DO NOTHING""",
+                            mapOf(
+                                "id" to internSubsumsjonBrukt.id,
+                                "behandling" to internSubsumsjonBrukt.behandlingsId,
+                                "arena" to internSubsumsjonBrukt.arenaTs,
+                                "created" to internSubsumsjonBrukt.created,
+                            ),
+                        ).asUpdate
+                },
             )
         }
     }
@@ -107,8 +112,8 @@ class PostgresBruktSubsumsjonStore(
             session.run(
                 queryOf(
                     """SELECT * FROM v2_subsumsjon_brukt WHERE id = :id""",
-                    mapOf("id" to subsumsjonId.id)
-                ).map { r -> extractInternSubsumsjonBrukt(r) }.asSingle
+                    mapOf("id" to subsumsjonId.id),
+                ).map { r -> extractInternSubsumsjonBrukt(r) }.asSingle,
             )
         }
     }
@@ -118,7 +123,7 @@ class PostgresBruktSubsumsjonStore(
             id = r.string("id"),
             behandlingsId = r.string("behandlings_id"),
             arenaTs = r.zonedDateTime("arena_ts"),
-            created = r.zonedDateTime("created")
+            created = r.zonedDateTime("created"),
         )
     }
 
@@ -127,8 +132,8 @@ class PostgresBruktSubsumsjonStore(
             session.run(
                 queryOf(
                     """SELECT * FROM v2_subsumsjon_brukt WHERE behandlings_id = :bid""",
-                    mapOf("bid" to behandlingsId)
-                ).map { r -> extractInternSubsumsjonBrukt(r) }.asList
+                    mapOf("bid" to behandlingsId),
+                ).map { r -> extractInternSubsumsjonBrukt(r) }.asList,
             )
         }
     }

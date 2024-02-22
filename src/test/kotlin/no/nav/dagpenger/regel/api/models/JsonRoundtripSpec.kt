@@ -34,38 +34,43 @@ class JsonRoundtripSpec : StringSpec() {
     }
 }
 
-private val subsumsjonGenerator = arbitrary {
-    val stringArb = Arb.string(10, 10)
-    Subsumsjon(
-        behovId = BehovId(ULID().nextULID()),
-        faktum = Faktum(
-            aktorId = stringArb.next(it),
-            regelkontekst = RegelKontekst(stringArb.next(it), Kontekst.vedtak),
-            beregningsdato = Arb.localDate(LocalDate.of(2010, 1, 1), LocalDate.of(LocalDate.now().year, 1, 1))
-                .next(it)
-        ),
-        grunnlagResultat = Arb.map(stringArb, stringArb).next(it),
-        periodeResultat = Arb.map(stringArb, stringArb).next(it),
-        minsteinntektResultat = Arb.map(stringArb, stringArb).next(it),
-        satsResultat = Arb.map(stringArb, stringArb).next(it),
-        problem = Problem(title = stringArb.next(it))
-    )
-}
+private val subsumsjonGenerator =
+    arbitrary {
+        val stringArb = Arb.string(10, 10)
+        Subsumsjon(
+            behovId = BehovId(ULID().nextULID()),
+            faktum =
+                Faktum(
+                    aktorId = stringArb.next(it),
+                    regelkontekst = RegelKontekst(stringArb.next(it), Kontekst.vedtak),
+                    beregningsdato =
+                        Arb.localDate(LocalDate.of(2010, 1, 1), LocalDate.of(LocalDate.now().year, 1, 1))
+                            .next(it),
+                ),
+            grunnlagResultat = Arb.map(stringArb, stringArb).next(it),
+            periodeResultat = Arb.map(stringArb, stringArb).next(it),
+            minsteinntektResultat = Arb.map(stringArb, stringArb).next(it),
+            satsResultat = Arb.map(stringArb, stringArb).next(it),
+            problem = Problem(title = stringArb.next(it)),
+        )
+    }
 
-private val internBehovGenerator = arbitrary {
-    val stringArb = Arb.string(10, 10)
-    InternBehov(
-        aktørId = stringArb.next(it),
-        behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(
-            RegelKontekst(
-                Arb.string().next(it),
-                Kontekst.vedtak
-            )
-        ),
-        harAvtjentVerneplikt = Arb.boolean().next(it),
-        oppfyllerKravTilFangstOgFisk = Arb.boolean().next(it),
-        manueltGrunnlag = Arb.int(0, 1000).next(it),
-        antallBarn = Arb.int(0, 10).next(it),
-        beregningsDato = LocalDate.now()
-    )
-}
+private val internBehovGenerator =
+    arbitrary {
+        val stringArb = Arb.string(10, 10)
+        InternBehov(
+            aktørId = stringArb.next(it),
+            behandlingsId =
+                BehandlingsId.nyBehandlingsIdFraEksternId(
+                    RegelKontekst(
+                        Arb.string().next(it),
+                        Kontekst.vedtak,
+                    ),
+                ),
+            harAvtjentVerneplikt = Arb.boolean().next(it),
+            oppfyllerKravTilFangstOgFisk = Arb.boolean().next(it),
+            manueltGrunnlag = Arb.int(0, 1000).next(it),
+            antallBarn = Arb.int(0, 10).next(it),
+            beregningsDato = LocalDate.now(),
+        )
+    }

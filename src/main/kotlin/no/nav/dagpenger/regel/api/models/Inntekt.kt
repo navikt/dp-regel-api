@@ -6,15 +6,9 @@ import no.nav.dagpenger.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
 import java.time.YearMonth
 
-internal enum class PeriodeNumber(val number: Int) {
-    ONE(1),
-    TWO(2),
-    THREE(3),
-}
-
 data class InntektsPeriode(
-    val førsteMåned: YearMonth, // todo: rename and create test that verifies the name
-    val sisteMåned: YearMonth, // todo: rename and create test that verifies the name
+    val førsteMåned: YearMonth,
+    val sisteMåned: YearMonth,
 ) {
     companion object Mapper {
         fun fromPacket(packet: Packet): InntektsPeriode? =

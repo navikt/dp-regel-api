@@ -72,56 +72,59 @@ fun main() {
             MAINLOGGER.info { "Vaktmesteren rydder IKKE" }
             // vaktmester.rydd()
             MAINLOGGER.info { "Vaktmesteren er ferdig... for denne gang" }
-        }
+        },
     )
 
     val aivenKafkaConsumer =
         AivenKafkaSubsumsjonConsumer(
             Configuration,
-            SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), Configuration.regelTopic)
+            SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), Configuration.regelTopic),
         ).also {
             it.start()
         }
 
-    val bruktSubsumsjonConsumer = KafkaSubsumsjonBruktConsumer(
-        Configuration,
-        BruktSubsumsjonStrategy(vaktmester = vaktmester, bruktSubsumsjonStore = bruktSubsumsjonStore)
-    ).also {
-        it.start()
-    }
+    val bruktSubsumsjonConsumer =
+        KafkaSubsumsjonBruktConsumer(
+            Configuration,
+            BruktSubsumsjonStrategy(vaktmester = vaktmester, bruktSubsumsjonStore = bruktSubsumsjonStore),
+        ).also {
+            it.start()
+        }
 
-    val kafkaProducer = KafkaDagpengerBehovProducer(
-        producerConfig(
-            Configuration.id,
-            Configuration.aivenBrokers,
-            KafkaAivenCredentials()
-        ),
-        Configuration.regelTopic
-    )
-
-    val app = embeddedServer(Netty, port = Configuration.httpPort) {
-        api(
-            subsumsjonStore,
-            kafkaProducer,
-            listOf(
-                subsumsjonStore as HealthCheck,
-                bruktSubsumsjonStore as HealthCheck,
-                aivenKafkaConsumer as HealthCheck,
-                kafkaProducer as HealthCheck,
-                bruktSubsumsjonConsumer as HealthCheck
+    val kafkaProducer =
+        KafkaDagpengerBehovProducer(
+            producerConfig(
+                Configuration.id,
+                Configuration.aivenBrokers,
+                KafkaAivenCredentials(),
             ),
-            Configuration
+            Configuration.regelTopic,
         )
-    }.also {
-        it.start(wait = false)
-    }
+
+    val app =
+        embeddedServer(Netty, port = Configuration.httpPort) {
+            api(
+                subsumsjonStore,
+                kafkaProducer,
+                listOf(
+                    subsumsjonStore as HealthCheck,
+                    bruktSubsumsjonStore as HealthCheck,
+                    aivenKafkaConsumer as HealthCheck,
+                    kafkaProducer as HealthCheck,
+                    bruktSubsumsjonConsumer as HealthCheck,
+                ),
+                Configuration,
+            )
+        }.also {
+            it.start(wait = false)
+        }
 
     Runtime.getRuntime().addShutdownHook(
         Thread {
             aivenKafkaConsumer.stop()
             bruktSubsumsjonConsumer.stop()
             app.stop(10000, 60000)
-        }
+        },
     )
 }
 
@@ -139,7 +142,7 @@ internal fun Application.api(
             azureAdJWT(
                 providerUrl = config.azureAppWellKnownUrl,
                 realm = config.id,
-                clientId = config.azureAppClientId
+                clientId = config.azureAppClientId,
             )
         }
     }

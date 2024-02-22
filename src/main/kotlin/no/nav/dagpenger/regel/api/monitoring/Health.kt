@@ -5,5 +5,6 @@ interface HealthCheck {
 }
 
 enum class HealthStatus {
-    UP, DOWN
+    UP,
+    DOWN,
 }

@@ -17,22 +17,26 @@ import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.models.Ulid
 import java.math.BigDecimal
 
-internal val jacksonObjectMapper = jacksonObjectMapper().also {
-    it.registerModule(JavaTimeModule())
-    it.registerModule(
-        SimpleModule().also { module ->
-            module.addSerializer(Ulid::class.java, UlidSerializer())
-            module.addDeserializer(Ulid::class.java, UlidDeserializer())
-        }
-    )
-    it.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    it.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-    it.setSerializationInclusion(JsonInclude.Include.NON_NULL)
-    it.addMixIn(Problem::class.java, ProblemJacksonMixIn::class.java)
-}
+internal val jacksonObjectMapper =
+    jacksonObjectMapper().also {
+        it.registerModule(JavaTimeModule())
+        it.registerModule(
+            SimpleModule().also { module ->
+                module.addSerializer(Ulid::class.java, UlidSerializer())
+                module.addDeserializer(Ulid::class.java, UlidDeserializer())
+            },
+        )
+        it.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        it.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        it.setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        it.addMixIn(Problem::class.java, ProblemJacksonMixIn::class.java)
+    }
 
 internal class EksternIdDeserializer : JsonDeserializer<Long>() {
-    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Long {
+    override fun deserialize(
+        p: JsonParser,
+        ctxt: DeserializationContext,
+    ): Long {
         return BigDecimal(p.text).toLong()
     }
 }
@@ -41,10 +45,16 @@ internal class EksternIdDeserializer : JsonDeserializer<Long>() {
 private class ProblemJacksonMixIn
 
 private class UlidSerializer : JsonSerializer<Ulid>() {
-    override fun serialize(value: Ulid, gen: JsonGenerator, serializers: SerializerProvider) =
-        gen.writeString(value.id)
+    override fun serialize(
+        value: Ulid,
+        gen: JsonGenerator,
+        serializers: SerializerProvider,
+    ) = gen.writeString(value.id)
 }
 
 private class UlidDeserializer : JsonDeserializer<Ulid>() {
-    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Ulid = Ulid(p.text)
+    override fun deserialize(
+        p: JsonParser,
+        ctxt: DeserializationContext,
+    ): Ulid = Ulid(p.text)
 }

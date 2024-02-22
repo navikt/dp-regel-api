@@ -8,32 +8,34 @@ import java.time.YearMonth
 internal class FaktumTest {
     @Test
     fun `Mapping from Packet to Faktum`() {
-        val packet = InternBehov.fromBehov(
-            behov = Behov(
-                aktørId = "aktørId",
-                regelkontekst = RegelKontekst("1", Kontekst.vedtak),
-                beregningsDato = LocalDate.of(2011, 7, 22),
-                harAvtjentVerneplikt = true,
-                oppfyllerKravTilFangstOgFisk = true,
-                bruktInntektsPeriode = InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7)),
-                antallBarn = 1,
-                lærling = false,
-                manueltGrunnlag = 1,
-                forrigeGrunnlag = 4,
-                regelverksdato = LocalDate.of(2020, 1, 1)
-            ),
-            behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1", Kontekst.vedtak))
-        ).toPacket().apply {
-            this.putValue(
-                PacketKeys.INNTEKT,
-                mapOf(
-                    Pair("inntektsId", "inntektsId"),
-                    Pair("inntektsListe", listOf<String>()),
-                    Pair("manueltRedigert", true),
-                    Pair("sisteAvsluttendeKalenderMåned", YearMonth.now().toString())
+        val packet =
+            InternBehov.fromBehov(
+                behov =
+                    Behov(
+                        aktørId = "aktørId",
+                        regelkontekst = RegelKontekst("1", Kontekst.vedtak),
+                        beregningsDato = LocalDate.of(2011, 7, 22),
+                        harAvtjentVerneplikt = true,
+                        oppfyllerKravTilFangstOgFisk = true,
+                        bruktInntektsPeriode = InntektsPeriode(YearMonth.of(2011, 7), YearMonth.of(2011, 7)),
+                        antallBarn = 1,
+                        lærling = false,
+                        manueltGrunnlag = 1,
+                        forrigeGrunnlag = 4,
+                        regelverksdato = LocalDate.of(2020, 1, 1),
+                    ),
+                behandlingsId = BehandlingsId.nyBehandlingsIdFraEksternId(RegelKontekst("1", Kontekst.vedtak)),
+            ).toPacket().apply {
+                this.putValue(
+                    PacketKeys.INNTEKT,
+                    mapOf(
+                        Pair("inntektsId", "inntektsId"),
+                        Pair("inntektsListe", listOf<String>()),
+                        Pair("manueltRedigert", true),
+                        Pair("sisteAvsluttendeKalenderMåned", YearMonth.now().toString()),
+                    ),
                 )
-            )
-        }
+            }
 
         Faktum.faktumFrom(packet).let {
             it.aktorId shouldBe "aktørId"

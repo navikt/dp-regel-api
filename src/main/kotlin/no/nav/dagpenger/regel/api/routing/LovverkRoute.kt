@@ -24,7 +24,10 @@ import java.time.LocalDate
 
 private val LOGGER = KotlinLogging.logger {}
 
-internal fun Route.lovverk(store: SubsumsjonStore, producer: DagpengerBehovProducer) {
+internal fun Route.lovverk(
+    store: SubsumsjonStore,
+    producer: DagpengerBehovProducer,
+) {
     suspend fun Subsumsjon.måReberegnes(beregningsdato: LocalDate): Boolean {
         store.getBehov(this.behovId).let { internBehov ->
             val behov = store.opprettBehov(internBehov.tilBehov(beregningsdato))
@@ -45,7 +48,9 @@ internal fun Route.lovverk(store: SubsumsjonStore, producer: DagpengerBehovProdu
                         .any { subsumsjon -> subsumsjon.måReberegnes(beregningsdato) }
                         .let { call.respond(KreverNyVurdering(it)) }
                 }.also {
-                    LOGGER.info("Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}.")
+                    LOGGER.info(
+                        "Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}.",
+                    )
                 }
             }
         }
@@ -65,10 +70,13 @@ private fun InternBehov.tilBehov(beregningsdato: LocalDate) =
         antallBarn = this.antallBarn,
         manueltGrunnlag = this.manueltGrunnlag,
         inntektsId = this.inntektsId,
-        lærling = this.lærling
+        lærling = this.lærling,
     )
 
-suspend fun SubsumsjonStore.sjekkResultat(behovId: BehovId, subsumsjon: Subsumsjon): Boolean {
+suspend fun SubsumsjonStore.sjekkResultat(
+    behovId: BehovId,
+    subsumsjon: Subsumsjon,
+): Boolean {
     repeat(15) {
         LOGGER.info("Sjekker resultat. Runde: $it. For behov: $behovId og subsumsjon: $subsumsjon")
         when (this.behovStatus(behovId)) {

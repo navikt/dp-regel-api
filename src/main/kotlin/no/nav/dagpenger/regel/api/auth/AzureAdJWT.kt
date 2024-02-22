@@ -23,9 +23,8 @@ private val LOGGER = KotlinLogging.logger {}
 internal fun JWTAuthenticationProvider.Config.azureAdJWT(
     providerUrl: String,
     realm: String,
-    clientId: String
+    clientId: String,
 ) {
-
     val meta = meta(providerUrl)
     this.verifier(jwkProvider(meta.jwksUri), meta.issuer)
     this.realm = realm
@@ -45,13 +44,14 @@ internal fun JWTAuthenticationProvider.Config.azureAdJWT(
     }
 }
 
-private val httpClient = HttpClient(CIO) {
-    engine {
-        System.getenv("HTTP_PROXY")?.let {
-            this.proxy = ProxyBuilder.http(it)
+private val httpClient =
+    HttpClient(CIO) {
+        engine {
+            System.getenv("HTTP_PROXY")?.let {
+                this.proxy = ProxyBuilder.http(it)
+            }
         }
     }
-}
 
 internal data class AzureAdOpenIdConfiguration(
     @JsonProperty("jwks_uri")
@@ -61,7 +61,7 @@ internal data class AzureAdOpenIdConfiguration(
     @JsonProperty("token_endpoint")
     val tokenEndpoint: String,
     @JsonProperty("authorization_endpoint")
-    val authorizationEndpoint: String
+    val authorizationEndpoint: String,
 )
 
 private fun meta(url: String): AzureAdOpenIdConfiguration {
@@ -78,7 +78,7 @@ private fun jwkProvider(url: String): JwkProvider {
         .rateLimited(
             10,
             1,
-            TimeUnit.MINUTES
+            TimeUnit.MINUTES,
         ) // if not cached, only allow max 10 different keys per minute to be fetched from external provider
         .build()
 }

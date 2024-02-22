@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
 
 class EksternSubsumsjonBruktTest {
-
     @Test
     fun `json deserialisering og serialisering`() {
         val json =

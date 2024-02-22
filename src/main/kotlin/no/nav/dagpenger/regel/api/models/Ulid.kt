@@ -3,7 +3,6 @@ package no.nav.dagpenger.regel.api.models
 import de.huxhorn.sulky.ulid.ULID
 
 open class Ulid(private val rawId: String) {
-
     val id: String
 
     init {
@@ -35,6 +34,7 @@ open class Ulid(private val rawId: String) {
 }
 
 class BehovId(rawId: String) : Ulid(rawId)
+
 class SubsumsjonId(rawId: String) : Ulid(rawId)
 
 class IllegalUlidException(override val message: String) : RuntimeException(message)

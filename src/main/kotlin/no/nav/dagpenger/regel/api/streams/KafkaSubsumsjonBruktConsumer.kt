@@ -23,23 +23,25 @@ private val LOGGER = KotlinLogging.logger {}
 
 internal class KafkaSubsumsjonBruktConsumer(
     private val config: Configuration,
-    private val bruktSubsumsjonStrategy: BruktSubsumsjonStrategy
+    private val bruktSubsumsjonStrategy: BruktSubsumsjonStrategy,
 ) : HealthCheck {
-    private val SERVICE_APP_ID = "kafka-subsumsjonbrukt-v1"
-    val subsumsjonBruktTopic = Topic(
-        config.subsumsjonBruktTopic,
-        keySerde = Serdes.StringSerde(),
-        valueSerde = Serdes.StringSerde()
-    )
+    private val serviceAppId = "kafka-subsumsjonbrukt-v1"
+    val subsumsjonBruktTopic =
+        Topic(
+            config.subsumsjonBruktTopic,
+            keySerde = Serdes.StringSerde(),
+            valueSerde = Serdes.StringSerde(),
+        )
 
-    fun start() = streams.start().also { LOGGER.info { "Starting up $SERVICE_APP_ID kafka consumer" } }
+    fun start() = streams.start().also { LOGGER.info { "Starting up $serviceAppId kafka consumer" } }
 
-    fun stop() = with(streams) {
-        close(Duration.ofSeconds(3))
-        cleanUp()
-    }.also {
-        LOGGER.info { "Shutting down $SERVICE_APP_ID kafka consumer" }
-    }
+    fun stop() =
+        with(streams) {
+            close(Duration.ofSeconds(3))
+            cleanUp()
+        }.also {
+            LOGGER.info { "Shutting down $serviceAppId kafka consumer" }
+        }
 
     override fun status(): HealthStatus =
         when (streams.state()) {
@@ -58,21 +60,23 @@ internal class KafkaSubsumsjonBruktConsumer(
         }
     }
 
-    private fun getConfig() = streamConfigAiven(
-        appId = SERVICE_APP_ID,
-        bootStapServerUrl = config.aivenBrokers,
-        aivenCredentials = KafkaAivenCredentials()
-    )
+    private fun getConfig() =
+        streamConfigAiven(
+            appId = serviceAppId,
+            bootStapServerUrl = config.aivenBrokers,
+            aivenCredentials = KafkaAivenCredentials(),
+        )
 
     internal fun buildTopology(): Topology {
         val builder = StreamsBuilder()
-        val stream = builder.consumeTopic(
-            Topic(
-                config.subsumsjonBruktTopic,
-                keySerde = Serdes.StringSerde(),
-                valueSerde = Serdes.StringSerde()
+        val stream =
+            builder.consumeTopic(
+                Topic(
+                    config.subsumsjonBruktTopic,
+                    keySerde = Serdes.StringSerde(),
+                    valueSerde = Serdes.StringSerde(),
+                ),
             )
-        )
         stream
             .mapValues { _, value -> EksternSubsumsjonBrukt.fromJson(value) }
             .filterNot { _, bruktSubsumsjon ->
@@ -87,7 +91,7 @@ internal class KafkaSubsumsjonBruktConsumer(
                         "inntektsId" to faktum?.inntektsId,
                         "aktorId" to faktum?.aktorId,
                         "kontekst" to faktum?.regelkontekst,
-                    )
+                    ),
                 )
             }
             .to(config.inntektBruktTopic, Produced.with(Serdes.StringSerde(), Serdes.StringSerde()))
@@ -96,13 +100,15 @@ internal class KafkaSubsumsjonBruktConsumer(
 
     private fun logUnexpectedError(e: Throwable) {
         when (e) {
-            is TopicAuthorizationException -> LOGGER.warn(
-                "TopicAuthorizationException in $SERVICE_APP_ID stream, stopping app"
-            )
-            else -> LOGGER.error(
-                "Uncaught exception in $SERVICE_APP_ID stream, thread: ${Thread.currentThread()} message:  ${e.message}",
-                e
-            )
+            is TopicAuthorizationException ->
+                LOGGER.warn(
+                    "TopicAuthorizationException in $serviceAppId stream, stopping app",
+                )
+            else ->
+                LOGGER.error(
+                    "Uncaught exception in $serviceAppId stream, thread: ${Thread.currentThread()} message:  ${e.message}",
+                    e,
+                )
         }
     }
 }

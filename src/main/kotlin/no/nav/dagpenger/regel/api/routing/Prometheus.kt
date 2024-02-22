@@ -10,9 +10,7 @@ import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.exporter.common.TextFormat
 import io.prometheus.client.hotspot.DefaultExports
 
-fun Routing.metrics(
-    collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry,
-) {
+fun Routing.metrics(collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry) {
     DefaultExports.initialize()
 
     route("/metrics") {

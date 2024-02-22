@@ -16,7 +16,6 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 internal object JsonAdapter {
-
     fun fromJson(jsonString: String): Subsumsjon {
         try {
             return jacksonObjectMapper.readTree(jsonString).let {
@@ -27,7 +26,7 @@ internal object JsonAdapter {
                     minsteinntektResultat = it.getOrNull("minsteinntektResultat")?.asMap(),
                     satsResultat = it.getOrNull("satsResultat")?.asMap(),
                     periodeResultat = it.getOrNull("periodeResultat")?.asMap(),
-                    problem = it.getOrNull("problem")?.asProblem()
+                    problem = it.getOrNull("problem")?.asProblem(),
                 )
             }
         } catch (e: Exception) {
@@ -39,26 +38,26 @@ internal object JsonAdapter {
 
     private fun JsonNode.asYearMonth(): YearMonth = YearMonth.parse(this.asText())
 
-    private fun JsonNode.asMap(): Map<String, Any> =
-        jacksonObjectMapper.convertValue(this, object : TypeReference<Map<String, Any>>() {})
+    private fun JsonNode.asMap(): Map<String, Any> = jacksonObjectMapper.convertValue(this, object : TypeReference<Map<String, Any>>() {})
 
-    private fun JsonNode.asProblem(): Problem =
-        jacksonObjectMapper.convertValue(this, Problem::class.java)
+    private fun JsonNode.asProblem(): Problem = jacksonObjectMapper.convertValue(this, Problem::class.java)
 
-    private fun JsonNode.asInntektsPeriode() = InntektsPeriode(
-        førsteMåned = this["førsteMåned"].asYearMonth(),
-        sisteMåned = this["sisteMåned"].asYearMonth(),
-    )
+    private fun JsonNode.asInntektsPeriode() =
+        InntektsPeriode(
+            førsteMåned = this["førsteMåned"].asYearMonth(),
+            sisteMåned = this["sisteMåned"].asYearMonth(),
+        )
 
     private fun getFaktum(json: JsonNode): Faktum {
         val faktum = json["faktum"]
-        val regelkontekst = if (faktum.has("vedtakId")) {
-            RegelKontekst(faktum["vedtakId"].asText(), Kontekst.vedtak)
-        } else {
-            faktum["regelkontekst"].let {
-                RegelKontekst(it["id"].asText(), Kontekst.valueOf(it["type"].asText()))
+        val regelkontekst =
+            if (faktum.has("vedtakId")) {
+                RegelKontekst(faktum["vedtakId"].asText(), Kontekst.vedtak)
+            } else {
+                faktum["regelkontekst"].let {
+                    RegelKontekst(it["id"].asText(), Kontekst.valueOf(it["type"].asText()))
+                }
             }
-        }
 
         return Faktum(
             aktorId = faktum["aktorId"].asText(),
@@ -74,13 +73,16 @@ internal object JsonAdapter {
             forrigeGrunnlag = faktum.getOrNull("forrigeGrunnlag")?.asInt(),
             lærling = faktum.getOrNull("lærling")?.asBoolean(),
             bruktInntektsPeriode = faktum.getOrNull("bruktInntektsPeriode")?.asInntektsPeriode(),
-            regelverksdato = faktum.getOrNull("regelverksdato")?.asLocalDate()
+            regelverksdato = faktum.getOrNull("regelverksdato")?.asLocalDate(),
         )
     }
 
     fun JsonNode.getOrNull(nullableField: String): JsonNode? {
         val nullableNode = this.get(nullableField)
-        return if (nullableNode == null || nullableNode.isNull) null
-        else nullableNode
+        return if (nullableNode == null || nullableNode.isNull) {
+            null
+        } else {
+            nullableNode
+        }
     }
 }

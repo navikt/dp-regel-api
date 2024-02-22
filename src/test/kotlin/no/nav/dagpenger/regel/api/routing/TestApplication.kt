@@ -20,13 +20,13 @@ internal object TestApplication {
 
     val testOAuthToken: String by lazy {
         mockOAuth2Server.issueToken(
-            issuerId = ISSUER_ID
+            issuerId = ISSUER_ID,
         ).serialize()
     }
 
     internal fun <R> withMockAuthServerAndTestApplication(
         moduleFunction: Application.() -> Unit,
-        test: TestApplicationEngine.() -> R
+        test: TestApplicationEngine.() -> R,
     ): R {
         try {
             System.setProperty("azure.app.well.known.url", mockOAuth2Server.wellKnownUrl(ISSUER_ID).toString())
@@ -38,7 +38,7 @@ internal object TestApplication {
     internal fun TestApplicationEngine.handleAuthenticatedAzureAdRequest(
         method: HttpMethod,
         uri: String,
-        test: TestApplicationRequest.() -> Unit = {}
+        test: TestApplicationRequest.() -> Unit = {},
     ): TestApplicationCall {
         return this.handleRequest(method, uri) {
             addHeader("Authorization", "Bearer $testOAuthToken")

@@ -18,7 +18,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 
 class PostgresBruktSubsumsjonStoreTest {
-
     @Test
     fun `successfully inserts BruktSubsumsjon`() {
         withMigratedDb { dataSource ->
@@ -26,8 +25,8 @@ class PostgresBruktSubsumsjonStoreTest {
             with(
                 PostgresBruktSubsumsjonStore(
                     dataSource = dataSource,
-                    subsumsjonStore = subsumsjonStore
-                )
+                    subsumsjonStore = subsumsjonStore,
+                ),
             ) {
                 opprettKoblingTilEkstern(subsumsjonStore)
                 insertSubsumsjonBrukt(eksternTilInternSubsumsjon(bruktSubsumsjon)) shouldBe 1
@@ -39,13 +38,15 @@ class PostgresBruktSubsumsjonStoreTest {
     fun `inserting intern subsumsjon brukt also works`() {
         withMigratedDb { dataSource ->
             with(PostgresBruktSubsumsjonStore(dataSource = dataSource)) {
-                val internSubsumsjonBrukt = InternSubsumsjonBrukt(
-                    id = subsumsjon.behovId.id,
-                    behandlingsId = PostgresSubsumsjonStore(dataSource).opprettKoblingTilRegelkontekst(
-                        eksternId
-                    ).id,
-                    arenaTs = exampleDate
-                )
+                val internSubsumsjonBrukt =
+                    InternSubsumsjonBrukt(
+                        id = subsumsjon.behovId.id,
+                        behandlingsId =
+                            PostgresSubsumsjonStore(dataSource).opprettKoblingTilRegelkontekst(
+                                eksternId,
+                            ).id,
+                        arenaTs = exampleDate,
+                    )
                 this.insertSubsumsjonBrukt(internSubsumsjonBrukt = internSubsumsjonBrukt)
                 val savedBruktSub = getSubsumsjonBrukt(SubsumsjonId(internSubsumsjonBrukt.id))
                 savedBruktSub!!.created shouldNotBe null
@@ -61,14 +62,14 @@ class PostgresBruktSubsumsjonStoreTest {
             with(
                 PostgresBruktSubsumsjonStore(
                     dataSource = dataSource,
-                    subsumsjonStore = subsumsjonStore
-                )
+                    subsumsjonStore = subsumsjonStore,
+                ),
             ) {
                 subsumsjonStore.opprettKoblingTilRegelkontekst(
                     RegelKontekst(
                         bruktSubsumsjon.eksternId.toString(),
-                        Kontekst.vedtak
-                    )
+                        Kontekst.vedtak,
+                    ),
                 )
                 insertSubsumsjonBrukt(eksternTilInternSubsumsjon(bruktSubsumsjon)) shouldBe 1
                 /*getSubsumsjonBrukt(SubsumsjonId(bruktSubsumsjon.id))?.arenaTs?.format(secondFormatter) shouldBe exampleDate.format(
@@ -85,8 +86,8 @@ class PostgresBruktSubsumsjonStoreTest {
             with(
                 PostgresBruktSubsumsjonStore(
                     dataSource = dataSource,
-                    subsumsjonStore = subsumsjonStore
-                )
+                    subsumsjonStore = subsumsjonStore,
+                ),
             ) {
                 opprettKoblingTilEkstern(subsumsjonStore)
                 val internSubsumsjonBrukt = eksternTilInternSubsumsjon(bruktSubsumsjon)
@@ -105,8 +106,8 @@ class PostgresBruktSubsumsjonStoreTest {
             with(
                 PostgresBruktSubsumsjonStore(
                     dataSource = dataSource,
-                    subsumsjonStore = subsumsjonStore
-                )
+                    subsumsjonStore = subsumsjonStore,
+                ),
             ) {
                 opprettKoblingTilEkstern(subsumsjonStore)
                 val internSubsumsjonBrukt1 = eksternTilInternSubsumsjon(bruktSubsumsjon)
@@ -124,14 +125,14 @@ class PostgresBruktSubsumsjonStoreTest {
             with(
                 PostgresBruktSubsumsjonStore(
                     dataSource = dataSource,
-                    subsumsjonStore = subsumsjonStore
-                )
+                    subsumsjonStore = subsumsjonStore,
+                ),
             ) {
                 shouldThrow<SubsumsjonBruktNotFoundException> {
                     eksternTilInternSubsumsjon(
                         bruktSubsumsjon.copy(
-                            eksternId = 9876
-                        )
+                            eksternId = 9876,
+                        ),
                     )
                 }
             }
@@ -142,28 +143,29 @@ class PostgresBruktSubsumsjonStoreTest {
         subsumsjonStore.opprettKoblingTilRegelkontekst(
             RegelKontekst(
                 bruktSubsumsjon.eksternId.toString(),
-                Kontekst.vedtak
-            )
+                Kontekst.vedtak,
+            ),
         )
     }
 
     val oslo = ZoneId.of("Europe/Oslo")
     val exampleDate = ZonedDateTime.now(oslo).minusHours(6)
-    val subsumsjon = Subsumsjon(
-        behovId = BehovId("01DSFT25TF56A7J8HBGDMEXAZB"),
-        faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),
-        grunnlagResultat = emptyMap(),
-        minsteinntektResultat = emptyMap(),
-        periodeResultat = emptyMap(),
-        satsResultat = emptyMap(),
-        problem = Problem(title = "problem")
-    )
+    val subsumsjon =
+        Subsumsjon(
+            behovId = BehovId("01DSFT25TF56A7J8HBGDMEXAZB"),
+            faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),
+            grunnlagResultat = emptyMap(),
+            minsteinntektResultat = emptyMap(),
+            periodeResultat = emptyMap(),
+            satsResultat = emptyMap(),
+            problem = Problem(title = "problem"),
+        )
     val eksternId = RegelKontekst(id = "1234", type = Kontekst.vedtak)
     val bruktSubsumsjon =
         EksternSubsumsjonBrukt(
             id = subsumsjon.behovId.id,
             eksternId = 1231231,
             arenaTs = exampleDate,
-            ts = Instant.now().toEpochMilli()
+            ts = Instant.now().toEpochMilli(),
         )
 }

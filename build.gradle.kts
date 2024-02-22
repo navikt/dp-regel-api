@@ -1,21 +1,13 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     application
-    kotlin("jvm") version Kotlin.version
-    id(Spotless.spotless) version Spotless.version
-    id(Shadow.shadow) version Shadow.version
-}
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
-
-apply {
-    plugin(Spotless.spotless)
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.spotless)
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 repositories {
@@ -28,18 +20,6 @@ repositories {
 application {
     applicationName = "dp-regel-api"
     mainClass.set("no.nav.dagpenger.regel.api.RegelApiKt")
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-configurations {
-    this.all {
-        exclude(group = "ch.qos.logback")
-    }
 }
 
 dependencies {
@@ -113,13 +93,29 @@ dependencies {
     testRuntimeOnly(Junit5.vintageEngine)
 }
 
-spotless {
-    kotlin {
-        ktlint(Ktlint.version)
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
+}
+
+configurations {
+    this.all {
+        exclude(group = "ch.qos.logback")
+    }
+}
+
+tasks.withType<Jar>().configureEach {
+    dependsOn("test")
+}
+
+configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+    kotlin {
+        ktlint()
+    }
+
     kotlinGradle {
-        target("*.gradle.kts", "buildSrc/**/*.kt*")
-        ktlint(Ktlint.version)
+        ktlint()
     }
 }
 
@@ -128,16 +124,8 @@ tasks.withType<Test> {
     testLogging {
         showExceptions = true
         showStackTraces = true
-        showStandardStreams = true
         exceptionFormat = TestExceptionFormat.FULL
-        events =
-            setOf(
-                TestLogEvent.PASSED,
-                TestLogEvent.SKIPPED,
-                TestLogEvent.FAILED,
-                TestLogEvent.STANDARD_OUT,
-                TestLogEvent.STANDARD_ERROR,
-            )
+        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
     }
 }
 
@@ -149,6 +137,7 @@ tasks.named("compileKotlin") {
     dependsOn("spotlessCheck")
 }
 
-tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
-    transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer::class.java)
+tasks.withType<ShadowJar> {
+    transform(Log4j2PluginsCacheFileTransformer::class.java)
+    mergeServiceFiles()
 }
