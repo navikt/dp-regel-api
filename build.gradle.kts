@@ -23,74 +23,61 @@ application {
 }
 
 dependencies {
-    constraints {
-        testRuntimeOnly("org.xerial.snappy:snappy-java:1.1.8.2") {
-            because("Required on M1 cpus")
-        }
-    }
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.github.navikt:dagpenger-streams:20231220.ec218b")
     implementation("com.github.navikt:dp-inntekt-kontrakter:1_20231220.55a8a9")
     implementation("com.github.navikt:dagpenger-events:20231220.3050bf")
+    implementation(libs.bundles.jackson)
 
-    implementation(Jackson.core)
-    implementation(Jackson.kotlin)
-    implementation(Jackson.jsr310)
-    implementation(Kafka.clients)
-    implementation(Kafka.streams)
+    val kafkaVersion = "3.3.1"
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
+    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
-    implementation(Ktor2.Server.library("netty"))
-    implementation(Ktor2.Server.library("default-headers"))
-    implementation(Ktor2.Server.library("call-logging"))
-    implementation(Ktor2.Server.library("status-pages"))
-    implementation(Ktor2.Server.library("auth"))
-    implementation(Ktor2.Server.library("auth-jwt"))
-    implementation(Ktor2.Server.library("locations"))
-    implementation(Ktor2.Server.library("metrics-micrometer"))
-    implementation(Ktor2.Server.library("content-negotiation"))
-    implementation("io.ktor:ktor-serialization-jackson:${Ktor2.version}")
+    val ktorServerVersion = libs.versions.ktor.get()
+    implementation(libs.bundles.ktor.server)
+    implementation(libs.ktor.server.metrics.micrometer)
+    implementation("io.ktor:ktor-server-netty:$ktorServerVersion")
+    implementation("io.ktor:ktor-server-default-headers:$ktorServerVersion")
+    implementation("io.ktor:ktor-server-locations:$ktorServerVersion")
 
-    implementation(Ktor2.Client.library("core"))
-    implementation(Ktor2.Client.library("cio"))
-    implementation(Ktor2.Client.library("apache"))
+    implementation(libs.bundles.ktor.client)
 
-    implementation(Micrometer.prometheusRegistry)
+    implementation("io.micrometer:micrometer-registry-prometheus:1.10.1")
 
-    implementation(Log4j2.api)
-    implementation(Log4j2.core)
-    implementation(Log4j2.slf4j)
-    implementation(Log4j2.library("layout-template-json"))
-    implementation(Kotlin.Logging.kotlinLogging)
+    val log4j2Version = "2.20.0"
+    implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
+    implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4j2Version")
+    implementation("org.apache.logging.log4j:log4j-layout-template-json:$log4j2Version")
+    implementation("org.slf4j:slf4j-api:1.7.25")
 
-    implementation(Slf4j.api)
+    implementation(libs.kotlin.logging)
 
-    implementation(Ulid.ulid)
+    implementation("de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.3.0")
 
-    implementation(Database.Flyway)
-    implementation(Database.HikariCP)
-    implementation(Database.Postgres)
-    implementation(Database.Kotlinquery)
-    implementation(Konfig.konfig)
+    implementation(libs.bundles.postgres)
+    implementation(libs.konfig)
 
-    implementation(Prometheus.common)
-    implementation(Prometheus.hotspot)
-    implementation(Prometheus.log4j2)
+    val prometheusVersion = "0.16.0"
+    implementation("io.prometheus:simpleclient_common:$prometheusVersion")
+    implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
+    implementation("io.prometheus:simpleclient_log4j2:$prometheusVersion")
 
     testImplementation(kotlin("test"))
-    testImplementation(Ktor2.Server.library("test-host"))
-    testImplementation(Junit5.api)
-    testImplementation(KoTest.assertions)
-    testImplementation(KoTest.property)
-    testImplementation(KoTest.runner)
-    testImplementation(TestContainers.postgresql)
-    testImplementation(TestContainers.kafka)
-    testImplementation(Kafka.streamTestUtils)
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.kotest.assertions.core)
+    testImplementation("io.kotest:kotest-property-jvm:${libs.versions.kotest.get()}")
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:${libs.versions.kotest.get()}")
+    testImplementation(libs.testcontainer.postgresql)
+    testImplementation("org.testcontainers:kafka:1.17.6")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:3.3.1")
     testImplementation("no.nav.security:mock-oauth2-server:0.5.7")
 
-    testImplementation(Mockk.mockk)
+    testImplementation(libs.mockk)
 
-    testRuntimeOnly(Junit5.engine)
-    testRuntimeOnly(Junit5.vintageEngine)
+    val junitVersion = libs.versions.junit.get()
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
 kotlin {
