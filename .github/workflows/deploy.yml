@@ -25,12 +25,8 @@ jobs:
         with:
           team: teamdagpenger
           tag: latest
-          push_image: true # optional, default true
-          dockerfile: Dockerfile # optional, default Dockerfile
-          docker_context: . # optional, default .
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
-          tag_latest: true # optional, default false
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
 
