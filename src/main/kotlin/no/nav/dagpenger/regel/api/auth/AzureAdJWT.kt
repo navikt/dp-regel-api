@@ -15,7 +15,7 @@ import io.ktor.server.auth.jwt.JWTPrincipal
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
-import java.net.URL
+import java.net.URI
 import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger {}
@@ -73,7 +73,7 @@ private fun meta(url: String): AzureAdOpenIdConfiguration {
 }
 
 private fun jwkProvider(url: String): JwkProvider {
-    return JwkProviderBuilder(URL(url))
+    return JwkProviderBuilder(URI(url).toURL())
         .cached(10, 24, TimeUnit.HOURS) // cache up to 10 JWKs for 24 hours
         .rateLimited(
             10,
