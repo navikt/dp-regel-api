@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 private object Kafka {
     val instance by lazy {
         // See https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility
-        KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:5.3.1")).apply { this.start() }
+        KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.7.0")).apply { this.start() }
     }
 }
 
