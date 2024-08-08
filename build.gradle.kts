@@ -24,7 +24,7 @@ application {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.github.navikt:dagpenger-streams:20231220.ec218b")
+    implementation("com.github.navikt:dagpenger-streams:2023081812031692353030.ca95330b1ba8")
     implementation("com.github.navikt:dp-inntekt-kontrakter:1_20231220.55a8a9")
     implementation("com.github.navikt:dagpenger-events:20231220.3050bf")
     implementation(libs.bundles.jackson)
