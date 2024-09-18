@@ -136,7 +136,11 @@ class KafkaSubsumsjonBruktConsumerTest {
                         arenaTs = now.minusMinutes(5),
                     )
                 every { this@apply.insertSubsumsjonBrukt(capture(lagretTilDb)) } returns 1
-                every { this@apply.getSubsumsjonByResult(any()) } returns subsumsjon.copy(faktum = subsumsjon.faktum.copy(inntektsId = null))
+                every {
+                    this@apply.getSubsumsjonByResult(
+                        any(),
+                    )
+                } returns subsumsjon.copy(faktum = subsumsjon.faktum.copy(inntektsId = null))
             }
         val vaktmester =
             mockk<Vaktmester>(relaxed = true).apply {

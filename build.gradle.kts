@@ -7,7 +7,7 @@ plugins {
     application
     alias(libs.plugins.kotlin)
     alias(libs.plugins.spotless)
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    alias(libs.plugins.shadow.jar)
 }
 
 repositories {
@@ -90,10 +90,6 @@ configurations {
     this.all {
         exclude(group = "ch.qos.logback")
     }
-}
-
-tasks.withType<Jar>().configureEach {
-    dependsOn("test")
 }
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
