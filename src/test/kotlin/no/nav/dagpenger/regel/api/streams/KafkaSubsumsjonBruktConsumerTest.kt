@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.Properties
+import java.util.UUID
 
 class KafkaSubsumsjonBruktConsumerTest {
     val streamsConfig =
@@ -322,6 +323,42 @@ class KafkaSubsumsjonBruktConsumerTest {
                 arenaTs = now,
                 ts = now.toInstant().toEpochMilli(),
             )
+        TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
+            val topic =
+                it.createInputTopic(
+                    subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
+                    subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
+                    subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer(),
+                )
+            topic.pipeInput(bruktSubsumsjon.toJson())
+
+            val outTopic =
+                it.createOutputTopic(
+                    "teamdagpenger.inntektbrukt.v1",
+                    Serdes.StringSerde().deserializer(),
+                    Serdes.StringSerde().deserializer(),
+                )
+
+            outTopic.isEmpty shouldBe true
+        }
+    }
+
+    @Test
+    fun `skal filtrere ut der Id ikke er laget av dp-regel-api (der Id er noe annet enn ULID)`() {
+        val config = Configuration
+        val storeMock =
+            mockk<BruktSubsumsjonStore>(relaxed = true)
+        val subsumsjonBruktConsumer =
+            KafkaSubsumsjonBruktConsumer(config, BruktSubsumsjonStrategy(mockk(relaxed = true), storeMock))
+
+        val bruktSubsumsjon =
+            EksternSubsumsjonBrukt(
+                id = UUID.randomUUID().toString(),
+                eksternId = 1234678L,
+                arenaTs = now,
+                ts = now.toInstant().toEpochMilli(),
+            )
+
         TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
             val topic =
                 it.createInputTopic(
