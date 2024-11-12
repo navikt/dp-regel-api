@@ -42,7 +42,7 @@ dependencies {
 
     implementation(libs.bundles.ktor.client)
 
-    implementation("io.micrometer:micrometer-registry-prometheus:1.10.1")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.14.0")
 
     val log4j2Version = "2.24.1"
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
