@@ -7,7 +7,7 @@ plugins {
     application
     alias(libs.plugins.kotlin)
     alias(libs.plugins.spotless)
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    alias(libs.plugins.shadow.jar)
 }
 
 repositories {
@@ -29,7 +29,7 @@ dependencies {
     implementation("com.github.navikt:dagpenger-events:20231220.3050bf")
     implementation(libs.bundles.jackson)
 
-    val kafkaVersion = "7.7.0-ce"
+    val kafkaVersion = "7.7.1-ce"
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
@@ -44,7 +44,7 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.10.1")
 
-    val log4j2Version = "2.24.0"
+    val log4j2Version = "2.24.1"
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4j2Version")
@@ -69,9 +69,9 @@ dependencies {
     testImplementation("io.kotest:kotest-property-jvm:${libs.versions.kotest.get()}")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:${libs.versions.kotest.get()}")
     testImplementation(libs.testcontainer.postgresql)
-    testImplementation("org.testcontainers:kafka:1.20.1")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.7.0-ce")
-    testImplementation("no.nav.security:mock-oauth2-server:2.1.9")
+    testImplementation("org.testcontainers:kafka:1.20.3")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.7.1-ce")
+    testImplementation("no.nav.security:mock-oauth2-server:2.1.10")
 
     testImplementation(libs.mockk)
 
@@ -90,10 +90,6 @@ configurations {
     this.all {
         exclude(group = "ch.qos.logback")
     }
-}
-
-tasks.withType<Jar>().configureEach {
-    dependsOn("test")
 }
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
