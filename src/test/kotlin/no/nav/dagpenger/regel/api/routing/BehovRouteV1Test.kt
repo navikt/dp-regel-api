@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotEndWith
 import io.kotest.matchers.string.shouldStartWith
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -62,6 +63,7 @@ class BehovRouteV1Test {
             handleAuthenticatedAzureAdRequest(HttpMethod.Get, "v1/behov/status/01DSFG6P7969DP56BPW2EDS1RN")
                 .apply {
                     response.status() shouldBe HttpStatusCode.OK
+                    response.headers["Content-Type"] shouldBe ContentType.Application.Json.toString()
                     response.content shouldNotBe null
                     response.content shouldBe """{"status":"PENDING"}"""
                 }

@@ -3,6 +3,7 @@ package no.nav.dagpenger.regel.api.routing
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -61,6 +62,7 @@ internal class SubsumsjonRouteV1Test {
             handleAuthenticatedAzureAdRequest(HttpMethod.Get, "v1/subsumsjon/01DSFGFVF3C1D1QQR69C7BRJT5")
                 .apply {
                     response.status() shouldBe HttpStatusCode.OK
+                    response.headers["Content-Type"] shouldBe ContentType.Application.Json.toString()
                     response.content shouldNotBe null
                     response.content?.let {
                         JsonAdapter.fromJson(it) shouldBe subsumsjon
@@ -100,6 +102,7 @@ internal class SubsumsjonRouteV1Test {
             handleAuthenticatedAzureAdRequest(HttpMethod.Get, "v1/subsumsjon/result/$id")
                 .apply {
                     response.status() shouldBe HttpStatusCode.OK
+                    response.headers["Content-Type"] shouldBe ContentType.Application.Json.toString()
                     response.content shouldNotBe null
                     response.content?.let {
                         JsonAdapter.fromJson(it) shouldBe subsumsjon

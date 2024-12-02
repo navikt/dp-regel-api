@@ -2,6 +2,7 @@ package no.nav.dagpenger.regel.api.routing
 
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.matchers.shouldBe
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -75,7 +76,7 @@ class LovverkRouteTest {
         testApplicationRequest(subsumsjonStore)
             .apply {
                 response.status() shouldBe HttpStatusCode.OK
-
+                response.headers["Content-Type"] shouldBe ContentType.Application.Json.toString()
                 response.content shouldBe """{"nyVurdering":false}"""
                 verify {
                     subsumsjonStore.getSubsumsjonerByResults(
@@ -98,7 +99,7 @@ class LovverkRouteTest {
         testApplicationRequest(subsumsjonStore)
             .apply {
                 response.status() shouldBe HttpStatusCode.OK
-
+                response.headers["Content-Type"] shouldBe ContentType.Application.Json.toString()
                 response.content shouldBe """{"nyVurdering":true}"""
                 verify {
                     subsumsjonStore.getSubsumsjonerByResults(

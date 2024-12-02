@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotEndWith
 import io.kotest.matchers.string.shouldStartWith
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -121,6 +122,7 @@ class BehovRouteTest {
                 )
             }.apply {
                 response.status() shouldBe HttpStatusCode.Accepted
+                response.headers["Content-Type"] shouldBe ContentType.Application.Json.toString()
                 response.headers.contains(HttpHeaders.Location) shouldBe true
                 response.headers[HttpHeaders.Location]?.let { location ->
                     location shouldStartWith "/behov/status/"
