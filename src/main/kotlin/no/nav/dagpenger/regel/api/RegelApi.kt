@@ -10,7 +10,6 @@ import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.locations.Locations
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.BadRequestException
@@ -160,8 +159,6 @@ internal fun Application.api(
     install(ContentNegotiation) {
         register(ContentType.Application.Json, JacksonConverter(jacksonObjectMapper))
     }
-
-    install(Locations)
 
     install(MicrometerMetrics) {
         registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, prometheusMeterRegistry, Clock.SYSTEM)

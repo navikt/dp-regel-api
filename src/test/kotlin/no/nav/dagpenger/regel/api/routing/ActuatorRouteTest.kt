@@ -2,25 +2,26 @@ package no.nav.dagpenger.regel.api.routing
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.ktor.http.HttpMethod
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.handleRequest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
+import no.nav.dagpenger.regel.api.routing.TestApplication.testApp
 import org.junit.jupiter.api.Test
 
 class ActuatorRouteTest {
     @Test
     fun `isReady route returns 200 OK`() {
-        withMockAuthServerAndTestApplication(mockApi()) {
-            handleRequest(HttpMethod.Get, "/isReady").apply {
-                response.status() shouldBe HttpStatusCode.OK
-                response.content shouldBe "READY"
-            }
+        testApp(
+            mockApi(),
+        ) {
+            val res = client.get("/isReady")
+            res.status shouldBe HttpStatusCode.OK
+            res.bodyAsText() shouldBe "READY"
         }
     }
 
@@ -31,15 +32,14 @@ class ActuatorRouteTest {
                 every { this@apply.status() } returns HealthStatus.UP
             }
 
-        withMockAuthServerAndTestApplication(
+        testApp(
             mockApi(
                 healthChecks = listOf(healthCheck, healthCheck),
             ),
         ) {
-            handleRequest(HttpMethod.Get, "/isAlive").apply {
-                response.status() shouldBe HttpStatusCode.OK
-                response.content shouldBe "ALIVE"
-            }
+            val res = client.get("/isAlive")
+            res.status shouldBe HttpStatusCode.OK
+            res.bodyAsText() shouldBe "ALIVE"
         }
 
         verify(exactly = 2) {
@@ -54,14 +54,13 @@ class ActuatorRouteTest {
                 every { this@apply.status() } returns HealthStatus.UP andThen HealthStatus.DOWN
             }
 
-        withMockAuthServerAndTestApplication(
+        testApp(
             mockApi(
                 healthChecks = listOf(healthCheck, healthCheck),
             ),
         ) {
-            handleRequest(HttpMethod.Get, "/isAlive").apply {
-                response.status() shouldBe HttpStatusCode.ServiceUnavailable
-            }
+            val res = client.get("/isAlive")
+            res.status shouldBe HttpStatusCode.ServiceUnavailable
         }
 
         verify(exactly = 2) {
@@ -71,11 +70,12 @@ class ActuatorRouteTest {
 
     @Test
     fun `The application produces metrics`() {
-        withMockAuthServerAndTestApplication(mockApi()) {
-            handleRequest(HttpMethod.Get, "/metrics").run {
-                response.status() shouldBe HttpStatusCode.OK
-                response.content shouldContain "jvm_"
-            }
+        testApp(
+            mockApi(),
+        ) {
+            val res = client.get("/metrics")
+            res.status shouldBe HttpStatusCode.OK
+            res.bodyAsText() shouldContain "jvm_"
         }
     }
 }

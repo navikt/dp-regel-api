@@ -35,7 +35,6 @@ dependencies {
     implementation(libs.ktor.server.metrics.micrometer)
     implementation("io.ktor:ktor-server-netty:$ktorServerVersion")
     implementation("io.ktor:ktor-server-default-headers:$ktorServerVersion")
-    implementation("io.ktor:ktor-server-locations:$ktorServerVersion")
 
     implementation(libs.bundles.ktor.client)
 

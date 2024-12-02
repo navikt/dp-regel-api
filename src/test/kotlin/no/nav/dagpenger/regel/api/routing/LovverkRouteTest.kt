@@ -2,12 +2,11 @@ package no.nav.dagpenger.regel.api.routing
 
 import de.huxhorn.sulky.ulid.ULID
 import io.kotest.matchers.shouldBe
+import io.ktor.client.request.post
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -20,8 +19,8 @@ import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
-import no.nav.dagpenger.regel.api.routing.TestApplication.handleAuthenticatedAzureAdRequest
-import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
+import no.nav.dagpenger.regel.api.routing.TestApplication.autentisert
+import no.nav.dagpenger.regel.api.routing.TestApplication.testApp
 import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -57,13 +56,11 @@ class LovverkRouteTest {
 
     @Test
     fun `401 on unauthorized requests`() {
-        withMockAuthServerAndTestApplication(mockApi()) {
-            handleRequest(
-                HttpMethod.Post,
-                "lovverk/vurdering/minsteinntekt",
-            ).response.status() shouldBe HttpStatusCode.Unauthorized
-            handleRequest(HttpMethod.Post, "lovverk/vurdering/minsteinntekt") { addHeader("X-API-KEY", "notvalid") }
-                .response.status() shouldBe HttpStatusCode.Unauthorized
+        testApp(
+            mockApi(),
+        ) {
+            val response = client.post("lovverk/vurdering/minsteinntekt")
+            response.status shouldBe HttpStatusCode.Unauthorized
         }
     }
 
@@ -72,21 +69,28 @@ class LovverkRouteTest {
         subsumsjonStore.apply {
             every { getSubsumsjon(any()) } returns subsumsjonMock
         }
+        testApp(
+            mockApi(
+                subsumsjonStore = subsumsjonStore,
+                kafkaDagpengerBehovProducer = behovProducer,
+            ),
+        ) {
+            val response = autentisert("lovverk/vurdering/minsteinntekt", HttpMethod.Post, body = jsonRequestBody)
+            response.status shouldBe HttpStatusCode.OK
+            response.headers["Content-Type"] shouldBe
+                ContentType.Application.Json.withParameter("charset", "UTF-8")
+                    .toString()
 
-        testApplicationRequest(subsumsjonStore)
-            .apply {
-                response.status() shouldBe HttpStatusCode.OK
-                response.headers["Content-Type"] shouldBe ContentType.Application.Json.toString()
-                response.content shouldBe """{"nyVurdering":false}"""
-                verify {
-                    subsumsjonStore.getSubsumsjonerByResults(
-                        listOf(
-                            SubsumsjonId(subsumsjonId1),
-                            SubsumsjonId(subsumsjonId2),
-                        ),
-                    )
-                }
+            response.bodyAsText() shouldBe """{"nyVurdering":false}"""
+            verify {
+                subsumsjonStore.getSubsumsjonerByResults(
+                    listOf(
+                        SubsumsjonId(subsumsjonId1),
+                        SubsumsjonId(subsumsjonId2),
+                    ),
+                )
             }
+        }
     }
 
     @Test
@@ -96,39 +100,34 @@ class LovverkRouteTest {
                 subsumsjonMock.copy(minsteinntektResultat = mapOf("oppfyllerMinsteinntekt" to false))
         }
 
-        testApplicationRequest(subsumsjonStore)
-            .apply {
-                response.status() shouldBe HttpStatusCode.OK
-                response.headers["Content-Type"] shouldBe ContentType.Application.Json.toString()
-                response.content shouldBe """{"nyVurdering":true}"""
-                verify {
-                    subsumsjonStore.getSubsumsjonerByResults(
-                        listOf(
-                            SubsumsjonId(subsumsjonId1),
-                            SubsumsjonId(subsumsjonId2),
-                        ),
-                    )
-                }
+        testApp(
+            mockApi(
+                subsumsjonStore = subsumsjonStore,
+                kafkaDagpengerBehovProducer = behovProducer,
+            ),
+        ) {
+            val response = autentisert("lovverk/vurdering/minsteinntekt", HttpMethod.Post, body = jsonRequestBody)
+            response.status shouldBe HttpStatusCode.OK
+            response.headers["Content-Type"] shouldBe
+                ContentType.Application.Json.withParameter("charset", "UTF-8")
+                    .toString()
+
+            response.bodyAsText() shouldBe """{"nyVurdering":true}"""
+            verify {
+                subsumsjonStore.getSubsumsjonerByResults(
+                    listOf(
+                        SubsumsjonId(subsumsjonId1),
+                        SubsumsjonId(subsumsjonId2),
+                    ),
+                )
             }
+        }
     }
 
     companion object {
         val subsumsjonId1 = ULID().nextULID()
         val subsumsjonId2 = ULID().nextULID()
     }
-
-    fun testApplicationRequest(subsumsjonStore: SubsumsjonStore) =
-        withMockAuthServerAndTestApplication(
-            mockApi(
-                subsumsjonStore = subsumsjonStore,
-                kafkaDagpengerBehovProducer = behovProducer,
-            ),
-        ) {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Post, "/lovverk/vurdering/minsteinntekt") {
-                addHeader(HttpHeaders.ContentType, "application/json")
-                setBody(jsonRequestBody)
-            }
-        }
 
     val jsonRequestBody =
         """

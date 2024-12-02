@@ -1,12 +1,13 @@
 package no.nav.dagpenger.regel.api.routing
 
 import de.huxhorn.sulky.ulid.ULID
+import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.handleRequest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
@@ -20,57 +21,57 @@ import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
-import no.nav.dagpenger.regel.api.routing.TestApplication.handleAuthenticatedAzureAdRequest
-import no.nav.dagpenger.regel.api.routing.TestApplication.withMockAuthServerAndTestApplication
+import no.nav.dagpenger.regel.api.routing.TestApplication.autentisert
+import no.nav.dagpenger.regel.api.routing.TestApplication.testApp
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 internal class SubsumsjonRouteTest {
     @Test
     fun `401 on unauthorized requests`() {
-        withMockAuthServerAndTestApplication(mockApi()) {
-            handleRequest(HttpMethod.Get, "subsumsjon/id").response.status() shouldBe HttpStatusCode.Unauthorized
-            handleRequest(HttpMethod.Get, "subsumsjon/id") { addHeader("X-API-KEY", "notvalid") }
-                .response.status() shouldBe HttpStatusCode.Unauthorized
+        testApp(
+            mockApi(),
+        ) {
+            client.get("/subsumsjon/id").status shouldBe HttpStatusCode.Unauthorized
         }
     }
 
     @Test
     fun `Returns subsumsjon if found`() {
-        val subsumsjon =
-            Subsumsjon(
-                behovId = BehovId("01DSFSSNA8S577XGQ8V1R9EBJ7"),
-                faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),
-                grunnlagResultat = emptyMap(),
-                minsteinntektResultat = emptyMap(),
-                periodeResultat = emptyMap(),
-                satsResultat = emptyMap(),
-                problem = Problem(title = "problem"),
-            )
+        runBlocking {
+            val subsumsjon =
+                Subsumsjon(
+                    behovId = BehovId("01DSFSSNA8S577XGQ8V1R9EBJ7"),
+                    faktum = Faktum("aktorId", RegelKontekst("1", Kontekst.vedtak), LocalDate.now()),
+                    grunnlagResultat = emptyMap(),
+                    minsteinntektResultat = emptyMap(),
+                    periodeResultat = emptyMap(),
+                    satsResultat = emptyMap(),
+                    problem = Problem(title = "problem"),
+                )
 
-        val storeMock =
-            mockk<SubsumsjonStore>(relaxed = false).apply {
-                every { this@apply.getSubsumsjon(BehovId("01DSFGFVF3C1D1QQR69C7BRJT5")) } returns subsumsjon
-            }
-
-        withMockAuthServerAndTestApplication(
-            mockApi(
-                subsumsjonStore = storeMock,
-            ),
-        ) {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/subsumsjon/01DSFGFVF3C1D1QQR69C7BRJT5")
-                .apply {
-                    response.status() shouldBe HttpStatusCode.OK
-                    response.headers["Content-Type"] shouldBe ContentType.Application.Json.toString()
-                    response.content shouldNotBe null
-                    response.content?.let {
-                        JsonAdapter.fromJson(it) shouldBe subsumsjon
-                    }
+            val storeMock =
+                mockk<SubsumsjonStore>(relaxed = false).apply {
+                    every { this@apply.getSubsumsjon(BehovId("01DSFGFVF3C1D1QQR69C7BRJT5")) } returns subsumsjon
                 }
-        }
 
-        verifyAll {
-            storeMock.getSubsumsjon(BehovId("01DSFGFVF3C1D1QQR69C7BRJT5"))
+            testApp(
+                mockApi(
+                    subsumsjonStore = storeMock,
+                ),
+            ) {
+                val response = autentisert("/subsumsjon/01DSFGFVF3C1D1QQR69C7BRJT5", HttpMethod.Get)
+                response.status shouldBe HttpStatusCode.OK
+                response.headers["Content-Type"] shouldBe
+                    ContentType.Application.Json.withParameter("charset", "UTF-8")
+                        .toString()
+                response.bodyAsText().let {
+                    JsonAdapter.fromJson(it) shouldBe subsumsjon
+                }
+            }
+            verifyAll {
+                storeMock.getSubsumsjon(BehovId("01DSFGFVF3C1D1QQR69C7BRJT5"))
+            }
         }
     }
 
@@ -93,20 +94,19 @@ internal class SubsumsjonRouteTest {
                 every { this@apply.getSubsumsjonByResult(SubsumsjonId(id)) } returns subsumsjon
             }
 
-        withMockAuthServerAndTestApplication(
+        testApp(
             mockApi(
                 subsumsjonStore = storeMock,
             ),
         ) {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/subsumsjon/result/$id")
-                .apply {
-                    response.status() shouldBe HttpStatusCode.OK
-                    response.headers["Content-Type"] shouldBe ContentType.Application.Json.toString()
-                    response.content shouldNotBe null
-                    response.content?.let {
-                        JsonAdapter.fromJson(it) shouldBe subsumsjon
-                    }
-                }
+            val response = autentisert("/subsumsjon/result/$id", HttpMethod.Get)
+            response.status shouldBe HttpStatusCode.OK
+            response.headers["Content-Type"] shouldBe
+                ContentType.Application.Json.withParameter("charset", "UTF-8")
+                    .toString()
+            response.bodyAsText().let {
+                JsonAdapter.fromJson(it) shouldBe subsumsjon
+            }
         }
 
         verifyAll {
@@ -120,14 +120,13 @@ internal class SubsumsjonRouteTest {
 
         every { storeMock.getSubsumsjon(BehovId("01DSFGJBRYVBX2CNJKHJ0BB2W9")) } throws SubsumsjonNotFoundException("Not found")
 
-        withMockAuthServerAndTestApplication(
+        testApp(
             mockApi(
                 subsumsjonStore = storeMock,
             ),
         ) {
-            handleAuthenticatedAzureAdRequest(HttpMethod.Get, "/subsumsjon/01DSFGJBRYVBX2CNJKHJ0BB2W9").apply {
-                response.status() shouldBe HttpStatusCode.NotFound
-            }
+            val response = autentisert("/subsumsjon/01DSFGJBRYVBX2CNJKHJ0BB2W9", HttpMethod.Get)
+            response.status shouldBe HttpStatusCode.NotFound
         }
 
         verifyAll {
