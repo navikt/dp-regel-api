@@ -1,12 +1,9 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
+    id("common")
     application
-    alias(libs.plugins.kotlin)
-    alias(libs.plugins.spotless)
     alias(libs.plugins.shadow.jar)
 }
 
@@ -80,44 +77,10 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-}
-
 configurations {
     this.all {
         exclude(group = "ch.qos.logback")
     }
-}
-
-configure<com.diffplug.gradle.spotless.SpotlessExtension> {
-    kotlin {
-        ktlint()
-    }
-
-    kotlinGradle {
-        ktlint()
-    }
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-    testLogging {
-        showExceptions = true
-        showStackTraces = true
-        exceptionFormat = TestExceptionFormat.FULL
-        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-    }
-}
-
-tasks.withType<Wrapper> {
-    gradleVersion = "7.3.3"
-}
-
-tasks.named("compileKotlin") {
-    dependsOn("spotlessCheck")
 }
 
 tasks.withType<ShadowJar> {
