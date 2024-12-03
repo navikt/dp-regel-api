@@ -2,7 +2,7 @@
 
 package no.nav.dagpenger.regel.api.db
 
-import io.prometheus.client.Histogram
+import io.prometheus.metrics.core.metrics.Histogram
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -27,8 +27,8 @@ import javax.sql.DataSource
 
 private val LOGGER = KotlinLogging.logger {}
 
-private val subsumsjonStoreLatency: Histogram =
-    Histogram.build()
+internal val subsumsjonStoreLatency: Histogram =
+    Histogram.builder()
         .name("subsumsjonstore_latency")
         .labelNames("method")
         .help("Subsumsjonstore latency in seconds.").register()
@@ -321,7 +321,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         metric: String,
         block: () -> R,
     ): R {
-        val timer = subsumsjonStoreLatency.labels(metric).startTimer()
+        val timer = subsumsjonStoreLatency.labelValues(metric).startTimer()
         try {
             return block()
         } finally {
