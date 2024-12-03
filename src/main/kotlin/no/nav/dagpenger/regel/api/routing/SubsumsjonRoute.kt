@@ -18,7 +18,7 @@ internal fun Route.subsumsjon(store: SubsumsjonStore) {
         get("/{behovid}") {
             withContext(Dispatchers.IO) {
                 val behovid = BehovId(call.parameters["behovid"] ?: throw MissingRequestParameterException("behovid"))
-                store.getSubsumsjon(behovid).toJson().let {
+                store.getSubsumsjon(behovid).let {
                     call.respond(HttpStatusCode.OK, it)
                 }
             }
@@ -26,7 +26,7 @@ internal fun Route.subsumsjon(store: SubsumsjonStore) {
         get("/result/{subsumsjonsid}") {
             withContext(Dispatchers.IO) {
                 val subsumsjonsId = SubsumsjonId(call.parameters["subsumsjonsid"] ?: throw MissingRequestParameterException("behovid"))
-                store.getSubsumsjonByResult(subsumsjonsId).toJson().let {
+                store.getSubsumsjonByResult(subsumsjonsId).let {
                     call.respond(HttpStatusCode.OK, it)
                 }
             }

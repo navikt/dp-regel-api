@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.streams
 
+import de.huxhorn.sulky.ulid.ULID
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
@@ -81,6 +82,13 @@ internal class KafkaSubsumsjonBruktConsumer(
             .mapValues { _, value -> EksternSubsumsjonBrukt.fromJson(value) }
             .filterNot { _, bruktSubsumsjon ->
                 "AVSLU" == bruktSubsumsjon.vedtakStatus && "AVBRUTT" == bruktSubsumsjon.utfall
+            }
+            .filter { _, bruktSubsumsjon ->
+                kotlin.runCatching { ULID.parseULID(bruktSubsumsjon.id) }.isSuccess.also {
+                    if (!it) {
+                        LOGGER.warn { "Kunne ikke lese $bruktSubsumsjon -> ID er ikke ULID og ikke laget av dp-regel" }
+                    }
+                }
             }
             .mapValues { _, bruktSubsumsjon -> bruktSubsumsjonStrategy.handle(bruktSubsumsjon) }
             .filterNot { _, value -> value == null }

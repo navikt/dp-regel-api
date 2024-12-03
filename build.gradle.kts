@@ -1,12 +1,9 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
+    id("common")
     application
-    alias(libs.plugins.kotlin)
-    alias(libs.plugins.spotless)
     alias(libs.plugins.shadow.jar)
 }
 
@@ -29,7 +26,7 @@ dependencies {
     implementation("com.github.navikt:dagpenger-events:20240821.e26bb8")
     implementation(libs.bundles.jackson)
 
-    val kafkaVersion = "7.7.1-ce"
+    val kafkaVersion = "7.7.2-ce"
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
@@ -38,13 +35,12 @@ dependencies {
     implementation(libs.ktor.server.metrics.micrometer)
     implementation("io.ktor:ktor-server-netty:$ktorServerVersion")
     implementation("io.ktor:ktor-server-default-headers:$ktorServerVersion")
-    implementation("io.ktor:ktor-server-locations:$ktorServerVersion")
 
     implementation(libs.bundles.ktor.client)
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.10.1")
 
-    val log4j2Version = "2.24.0"
+    val log4j2Version = "2.24.2"
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4j2Version")
@@ -69,9 +65,9 @@ dependencies {
     testImplementation("io.kotest:kotest-property-jvm:${libs.versions.kotest.get()}")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:${libs.versions.kotest.get()}")
     testImplementation(libs.testcontainer.postgresql)
-    testImplementation("org.testcontainers:kafka:1.20.1")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.7.1-ce")
-    testImplementation("no.nav.security:mock-oauth2-server:2.1.9")
+    testImplementation("org.testcontainers:kafka:1.20.4")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.7.2-ce")
+    testImplementation("no.nav.security:mock-oauth2-server:2.1.10")
 
     testImplementation(libs.mockk)
 
@@ -80,44 +76,10 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-}
-
 configurations {
     this.all {
         exclude(group = "ch.qos.logback")
     }
-}
-
-configure<com.diffplug.gradle.spotless.SpotlessExtension> {
-    kotlin {
-        ktlint()
-    }
-
-    kotlinGradle {
-        ktlint()
-    }
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-    testLogging {
-        showExceptions = true
-        showStackTraces = true
-        exceptionFormat = TestExceptionFormat.FULL
-        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-    }
-}
-
-tasks.withType<Wrapper> {
-    gradleVersion = "7.3.3"
-}
-
-tasks.named("compileKotlin") {
-    dependsOn("spotlessCheck")
 }
 
 tasks.withType<ShadowJar> {
