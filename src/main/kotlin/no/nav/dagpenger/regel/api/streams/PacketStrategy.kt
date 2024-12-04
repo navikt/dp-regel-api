@@ -1,6 +1,6 @@
 package no.nav.dagpenger.regel.api.streams
 
-import io.prometheus.client.Summary
+import io.prometheus.metrics.core.metrics.Summary
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -16,7 +16,7 @@ private val LOGGER = KotlinLogging.logger {}
 
 const val PACKET_PROCESS_TIME_METRIC_NAME = "packet_process_time_nanoseconds"
 val packetProcessTimeLatency: Summary =
-    Summary.build()
+    Summary.builder()
         .name(PACKET_PROCESS_TIME_METRIC_NAME)
         .quantile(0.5, 0.05) // Add 50th percentile (= median) with 5% tolerated error
         .quantile(0.9, 0.01) // Add 90th percentile with 1% tolerated error
@@ -40,7 +40,7 @@ internal interface SubsumsjonPacketStrategy {
             LOGGER.info { "Strategy triggered: $simpleStrategyName" }
             handle(packet)
             started?.let { Duration.between(it, LocalDateTime.now()) }?.let {
-                packetProcessTimeLatency.labels(this.simpleStrategyName).observe(it.nano.toDouble())
+                packetProcessTimeLatency.labelValues(this.simpleStrategyName).observe(it.nano.toDouble())
             }
         }
     }
