@@ -40,7 +40,7 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.10.1")
 
-    val log4j2Version = "2.24.2"
+    val log4j2Version = "2.24.3"
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4j2Version")
