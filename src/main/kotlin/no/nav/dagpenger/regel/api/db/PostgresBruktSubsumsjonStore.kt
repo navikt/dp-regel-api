@@ -2,7 +2,6 @@
 
 package no.nav.dagpenger.regel.api.db
 
-import io.prometheus.client.Counter
 import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
@@ -26,13 +25,6 @@ class PostgresBruktSubsumsjonStore(
     private val dataSource: DataSource,
     val subsumsjonStore: SubsumsjonStore = PostgresSubsumsjonStore(dataSource),
 ) : BruktSubsumsjonStore, HealthCheck {
-    companion object {
-        val insertCounter =
-            Counter.build().name("subsumsjon_brukt_insert")
-                .namespace("no_nav_dagpenger")
-                .help("Hvor mange subsumsjoner fra vedtak lytter").register()
-    }
-
     override fun status(): HealthStatus {
         return try {
             using(sessionOf(dataSource)) { session ->
