@@ -62,4 +62,9 @@ spec:
           hour: 4
         pointInTimeRecovery: false
         tier:	db-custom-1-3840
+        flags:
+          - name: cloudsql.enable_pgaudit
+            value: "true"
+          - name: pgaudit.log
+            value: 'write'
         type: POSTGRES_15
