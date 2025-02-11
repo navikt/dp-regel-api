@@ -38,7 +38,7 @@ dependencies {
 
     implementation(libs.bundles.ktor.client)
 
-    implementation("io.micrometer:micrometer-registry-prometheus:1.10.1")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.14.1")
 
     val log4j2Version = "2.24.3"
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
@@ -54,10 +54,8 @@ dependencies {
     implementation(libs.bundles.postgres)
     implementation(libs.konfig)
 
-    val prometheusVersion = "0.16.0"
-    implementation("io.prometheus:simpleclient_common:$prometheusVersion")
-    implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
-    implementation("io.prometheus:simpleclient_log4j2:$prometheusVersion")
+    implementation("io.prometheus:prometheus-metrics-core:1.3.1")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.1")
 
     testImplementation(kotlin("test"))
     testImplementation(libs.ktor.server.test.host)

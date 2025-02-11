@@ -22,9 +22,14 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.Clock
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
-import io.prometheus.client.CollectorRegistry
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Vaktmester.Companion.LOGGER
 import no.nav.dagpenger.regel.api.auth.azureAdJWT
@@ -132,7 +137,8 @@ internal fun Application.api(
     kafkaProducer: DagpengerBehovProducer,
     healthChecks: List<HealthCheck>,
     config: Configuration,
-    prometheusMeterRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry,
+    prometheusMeterRegistry: PrometheusMeterRegistry =
+        PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM),
 ) {
     install(DefaultHeaders)
 
@@ -161,7 +167,15 @@ internal fun Application.api(
     }
 
     install(MicrometerMetrics) {
-        registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, prometheusMeterRegistry, Clock.SYSTEM)
+        registry = prometheusMeterRegistry
+        meterBinders =
+            listOf(
+                ClassLoaderMetrics(),
+                JvmMemoryMetrics(),
+                JvmGcMetrics(),
+                ProcessorMetrics(),
+                JvmThreadMetrics(),
+            )
     }
 
     install(StatusPages) {
