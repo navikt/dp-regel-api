@@ -1,8 +1,7 @@
 package no.nav.dagpenger.regel.api.streams
 
-import io.kotest.matchers.doubles.shouldBeGreaterThan
+import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.mockk.Called
 import io.mockk.Runs
 import io.mockk.every
@@ -11,7 +10,6 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verifyAll
-import io.prometheus.client.CollectorRegistry
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
@@ -22,6 +20,7 @@ import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.Status
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.behovId
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class PendingBehovStrategyTest {
@@ -79,12 +78,13 @@ internal class PendingBehovStrategyTest {
 
         PendingBehovStrategy(subsumsjonStore).run(pendingBehov)
 
-        val registry = CollectorRegistry.defaultRegistry
+        val målinger = packetProcessTimeLatency.collect()
 
-        registry.metricFamilySamples().asSequence().find { it.name == PACKET_PROCESS_TIME_METRIC_NAME }?.let { metric ->
-            metric.samples[0].value shouldNotBe null
-            metric.samples[0].value shouldBeGreaterThan 0.0
-            metric.samples[0].labelValues[0] shouldBe PendingBehovStrategy::class.java.simpleName
+        assertEquals(1, målinger.dataPoints.sumOf { it.count }, "Antall observert")
+
+        with(packetProcessTimeLatency.collect().dataPoints.single()) {
+            sum shouldBeGreaterThan 0.0
+            labels.get("strategy") shouldBe PendingBehovStrategy::class.java.simpleName
         }
     }
 }
