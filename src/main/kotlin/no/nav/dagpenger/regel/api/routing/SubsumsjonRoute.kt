@@ -1,7 +1,6 @@
 package no.nav.dagpenger.regel.api.routing
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.plugins.MissingRequestParameterException
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
