@@ -91,9 +91,9 @@ class KafkaSubsumsjonBruktConsumerTest {
         TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
             val topic =
                 it.createInputTopic(
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer(),
+                    config.subsumsjonBruktTopic,
+                    Serdes.StringSerde().serializer(),
+                    Serdes.StringSerde().serializer(),
                 )
             topic.pipeInput(bruktSubsumsjon.toJson())
 
@@ -162,9 +162,9 @@ class KafkaSubsumsjonBruktConsumerTest {
         TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
             val topic =
                 it.createInputTopic(
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer(),
+                    config.subsumsjonBruktTopic,
+                    Serdes.StringSerde().serializer(),
+                    Serdes.StringSerde().serializer(),
                 )
             topic.pipeInput(bruktSubsumsjon.toJson())
 
@@ -229,9 +229,9 @@ class KafkaSubsumsjonBruktConsumerTest {
         TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
             val topic =
                 it.createInputTopic(
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer(),
+                    config.subsumsjonBruktTopic,
+                    Serdes.StringSerde().serializer(),
+                    Serdes.StringSerde().serializer(),
                 )
             topic.pipeInput(bruktSubsumsjon.toJson())
 
@@ -292,9 +292,9 @@ class KafkaSubsumsjonBruktConsumerTest {
         TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
             val topic =
                 it.createInputTopic(
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer(),
+                    config.subsumsjonBruktTopic,
+                    Serdes.StringSerde().serializer(),
+                    Serdes.StringSerde().serializer(),
                 )
             brukteSubsumsjoner.forEach { eksternSubsumsjonBrukt ->
                 topic.pipeInput(eksternSubsumsjonBrukt.toJson())
@@ -326,9 +326,9 @@ class KafkaSubsumsjonBruktConsumerTest {
         TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
             val topic =
                 it.createInputTopic(
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer(),
+                    config.subsumsjonBruktTopic,
+                    Serdes.StringSerde().serializer(),
+                    Serdes.StringSerde().serializer(),
                 )
             topic.pipeInput(bruktSubsumsjon.toJson())
 
@@ -362,9 +362,9 @@ class KafkaSubsumsjonBruktConsumerTest {
         TopologyTestDriver(subsumsjonBruktConsumer.buildTopology(), streamsConfig).use {
             val topic =
                 it.createInputTopic(
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.name,
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.keySerde.serializer(),
-                    subsumsjonBruktConsumer.subsumsjonBruktTopic.valueSerde.serializer(),
+                    config.subsumsjonBruktTopic,
+                    Serdes.StringSerde().serializer(),
+                    Serdes.StringSerde().serializer(),
                 )
             topic.pipeInput(bruktSubsumsjon.toJson())
 

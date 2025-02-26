@@ -103,7 +103,7 @@ class PostgresSubsumsjonStoreTest {
 
     @Test
     fun `Store health check DOWN`() {
-        withMigratedDb { Unit ->
+        withMigratedDb { _ ->
             PostgresSubsumsjonStore(
                 HikariDataSource().apply {
                     username = PostgresTestSetup.instance.username

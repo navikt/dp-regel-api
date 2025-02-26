@@ -8,8 +8,6 @@ import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
 import no.nav.dagpenger.streams.KafkaAivenCredentials
-import no.nav.dagpenger.streams.Topic
-import no.nav.dagpenger.streams.consumeTopic
 import no.nav.dagpenger.streams.streamConfigAiven
 import org.apache.kafka.common.errors.TopicAuthorizationException
 import org.apache.kafka.common.serialization.Serdes
@@ -17,6 +15,7 @@ import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
+import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Produced
 import java.time.Duration
 
@@ -27,12 +26,6 @@ internal class KafkaSubsumsjonBruktConsumer(
     private val bruktSubsumsjonStrategy: BruktSubsumsjonStrategy,
 ) : HealthCheck {
     private val serviceAppId = "kafka-subsumsjonbrukt-v1"
-    val subsumsjonBruktTopic =
-        Topic(
-            config.subsumsjonBruktTopic,
-            keySerde = Serdes.StringSerde(),
-            valueSerde = Serdes.StringSerde(),
-        )
 
     fun start() = streams.start().also { LOGGER.info { "Starting up $serviceAppId kafka consumer" } }
 
@@ -70,12 +63,13 @@ internal class KafkaSubsumsjonBruktConsumer(
 
     internal fun buildTopology(): Topology {
         val builder = StreamsBuilder()
+
         val stream =
-            builder.consumeTopic(
-                Topic(
-                    config.subsumsjonBruktTopic,
-                    keySerde = Serdes.StringSerde(),
-                    valueSerde = Serdes.StringSerde(),
+            builder.stream(
+                config.subsumsjonBruktTopic,
+                Consumed.with(
+                    Serdes.StringSerde(),
+                    Serdes.StringSerde(),
                 ),
             )
         stream
