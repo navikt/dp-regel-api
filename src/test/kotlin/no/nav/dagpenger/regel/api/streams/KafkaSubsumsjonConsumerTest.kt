@@ -10,8 +10,10 @@ import io.mockk.verifyAll
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.Configuration
+import no.nav.dagpenger.regel.api.PacketSerializer
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.models.behovId
+import org.apache.kafka.common.serialization.Serdes.StringSerde
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.TopologyTestDriver
 import org.junit.jupiter.api.Test
@@ -65,13 +67,13 @@ internal class KafkaSubsumsjonConsumerTest {
             testBlock: () -> Unit,
         ) {
             val configuration = Configuration
-            SubsumsjonPond(strategies, configuration.regelTopic).let {
+            SubsumsjonPond(strategies, configuration.regelTopicName).let {
                 TopologyTestDriver(it.buildTopology(), config).use { topologyTestDriver ->
                     val input =
                         topologyTestDriver.createInputTopic(
-                            configuration.regelTopic.name,
-                            configuration.regelTopic.keySerde.serializer(),
-                            configuration.regelTopic.valueSerde.serializer(),
+                            configuration.regelTopicName,
+                            StringSerde().serializer(),
+                            PacketSerializer(),
                         )
                     input.pipeInput(packet)
 

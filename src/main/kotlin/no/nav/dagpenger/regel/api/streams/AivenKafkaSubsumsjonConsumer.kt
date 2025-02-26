@@ -1,23 +1,39 @@
 package no.nav.dagpenger.regel.api.streams
 
+import io.prometheus.client.Summary
 import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.Configuration
+import no.nav.dagpenger.regel.api.KafkaAivenCredentials
+import no.nav.dagpenger.regel.api.PacketDeserializer
+import no.nav.dagpenger.regel.api.PacketSerializer
 import no.nav.dagpenger.regel.api.models.PacketKeys
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import no.nav.dagpenger.streams.KafkaAivenCredentials
-import no.nav.dagpenger.streams.Pond
-import no.nav.dagpenger.streams.Topic
-import no.nav.dagpenger.streams.streamConfigAiven
+import no.nav.dagpenger.regel.api.streamConfigAiven
+import no.nav.dagpenger.regel.api.streams.SubsumsjonPond.CorrelationId.X_CORRELATION_ID
 import org.apache.kafka.common.errors.TopicAuthorizationException
+import org.apache.kafka.common.serialization.Serdes
+import org.apache.kafka.common.serialization.Serdes.StringSerde
 import org.apache.kafka.streams.KafkaStreams
+import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
+import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.Predicate
+import org.apache.logging.log4j.ThreadContext
 import java.time.Duration
 
 private val LOGGER = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
+private val processTimeLatency: Summary =
+    Summary.build()
+        .name("process_time_seconds")
+        .quantile(0.5, 0.05) // Add 50th percentile (= median) with 5% tolerated error
+        .quantile(0.9, 0.01) // Add 90th percentile with 1% tolerated error
+        .quantile(0.99, 0.001) // Add 99th percentile with 0.1% tolerated error
+        .help("Process time for a single packet")
+        .register()
 
 internal class AivenKafkaSubsumsjonConsumer(
     private val config: Configuration,
@@ -76,18 +92,44 @@ internal class AivenKafkaSubsumsjonConsumer(
 
 internal class SubsumsjonPond(
     private val packetStrategies: List<SubsumsjonPacketStrategy>,
-    topic: Topic<String, Packet>,
-) : Pond(topic) {
-    @Suppress("ktlint:standard:property-naming")
-    override val SERVICE_APP_ID: String = Configuration.id
+    private val topic: String,
+) {
+    object CorrelationId {
+        const val X_CORRELATION_ID = "x_correlation_id"
+    }
 
-    override fun filterPredicates(): List<Predicate<String, Packet>> =
+    fun buildTopology(): Topology {
+        val builder = StreamsBuilder()
+        val stream =
+            builder.stream(
+                topic,
+                Consumed.with(
+                    StringSerde(),
+                    Serdes.serdeFrom(PacketSerializer(), PacketDeserializer()),
+                ),
+            )
+        stream
+            .peek { _, packet -> ThreadContext.put(X_CORRELATION_ID, packet.getCorrelationId()) }
+            .peek { key, _ -> LOGGER.debug { "Pond recieved packet with key $key and will test it against filters." } }
+            .filter { key, packet -> filterPredicates().all { it.test(key, packet) } }
+            .foreach { key, packet ->
+                LOGGER.debug { "Packet with key $key passed filters and now calling onPacket() for: $packet" }
+
+                val timer = processTimeLatency.startTimer()
+                onPacket(packet)
+                timer.observeDuration()
+                ThreadContext.remove(X_CORRELATION_ID)
+            }
+        return builder.build()
+    }
+
+    fun filterPredicates(): List<Predicate<String, Packet>> =
         listOf(
             Predicate { _, packet -> packet.hasField(PacketKeys.BEHOV_ID) },
             Predicate { _, packet -> !packet.hasProblem() },
         )
 
-    override fun onPacket(packet: Packet) {
+    fun onPacket(packet: Packet) {
         sikkerlogg.info { "Mottok packet: ${packet.toJson()}" }
         packetStrategies.forEach { it.run(packet) }
     }
