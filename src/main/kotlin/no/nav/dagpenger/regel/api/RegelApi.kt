@@ -48,9 +48,7 @@ import no.nav.dagpenger.regel.api.streams.DagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaDagpengerBehovProducer
 import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer
 import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
-import no.nav.dagpenger.regel.api.streams.producerConfig
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
-import no.nav.dagpenger.streams.KafkaAivenCredentials
 import org.slf4j.event.Level
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.fixedRateTimer
@@ -77,7 +75,7 @@ fun main() {
     val aivenKafkaConsumer =
         AivenKafkaSubsumsjonConsumer(
             Configuration,
-            SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), Configuration.regelTopic),
+            SubsumsjonPond(subsumsjonPacketStrategies(subsumsjonStore), Configuration.regelTopicName),
         ).also {
             it.start()
         }
@@ -97,7 +95,7 @@ fun main() {
                 Configuration.aivenBrokers,
                 KafkaAivenCredentials(),
             ),
-            Configuration.regelTopic,
+            Configuration.regelTopicName,
         )
 
     val app =

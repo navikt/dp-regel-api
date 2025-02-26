@@ -3,13 +3,14 @@ package no.nav.dagpenger.regel.api.streams
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
-import no.nav.dagpenger.streams.Topics
+import no.nav.dagpenger.regel.api.producerConfig
 import org.junit.jupiter.api.Test
 import org.testcontainers.kafka.ConfluentKafkaContainer
 import org.testcontainers.utility.DockerImageName
@@ -28,7 +29,7 @@ internal class KafkaDagpengerBehovProducerTest {
     fun `Produce packet should success`() {
         KafkaDagpengerBehovProducer(
             producerConfig("APP", Kafka.instance.bootstrapServers, null),
-            Topics.DAGPENGER_BEHOV_PACKET_EVENT,
+            Configuration.regelTopicName,
         ).apply {
             val metadata =
                 produceEvent(
@@ -54,7 +55,7 @@ internal class KafkaDagpengerBehovProducerTest {
     fun `Test kafka health`() {
         KafkaDagpengerBehovProducer(
             producerConfig("APP", Kafka.instance.bootstrapServers, null),
-            Topics.DAGPENGER_BEHOV_PACKET_EVENT,
+            Configuration.regelTopicName,
         ).apply {
             this.status() shouldBe HealthStatus.UP
         }

@@ -3,12 +3,12 @@ package no.nav.dagpenger.regel.api.streams
 import de.huxhorn.sulky.ulid.ULID
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Configuration
+import no.nav.dagpenger.regel.api.KafkaAivenCredentials
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
-import no.nav.dagpenger.streams.KafkaAivenCredentials
-import no.nav.dagpenger.streams.streamConfigAiven
+import no.nav.dagpenger.regel.api.streamConfigAiven
 import org.apache.kafka.common.errors.TopicAuthorizationException
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams

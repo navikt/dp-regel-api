@@ -153,7 +153,7 @@ class PostgresSubsumsjonStoreTest {
 
     @Test
     fun `Exception if retrieving status of a non existant behov`() {
-        withMigratedDb { dataSource ->
+        withMigratedDb { _ ->
             shouldThrow<BehovNotFoundException> {
                 PostgresSubsumsjonStore(PostgresDataSourceBuilder.dataSource).behovStatus(BehovId("01DSFGT6XCX4W1RKDXBYTAX5QH"))
             }
