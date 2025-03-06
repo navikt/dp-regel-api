@@ -39,7 +39,6 @@ internal object TestApplication {
                     apply(moduleFunction)
                 }
                 createClient {
-                    developmentMode = true
                     followRedirects = false
                 }
 
