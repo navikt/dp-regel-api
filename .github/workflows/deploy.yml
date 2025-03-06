@@ -52,7 +52,7 @@ jobs:
   deploy-prod:
     name: Deploy to Production
     needs: [build, deploy-dev]
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: prod-gcp
     steps:
