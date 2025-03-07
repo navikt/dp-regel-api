@@ -4,7 +4,7 @@ package no.nav.dagpenger.regel.api.routing
 
 import io.ktor.server.application.Application
 import io.mockk.mockk
-import io.prometheus.client.CollectorRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.api
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
@@ -22,6 +22,6 @@ internal fun mockApi(
             kafkaProducer = kafkaDagpengerBehovProducer,
             healthChecks = healthChecks,
             config = Configuration,
-            prometheusMeterRegistry = CollectorRegistry(true),
+            prometheusMeterRegistry = PrometheusRegistry.defaultRegistry,
         )
     }
