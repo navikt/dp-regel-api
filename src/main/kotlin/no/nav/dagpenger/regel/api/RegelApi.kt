@@ -22,10 +22,10 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.Clock
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
-import io.prometheus.client.CollectorRegistry
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.client.hotspot.DefaultExports
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Vaktmester.Companion.LOGGER
 import no.nav.dagpenger.regel.api.auth.azureAdJWT
@@ -131,7 +131,7 @@ internal fun Application.api(
     kafkaProducer: DagpengerBehovProducer,
     healthChecks: List<HealthCheck>,
     config: Configuration,
-    prometheusMeterRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry,
+    prometheusMeterRegistry: PrometheusRegistry = PrometheusRegistry.defaultRegistry,
 ) {
     install(DefaultHeaders)
 
@@ -161,7 +161,6 @@ internal fun Application.api(
 
     install(MicrometerMetrics) {
         registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, prometheusMeterRegistry, Clock.SYSTEM)
-        DefaultExports.initialize()
     }
 
     install(StatusPages) {
