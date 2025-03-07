@@ -22,8 +22,8 @@ spec:
     limits:
       memory: 512Mi
     requests:
-      cpu: 80m
-      memory: 256Mi
+      cpu: 50m
+      memory: 384Mi
   kafka:
     pool: nav-prod
   ingresses:
@@ -43,6 +43,9 @@ spec:
         - application: dp-proxy
           namespace: teamdagpenger
           cluster: prod-fss
+  env:
+    - name: JDK_JAVA_OPTIONS
+      value: -XX:+UseParallelGC -XX:MaxRAMPercentage=35.0 -XX:ActiveProcessorCount=4
   gcp:
     sqlInstances:
       - autoBackupHour: 1

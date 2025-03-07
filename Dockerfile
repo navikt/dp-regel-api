@@ -1,9 +1,7 @@
-FROM ghcr.io/navikt/baseimages/temurin:21
+FROM gcr.io/distroless/java21
+
+ENV LANG='nb_NO.UTF-8' LANGUAGE='nb_NO:nb' LC_ALL='nb:NO.UTF-8' TZ="Europe/Oslo"
 
 COPY build/libs/*-all.jar app.jar
 
-ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 \
-               -XX:+HeapDumpOnOutOfMemoryError \
-               -XX:HeapDumpPath=/oom-dump.hprof"
-
-RUN echo 'java -XX:MaxRAMPercentage=75 -XX:+PrintFlagsFinal -version | grep -Ei "maxheapsize|maxram"' > /init-scripts/0-dump-memory-config.sh
+ENTRYPOINT ["java", "-jar", "/app.jar"]

@@ -20,10 +20,10 @@ spec:
     max: 3
   resources:
     limits:
-      memory: 1024Mi
-    requests:
-      cpu: 80m
       memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 384Mi
   kafka:
     pool: nav-dev
   ingresses:
@@ -43,6 +43,9 @@ spec:
         - application: dp-proxy
           namespace: teamdagpenger
           cluster: dev-fss
+  env:
+    - name: JDK_JAVA_OPTIONS
+      value: -XX:+UseParallelGC -XX:MaxRAMPercentage=35.0 -XX:ActiveProcessorCount=4
   gcp:
     sqlInstances:
       - collation: nb_NO.UTF8
