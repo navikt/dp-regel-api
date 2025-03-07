@@ -25,6 +25,7 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
+import io.prometheus.client.hotspot.DefaultExports
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Vaktmester.Companion.LOGGER
 import no.nav.dagpenger.regel.api.auth.azureAdJWT
@@ -160,6 +161,7 @@ internal fun Application.api(
 
     install(MicrometerMetrics) {
         registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, prometheusMeterRegistry, Clock.SYSTEM)
+        DefaultExports.initialize()
     }
 
     install(StatusPages) {
