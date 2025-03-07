@@ -9,7 +9,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldNotContain
 import io.mockk.mockk
-import io.prometheus.client.CollectorRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -283,10 +283,10 @@ class PostgresSubsumsjonStoreTest {
     }
 
     private fun shouldBeTimed() {
-        CollectorRegistry.defaultRegistry.metricFamilySamples().asSequence()
-            .find { it.name == "subsumsjonstore_latency" }
+        PrometheusRegistry.defaultRegistry.scrape()
+            .find { it.metadata.name == "subsumsjonstore_latency" }
             ?.let { metric ->
-                metric.samples[0].name shouldNotBe null
+                metric.dataPoints[0].labels shouldNotBe null
             }
     }
 

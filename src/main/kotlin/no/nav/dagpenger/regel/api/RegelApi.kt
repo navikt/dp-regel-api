@@ -24,7 +24,6 @@ import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import io.prometheus.client.hotspot.DefaultExports
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Vaktmester.Companion.LOGGER
@@ -132,6 +131,7 @@ internal fun Application.api(
     healthChecks: List<HealthCheck>,
     config: Configuration,
     prometheusMeterRegistry: PrometheusRegistry = PrometheusRegistry.defaultRegistry,
+    meterRegistry: PrometheusMeterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, prometheusMeterRegistry, Clock.SYSTEM),
 ) {
     install(DefaultHeaders)
 
@@ -160,7 +160,7 @@ internal fun Application.api(
     }
 
     install(MicrometerMetrics) {
-        registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, prometheusMeterRegistry, Clock.SYSTEM)
+        registry = meterRegistry
     }
 
     install(StatusPages) {
@@ -190,7 +190,7 @@ internal fun Application.api(
 
     routing {
         naischecks(healthChecks)
-        metrics()
+        metrics(meterRegistry)
 
         authenticate("jwt") {
             subsumsjon(subsumsjonStore)

@@ -75,7 +75,8 @@ class ActuatorRouteTest {
         ) {
             val res = client.get("/metrics")
             res.status shouldBe HttpStatusCode.OK
-            res.bodyAsText() shouldContain "jvm_"
+            val result = res.bodyAsText()
+            result shouldContain "jvm_"
         }
     }
 }

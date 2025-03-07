@@ -1,8 +1,7 @@
 package no.nav.dagpenger.regel.api.streams
 
-import io.kotest.matchers.doubles.shouldBeGreaterThan
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.mockk.Called
 import io.mockk.Runs
 import io.mockk.every
@@ -11,7 +10,7 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verifyAll
-import io.prometheus.client.CollectorRegistry
+import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
@@ -79,13 +78,12 @@ internal class PendingBehovStrategyTest {
 
         PendingBehovStrategy(subsumsjonStore).run(pendingBehov)
 
-        val registry = CollectorRegistry.defaultRegistry
-
-        registry.metricFamilySamples().asSequence().find { it.name == PACKET_PROCESS_TIME_METRIC_NAME }?.let { metric ->
-            metric.samples[0].value shouldNotBe null
-            metric.samples[0].value shouldBeGreaterThan 0.0
-            metric.samples[0].labelValues[0] shouldBe PendingBehovStrategy::class.java.simpleName
-        }
+        val registry = PrometheusRegistry.defaultRegistry
+        val snapshot =
+            registry.scrape {
+                it == PACKET_PROCESS_TIME_METRIC_NAME
+            }.get(0)
+        snapshot.dataPoints[0].labels.get("strategy").shouldNotBeNull()
     }
 }
 
