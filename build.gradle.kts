@@ -48,7 +48,7 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4j2Version")
     implementation("org.apache.logging.log4j:log4j-layout-template-json:$log4j2Version")
-    implementation("org.slf4j:slf4j-api:1.7.25")
+    implementation("org.slf4j:slf4j-api:2.0.17")
 
     implementation(libs.kotlin.logging)
 
