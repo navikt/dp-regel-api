@@ -41,7 +41,7 @@ dependencies {
 
     implementation("io.prometheus:client_java:1.3.7")
     implementation("io.prometheus:prometheus-metrics-core:1.3.7")
-    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.6")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.7")
 
     val log4j2Version = "2.24.3"
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
