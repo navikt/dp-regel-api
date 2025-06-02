@@ -71,3 +71,11 @@ spec:
           - name: pgaudit.log
             value: 'write'
         type: POSTGRES_15
+  observability:
+    logging:
+      destinations:
+        - id: loki
+        - id: elastic
+    autoInstrumentation:
+      enabled: true
+      runtime: java
