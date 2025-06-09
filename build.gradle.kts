@@ -65,7 +65,7 @@ dependencies {
     testImplementation(libs.testcontainer.postgresql)
     testImplementation("org.testcontainers:kafka:1.21.1")
     testImplementation("org.apache.kafka:kafka-streams-test-utils:7.9.1-ce")
-    testImplementation("no.nav.security:mock-oauth2-server:2.2.0")
+    testImplementation("no.nav.security:mock-oauth2-server:2.2.1")
 
     testImplementation(libs.mockk)
 
