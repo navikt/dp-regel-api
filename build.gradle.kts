@@ -39,9 +39,9 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.15.1")
 
-    implementation("io.prometheus:client_java:1.3.9")
-    implementation("io.prometheus:prometheus-metrics-core:1.3.9")
-    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.9")
+    implementation("io.prometheus:client_java:1.3.10")
+    implementation("io.prometheus:prometheus-metrics-core:1.3.10")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.10")
 
     val log4j2Version = "2.25.0"
     implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
