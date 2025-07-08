@@ -25,7 +25,7 @@ dependencies {
     implementation("com.github.navikt:dagpenger-events:20250226.cb02d9")
     implementation(libs.bundles.jackson)
 
-    val kafkaVersion = "7.9.1-ce"
+    val kafkaVersion = "8.0.0-ce"
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
     implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
