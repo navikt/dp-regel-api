@@ -12,7 +12,7 @@ import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.producerConfig
 import org.junit.jupiter.api.Test
-import org.testcontainers.kafka.ConfluentKafkaContainer
+import org.testcontainers.kafka.KafkaContainer
 import org.testcontainers.utility.DockerImageName
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 private object Kafka {
     val instance by lazy {
         // See https://docs.confluent.io/current/installation/versions-interoperability.html#cp-and-apache-kafka-compatibility
-        ConfluentKafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.7.0")).apply { this.start() }
+        KafkaContainer(DockerImageName.parse("apache/kafka-native:4.0.1")).apply { this.start() }
     }
 }
 
