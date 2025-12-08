@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 
 plugins {
     id("common")
@@ -43,12 +42,8 @@ dependencies {
     implementation("io.prometheus:prometheus-metrics-core:1.3.10")
     implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.10")
 
-    val log4j2Version = "2.25.0"
-    implementation("org.apache.logging.log4j:log4j-api:$log4j2Version")
-    implementation("org.apache.logging.log4j:log4j-core:$log4j2Version")
-    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:$log4j2Version")
-    implementation("org.apache.logging.log4j:log4j-layout-template-json:$log4j2Version")
-    implementation("org.slf4j:slf4j-api:2.0.17")
+    implementation("ch.qos.logback:logback-classic:1.5.18")
+    implementation("net.logstash.logback:logstash-logback-encoder:8.1")
 
     implementation(libs.kotlin.logging)
 
@@ -74,13 +69,6 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
-configurations {
-    this.all {
-        exclude(group = "ch.qos.logback")
-    }
-}
-
 tasks.withType<ShadowJar> {
-    transform(Log4j2PluginsCacheFileTransformer::class.java)
     mergeServiceFiles()
 }
