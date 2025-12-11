@@ -20,7 +20,7 @@ application {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.github.navikt:dp-inntekt-kontrakter:1_20231220.55a8a9")
+    implementation("com.github.navikt:dp-inntekt-kontrakter:2_20251211.17f9d7")
     implementation("com.github.navikt:dagpenger-events:20250226.cb02d9")
     implementation(libs.bundles.jackson)
 
