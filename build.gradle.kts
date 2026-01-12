@@ -38,9 +38,9 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.15.1")
 
-    implementation("io.prometheus:client_java:1.3.10")
-    implementation("io.prometheus:prometheus-metrics-core:1.3.10")
-    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.3.10")
+    implementation("io.prometheus:client_java:1.4.3")
+    implementation("io.prometheus:prometheus-metrics-core:1.4.3")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.4.3")
 
     implementation("ch.qos.logback:logback-classic:1.5.18")
     implementation("net.logstash.logback:logstash-logback-encoder:8.1")
