@@ -28,8 +28,6 @@ spec:
     pool: nav-prod
   ingresses:
     - https://dp-regel-api.intern.nav.no
-  secureLogs:
-    enabled: true
   azure:
     application:
       enabled: true
