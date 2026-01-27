@@ -42,7 +42,7 @@ dependencies {
     implementation("io.prometheus:prometheus-metrics-core:1.4.3")
     implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.4.3")
 
-    implementation("ch.qos.logback:logback-classic:1.5.24")
+    implementation("ch.qos.logback:logback-classic:1.5.25")
     implementation("net.logstash.logback:logstash-logback-encoder:8.1")
 
     implementation(libs.kotlin.logging)
