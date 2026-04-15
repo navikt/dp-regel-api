@@ -45,12 +45,6 @@ spec:
         - application: dp-proxy
           namespace: teamdagpenger
           cluster: dev-fss
-        - application: wonderwalled-idporten
-          namespace: nais
-        - application: wonderwalled-azure
-          namespace: nais
-        - application: azure-token-generator
-          namespace: nais
   env:
     - name: JDK_JAVA_OPTIONS
       value: -XX:+UseParallelGC -XX:MaxRAMPercentage=35.0 -XX:ActiveProcessorCount=4
