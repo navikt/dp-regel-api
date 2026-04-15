@@ -13,30 +13,6 @@ API for å kjøre dagpengeregler
 
 For å kjøre enkelte av testene kreves det at Docker kjører.
 
-[Docker Desktop](https://www.docker.com/products/docker-desktop)
-
-
-### Starte applikasjonen lokalt
-
-Applikasjonen har avhengigheter til Kafka og Postgres som kan kjøres
-opp lokalt vha Docker Compose(som følger med Docker Desktop) 
-
-
-Starte Kafka og Postgres: 
-```
-
-docker-compose -f docker-compose.yml up
-
-```
-Etter at containerene er startet kan man starte applikasjonen ved å kjøre main metoden.
-
-
-Stoppe Kafka og Postgres:
-
-```
-ctrl-c og docker-compose -f docker-compose.yml down 
-
-```
 
 ### Personlig tilgang til Postgres databasen
 
