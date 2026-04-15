@@ -24,7 +24,7 @@ interface BruktSubsumsjonStore {
 
 data class EksternSubsumsjonBrukt(
     val id: String,
-    @JsonDeserialize(using = EksternIdDeserializer::class)
+    @field:JsonDeserialize(using = EksternIdDeserializer::class)
     val eksternId: Long,
     val arenaTs: ZonedDateTime,
     val ts: Long,

@@ -54,13 +54,13 @@ private val httpClient =
     }
 
 internal data class AzureAdOpenIdConfiguration(
-    @JsonProperty("jwks_uri")
+    @field:JsonProperty("jwks_uri")
     val jwksUri: String,
-    @JsonProperty("issuer")
+    @field:JsonProperty("issuer")
     val issuer: String,
-    @JsonProperty("token_endpoint")
+    @field:JsonProperty("token_endpoint")
     val tokenEndpoint: String,
-    @JsonProperty("authorization_endpoint")
+    @field:JsonProperty("authorization_endpoint")
     val authorizationEndpoint: String,
 )
 
