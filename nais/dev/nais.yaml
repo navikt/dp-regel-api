@@ -38,11 +38,7 @@ spec:
           namespace: nais-system
     inbound:
       rules:
-        - application: dp-mottak
         - application: dp-regel-api-arena-adapter
-          namespace: teamdagpenger
-          cluster: dev-fss
-        - application: dp-proxy
           namespace: teamdagpenger
           cluster: dev-fss
   env:
