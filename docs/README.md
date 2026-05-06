@@ -83,6 +83,197 @@ graph TD
 
 ---
 
+## Vilkårsprøving og vedtakssammensetning
+
+Beregningen av en dagpengerettighet er sammensatt av fire uavhengige regler. Alle fire kjøres parallelt
+og lagres samlet i én subsumsjon. Arena bruker samtlige resultater som grunnlag for vedtaket.
+
+### Minsteinntekt
+
+Sjekker om søker oppfyller kravet til arbeidsinntekt etter folketrygdloven § 4-4.
+
+| Input | Beskrivelse |
+|-------|-------------|
+| `beregningsDato` | Referansedato for inntektsoppslag |
+| `harAvtjentVerneplikt` | Gir fritak fra minsteinntektskravet |
+| `oppfyllerKravTilFangstOgFisk` | Aktiverer særregler for fiskere |
+| `lærling` | Lærling-unntak |
+| `bruktInntektsPeriode` | Overstyrer hvilken inntektsperiode som brukes |
+
+**Resultatfelt:** `oppfyllerMinsteinntekt` (boolean), `beregningsRegel` (hvilken regel som slo til), `minsteinntektInntektsPerioder`
+
+### Periode
+
+Beregner antall uker søker har rett på dagpenger (52 eller 104 uker) basert på inntektsnivå.
+
+| Input | Beskrivelse |
+|-------|-------------|
+| `beregningsDato` | Referansedato |
+| `inntektsId` | Referanse til allerede klassifisert inntekt (valgfritt) |
+
+**Resultatfelt:** `periodeAntallUker` (52 eller 104)
+
+### Grunnlag
+
+Beregner dagpengegrunnlaget — den inntekten som brukes som basis for dagsatsen.
+Bruker høyeste av: inntekt siste 12 måneder × 3 eller inntekt siste 36 måneder.
+
+| Input | Beskrivelse |
+|-------|-------------|
+| `manueltGrunnlag` | Overstyrer beregnet grunnlag (saksbehandler-input) |
+| `forrigeGrunnlag` | Grunnlag fra forrige vedtak (gjenopptak) |
+| `beregningsDato` | Referansedato |
+
+**Resultatfelt:** `avkortetGrunnlag`, `uavkortetGrunnlag`, `beregningsRegel`, `grunnlagInntektsPerioder`
+
+### Sats
+
+Beregner dagpengesatsen (dagsats og ukesats) basert på grunnlag, grunnbeløp og antall barn.
+
+| Input | Beskrivelse |
+|-------|-------------|
+| `grunnlagResultat.avkortetGrunnlag` | Fra grunnlagsberegningen |
+| `antallBarn` | Antall barn under 18 år (barnetillegg) |
+| `beregningsDato` | Brukes til å finne riktig G-verdi |
+
+**Resultatfelt:** `dagsats`, `ukesats`, `grunnbeløpBrukt`, `grunnlagForDagsats`
+
+### Beregningsscenarioer
+
+Avhengig av hvilke felt som er tilstede i behovet, velges ett av disse scenarioene:
+
+| Scenario | Trigger | Resultat |
+|----------|---------|---------|
+| **Full beregning** | Alle fire regler har resultater | Komplett subsumsjon med alle felt |
+| **Manuelt grunnlag** | `manueltGrunnlag` er satt — grunnlag/sats beregnes, resten hoppes over | Kun `grunnlagResultat` + `satsResultat` |
+| **Forrige grunnlag** | `forrigeGrunnlag` er satt — gjenopptak | Kun `grunnlagResultat` + `satsResultat` |
+| **Problem** | En eller flere regler feilet | Subsumsjon med `problem`-felt, ingen regelresultater |
+
+---
+
+## Fullstendig kontrollspor
+
+Fra innkommende beregningsbehov til utbetaling:
+
+```
+1. Arena           → POST /behov til dp-regel-api-arena-adapter
+2. Arena-adapter   → POST /behov til dp-regel-api (Azure AD)
+3. dp-regel-api    → Lagrer behov i v2_behov (PostgreSQL)
+4. dp-regel-api    → Publiserer behov på Kafka (teamdagpenger.regel.v1)
+5. Regelberegnere  → Henter inntekt fra dp-inntekt-api, beregner, publiserer subsumsjon
+6. dp-regel-api    → Konsumerer subsumsjon fra Kafka, lagrer i v2_subsumsjon
+7. Arena-adapter   → Poller GET /behov/status/{id} til 303 → GET /subsumsjon/{id}
+8. Arena-adapter   → Sender subsumsjon tilbake til Arena som beregningsresultat
+9. Arena           → Oppretter vedtak (NY/DAGP) og sender til utbetaling (OS/UR)
+10. Arena          → Publiserer brukt-signal på Kafka (teamdagpenger.subsumsjonbrukt.v1)
+11. dp-regel-api   → Konsumerer brukt-signal, merker subsumsjon i v2_subsumsjon_brukt
+```
+
+**Sporbarhet per steg:**
+
+| Steg | Spores via | Audit |
+|------|-----------|-------|
+| Mottak av behov | `v2_behov.created` + `behovId` i logger | Applikasjonslogg |
+| Kafka-publisering | `system_started` i Kafka-melding | Kafka topic retention |
+| Regelberegning | `subsumsjonsId` per regel | Applikasjonslogg i regelberegnere |
+| Lagring i DB | `v2_subsumsjon.created` | pgAudit (write-logging aktivert i prod) |
+| Brukt i vedtak | `v2_subsumsjon_brukt.arena_ts` | pgAudit + `arena_ts` |
+
+> pgAudit er aktivert i prod med `pgaudit.log = write,ddl,role` — alle INSERT/UPDATE/DELETE logges til Cloud Logging.
+
+---
+
+## Tilgangskontroll og roller
+
+### Systemtilgang (inbound)
+
+| Klient | Autentisering | Tilgang |
+|--------|--------------|---------|
+| `dp-regel-api-arena-adapter` (prod-fss) | Azure AD client_credentials | Alle forretningsendepunkter (`/behov`, `/subsumsjon`, `/lovverk`) |
+| Prometheus (Nais-intern) | Ingen (cluster-intern) | `GET /metrics` |
+| Nais liveness/readiness | Ingen | `GET /isAlive`, `GET /isReady` |
+
+> Ingen andre klienter er autorisert. `accessPolicy.inbound` i Nais-manifestet begrenser dette på nettverksnivå.
+
+### Databasetilgang
+
+| Rolle | Tilgangstype | Hvordan |
+|-------|-------------|---------|
+| Applikasjon (`dp-regel-api`) | Lese + skrive | Cloud SQL proxy via Nais, env-var `DB_*` |
+| Teammedlem (manuell drift) | Lese + skrive (personlig sesjon) | `nais postgres proxy` med naisdevice |
+| pgAudit (automatisk) | Logging av alle skriv | Aktivert via Cloud SQL-flagg i prod |
+
+### Kafka-tilgang
+
+| Topic | Tilgang |
+|-------|---------|
+| `teamdagpenger.regel.v1` | Produserer (behov) + konsumerer (subsumsjoner) |
+| `teamdagpenger.subsumsjonbrukt.v1` | Konsumerer |
+
+---
+
+## Maskinelle avstemminger
+
+### Grensesnittavstemminger
+
+`dp-regel-api` er mellomledd mellom Arena (via arena-adapter) og regelberegnings-tjenestene.
+Konsistens verifiseres på tre måter:
+
+**1. Behov uten subsumsjon (ventende)**
+
+Behov som ikke har fått subsumsjon innen forventet tid indikerer at en regelberegner
+er nede eller har feilet.
+
+```sql
+-- Finn behov som har ventet mer enn 10 minutter uten svar
+SELECT b.id, b.beregnings_dato, b.created,
+       EXTRACT(EPOCH FROM (NOW() - b.created)) / 60 AS ventet_minutter
+FROM v2_behov b
+LEFT JOIN v2_subsumsjon s ON s.behov_id = b.id
+WHERE s.behov_id IS NULL
+  AND b.created < NOW() - INTERVAL '10 minutes'
+ORDER BY b.created DESC;
+```
+
+**2. Subsumsjoner ikke brukt i vedtak**
+
+Subsumsjoner som er levert til Arena-adapter, men aldri signalert tilbake via `subsumsjonbrukt`-topic,
+kan indikere at vedtaket ikke ble opprettet i Arena.
+
+```sql
+-- Finn subsumsjoner eldre enn 7 dager som ikke er brukt
+SELECT s.behov_id, s.created
+FROM v2_subsumsjon s
+LEFT JOIN v2_subsumsjon_brukt b ON b.id::text = s.behov_id
+WHERE b.id IS NULL
+  AND s.created < NOW() - INTERVAL '7 days'
+ORDER BY s.created DESC;
+```
+
+**3. Problem-subsumsjoner**
+
+Subsumsjoner med `problem`-felt indikerer at en regelberegner feilet.
+Arena-adapter returnerer en feilkode til Arena i dette tilfellet.
+
+```sql
+-- Finn subsumsjoner med feil
+SELECT behov_id, data -> 'problem' AS problem, created
+FROM v2_subsumsjon
+WHERE data ->> 'problem' IS NOT NULL
+ORDER BY created DESC
+LIMIT 50;
+```
+
+### Observabilitetsmetrikker for avstemming
+
+| Metrikk | Hva det måler |
+|---------|--------------|
+| `packet_process_time_nanoseconds` | Behandlingstid per Kafka-strategi (p50/p90/p99) |
+| `GET /isAlive` | Alle health checks grønne (DB tilgjengelig, Kafka tilgjengelig) |
+| Kafka consumer lag | Forsinkelse i subsumsjonsmottak — overvåkes via Nais Grafana |
+
+---
+
 ## API-endepunkter
 
 Alle forretningsendepunkter krever **Azure AD JWT**-token i `Authorization`-headeren.
