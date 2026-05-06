@@ -201,7 +201,7 @@ Brukes ved regelverksendringer for å sjekke om vedtak må revurderes.
 |-------|---------|-------------|
 | `teamdagpenger.regel.v1` | Produserer + konsumerer | Behov sendes ut, subsumsjoner leses inn |
 | `teamdagpenger.subsumsjonbrukt.v1` | Konsumerer | Signaler om at en subsumsjon er brukt i et vedtak |
-| `teamdagpenger.inntektbrukt.v1` | — | Konfigurert, men ikke aktivt i bruk |
+| `teamdagpenger.inntektbrukt.v1` | Produsent | Sender hvilken inntektId som er brukt slik at [dp-inntekt-api](https://github.com/navikt/dp-inntekt-api/blob/main/README.md) kan markere inntekten som brukt i et vedtak.|
 
 ---
 
