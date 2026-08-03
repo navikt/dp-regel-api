@@ -64,7 +64,7 @@ spec:
           day: 1
           hour: 4
         pointInTimeRecovery: true
-        tier: db-custom-4-15360
+        tier: db-custom-1-3840
         flags:
           - name: cloudsql.enable_pgaudit
             value: "true"
