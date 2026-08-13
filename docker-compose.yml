@@ -1,7 +1,7 @@
 version: '3'
 services:
   zoo1:
-    image: zookeeper:3.4.9
+    image: zookeeper:3.4.9@sha256:b7d3eb27c1841230bcfed59696f881597a97a5746fa5ae79d7f1eda7d2d9fcce
     hostname: zoo1
     ports:
       - "2181:2181"
@@ -14,7 +14,7 @@ services:
       - .docker_tmp/zk-single-kafka-single/zoo1/datalog:/datalog
 
   kafka1:
-    image: confluentinc/cp-kafka:5.1.2
+    image: confluentinc/cp-kafka:5.1.2@sha256:c5ff41b494329e9dea0f2d2d942a391a8d5968f597e9ba4a10846f511ba85220
     hostname: kafka1
     ports:
       - "9092:9092"
@@ -31,7 +31,7 @@ services:
     depends_on:
       - zoo1
   postgres:
-    image: postgres:11
+    image: postgres:11@sha256:5d2aa4a7b5f9bdadeddcf87cf7f90a176737a02a30d917de4ab2e6a329bd2d45
     ports:
       - "5432:5432"
     environment:
