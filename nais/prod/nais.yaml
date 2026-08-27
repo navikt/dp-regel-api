@@ -8,13 +8,25 @@ metadata:
 spec:
   image: "{{ image }}"
   port: 8092
+  strategy:
+    type: RollingUpdate # Bruk kun Recreate når vi deployer store/ukompatible migreringer
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 99%
+  startup:
+    path: /isalive
+    initialDelay: 10
+    failureThreshold: 6
+    periodSeconds: 5
+    timeout: 5
   liveness:
-    path: /isAlive
+    path: /isalive
+    failureThreshold: 6
+    periodSeconds: 10
   readiness:
-    path: /isReady
-  prometheus:
-    enabled: true
-    path: /metrics
+    path: /isready
+    failureThreshold: 3
+    periodSeconds: 10
   replicas:
     min: 2
     max: 6
