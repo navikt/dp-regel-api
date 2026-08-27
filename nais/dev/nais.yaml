@@ -14,17 +14,17 @@ spec:
       maxSurge: 100%
       maxUnavailable: 99%
   startup:
-    path: /isalive
+    path: /isAlive
     initialDelay: 10
     failureThreshold: 6
     periodSeconds: 5
     timeout: 5
   liveness:
-    path: /isalive
+    path: /isAlive
     failureThreshold: 6
     periodSeconds: 10
   readiness:
-    path: /isready
+    path: /isReady
     failureThreshold: 3
     periodSeconds: 10
   replicas:
