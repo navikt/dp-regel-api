@@ -14,7 +14,7 @@ services:
       - .docker_tmp/zk-single-kafka-single/zoo1/datalog:/datalog
 
   kafka1:
-    image: confluentinc/cp-kafka:5.1.2
+    image: confluentinc/cp-kafka:5.5.12@sha256:4a35b5d2eb2c9d511fd9140443cb2efe4c5d0e75847666db76411837d82d3e15
     hostname: kafka1
     ports:
       - "9092:9092"
