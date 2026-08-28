@@ -106,13 +106,13 @@ class KafkaSubsumsjonBruktConsumerTest {
 
             val out = jacksonObjectMapper.readTree(outTopic.readValue())
 
-            out["@event_name"].asText() shouldBe "brukt_inntekt"
-            out["inntektsId"].asText() shouldBe "test"
-            out["aktorId"].asText() shouldBe "aktorId"
+            out["@event_name"].asString() shouldBe "brukt_inntekt"
+            out["inntektsId"].asString() shouldBe "test"
+            out["aktorId"].asString() shouldBe "aktorId"
             out["kontekst"].let { json ->
                 RegelKontekst(
-                    json["id"].asText(),
-                    Kontekst.valueOf(json["type"].asText()),
+                    json["id"].asString(),
+                    Kontekst.valueOf(json["type"].asString()),
                 )
             } shouldBe RegelKontekst("1", Kontekst.vedtak)
 
@@ -177,13 +177,13 @@ class KafkaSubsumsjonBruktConsumerTest {
 
             val out = jacksonObjectMapper.readTree(outTopic.readValue())
 
-            out["@event_name"].asText() shouldBe "brukt_inntekt"
+            out["@event_name"].asString() shouldBe "brukt_inntekt"
             out.has("inntektsId") shouldBe false
-            out["aktorId"].asText() shouldBe "aktorId"
+            out["aktorId"].asString() shouldBe "aktorId"
             out["kontekst"].let { json ->
                 RegelKontekst(
-                    json["id"].asText(),
-                    Kontekst.valueOf(json["type"].asText()),
+                    json["id"].asString(),
+                    Kontekst.valueOf(json["type"].asString()),
                 )
             } shouldBe RegelKontekst("1", Kontekst.vedtak)
 

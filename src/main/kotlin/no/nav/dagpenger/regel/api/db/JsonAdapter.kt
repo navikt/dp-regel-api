@@ -20,7 +20,7 @@ internal object JsonAdapter {
         try {
             val node: tools.jackson.databind.JsonNode = jacksonObjectMapper.readTree(jsonString)
             return Subsumsjon(
-                behovId = BehovId(node["behovId"].asText()),
+                behovId = BehovId(node["behovId"].asString()),
                 faktum = getFaktum(node),
                 grunnlagResultat = node.getOrNull("grunnlagResultat")?.asMap(),
                 minsteinntektResultat = node.getOrNull("minsteinntektResultat")?.asMap(),
@@ -33,9 +33,9 @@ internal object JsonAdapter {
         }
     }
 
-    private fun JsonNode.asLocalDate(): LocalDate = LocalDate.parse(this.asText(), DateTimeFormatter.ISO_LOCAL_DATE)
+    private fun JsonNode.asLocalDate(): LocalDate = LocalDate.parse(this.asString(), DateTimeFormatter.ISO_LOCAL_DATE)
 
-    private fun JsonNode.asYearMonth(): YearMonth = YearMonth.parse(this.asText())
+    private fun JsonNode.asYearMonth(): YearMonth = YearMonth.parse(this.asString())
 
     private fun JsonNode.asMap(): Map<String, Any> = jacksonObjectMapper.convertValue(this, object : TypeReference<Map<String, Any>>() {})
 
@@ -51,15 +51,15 @@ internal object JsonAdapter {
         val faktum = json["faktum"]
         val regelkontekst =
             if (faktum.has("vedtakId")) {
-                RegelKontekst(faktum["vedtakId"].asText(), Kontekst.vedtak)
+                RegelKontekst(faktum["vedtakId"].asString(), Kontekst.vedtak)
             } else {
                 faktum["regelkontekst"].let {
-                    RegelKontekst(it["id"].asText(), Kontekst.valueOf(it["type"].asText()))
+                    RegelKontekst(it["id"].asString(), Kontekst.valueOf(it["type"].asString()))
                 }
             }
 
         return Faktum(
-            aktorId = faktum["aktorId"].asText(),
+            aktorId = faktum["aktorId"].asString(),
             regelkontekst = regelkontekst,
             beregningsdato = faktum["beregningsdato"].asLocalDate(),
             inntektsId = faktum.getOrNull("inntektsId")?.textValue(),
