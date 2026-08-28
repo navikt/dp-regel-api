@@ -3,6 +3,7 @@ package no.nav.dagpenger.regel.api.auth
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.ProxyBuilder
 import io.ktor.client.engine.cio.CIO
@@ -13,7 +14,6 @@ import io.ktor.server.auth.jwt.JWTAuthenticationProvider
 import io.ktor.server.auth.jwt.JWTCredential
 import io.ktor.server.auth.jwt.JWTPrincipal
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
 import java.net.URI
 import java.util.concurrent.TimeUnit
@@ -38,7 +38,7 @@ internal fun JWTAuthenticationProvider.Config.azureAdJWT(
             }
             JWTPrincipal(credentials.payload)
         } catch (e: Throwable) {
-            LOGGER.error("Unauthorized", e)
+            LOGGER.error(e) { "Unauthorized" }
             null
         }
     }

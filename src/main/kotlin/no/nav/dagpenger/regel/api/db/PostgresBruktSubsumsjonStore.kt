@@ -2,11 +2,11 @@
 
 package no.nav.dagpenger.regel.api.db
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.Kontekst
 import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
@@ -31,7 +31,7 @@ class PostgresBruktSubsumsjonStore(
                 session.run(queryOf("SELECT 1").asExecute)
             }.let { HealthStatus.UP }
         } catch (p: PSQLException) {
-            LOGGER.error("Failed health check", p)
+            LOGGER.error(p) { "Failed health check" }
             return HealthStatus.DOWN
         }
     }

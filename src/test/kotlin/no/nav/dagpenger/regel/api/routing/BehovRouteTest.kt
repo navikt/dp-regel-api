@@ -64,7 +64,7 @@ class BehovRouteTest {
             with(autentisert("v1/behov/status/01DSFG6P7969DP56BPW2EDS1RN", HttpMethod.Get)) {
                 status shouldBe HttpStatusCode.OK
                 headers["Content-Type"] shouldBe
-                    ContentType.Application.Json.withParameter("charset", "UTF-8")
+                    ContentType.Application.Json
                         .toString()
                 bodyAsText() shouldBe """{"status":"PENDING"}"""
             }
@@ -121,7 +121,7 @@ class BehovRouteTest {
             val response = autentisert("/behov", HttpMethod.Post, body)
             response.status shouldBe HttpStatusCode.Accepted
             response.headers["Content-Type"] shouldBe
-                ContentType.Application.Json.withParameter("charset", "UTF-8")
+                ContentType.Application.Json
                     .toString()
             response.headers.contains(HttpHeaders.Location) shouldBe true
             response.headers[HttpHeaders.Location]?.let { location ->

@@ -1,11 +1,11 @@
 package no.nav.dagpenger.regel.api.db
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonId
 import no.nav.dagpenger.regel.api.serder.EksternIdDeserializer
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
+import tools.jackson.databind.annotation.JsonDeserialize
 import java.time.ZonedDateTime
 
 interface BruktSubsumsjonStore {
@@ -35,9 +35,9 @@ data class EksternSubsumsjonBrukt(
         private val LOGGER = KotlinLogging.logger { }
 
         fun fromJson(json: String): EksternSubsumsjonBrukt {
-            return runCatching {
+            return runCatching<EksternSubsumsjonBrukt> {
                 jacksonObjectMapper.readValue(json, EksternSubsumsjonBrukt::class.java)
-            }.onFailure { e -> LOGGER.warn("Failed to convert string to object", e) }.getOrThrow()
+            }.onFailure { e -> LOGGER.warn(e) { "Failed to convert string to object" } }.getOrThrow()
         }
     }
 
@@ -56,12 +56,12 @@ data class InternSubsumsjonBrukt(
         private val LOGGER = KotlinLogging.logger { }
 
         fun fromJson(json: String): InternSubsumsjonBrukt? {
-            return runCatching {
+            return runCatching<InternSubsumsjonBrukt> {
                 jacksonObjectMapper.readValue(
                     json,
                     InternSubsumsjonBrukt::class.java,
                 )
-            }.onFailure { e -> LOGGER.warn("Failed to convert string to object", e) }.getOrNull()
+            }.onFailure { e -> LOGGER.warn(e) { "Failed to convert string to object" } }.getOrNull()
         }
     }
 

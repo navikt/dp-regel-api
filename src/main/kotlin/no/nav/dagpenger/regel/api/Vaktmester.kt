@@ -1,10 +1,10 @@
 package no.nav.dagpenger.regel.api
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.prometheus.metrics.core.metrics.Counter
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.InternSubsumsjonBrukt
 import no.nav.dagpenger.regel.api.db.JsonAdapter
@@ -51,7 +51,7 @@ class Vaktmester(
             run++
             markerSomBrukt(it)
             if (run % 100 == 0) {
-                LOGGER.info("Processed $run rows")
+                LOGGER.info { "Processed $run rows" }
             }
         }
     }

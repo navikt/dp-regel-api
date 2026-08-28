@@ -2,11 +2,11 @@
 
 package no.nav.dagpenger.regel.api.db
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.prometheus.metrics.core.metrics.Histogram
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.models.BehandlingsId
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.InntektsPeriode
@@ -248,7 +248,7 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
         return try {
             using(sessionOf(dataSource)) { session -> session.run(queryOf(""" SELECT 1""").asExecute) }.let { HealthStatus.UP }
         } catch (p: PSQLException) {
-            LOGGER.error("Failed health check", p)
+            LOGGER.error(p) { "Failed health check" }
             return HealthStatus.DOWN
         }
     }

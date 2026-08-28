@@ -78,7 +78,7 @@ class LovverkRouteTest {
             val response = autentisert("lovverk/vurdering/minsteinntekt", HttpMethod.Post, body = jsonRequestBody)
             response.status shouldBe HttpStatusCode.OK
             response.headers["Content-Type"] shouldBe
-                ContentType.Application.Json.withParameter("charset", "UTF-8")
+                ContentType.Application.Json
                     .toString()
 
             response.bodyAsText() shouldBe """{"nyVurdering":false}"""
@@ -109,7 +109,7 @@ class LovverkRouteTest {
             val response = autentisert("lovverk/vurdering/minsteinntekt", HttpMethod.Post, body = jsonRequestBody)
             response.status shouldBe HttpStatusCode.OK
             response.headers["Content-Type"] shouldBe
-                ContentType.Application.Json.withParameter("charset", "UTF-8")
+                ContentType.Application.Json
                     .toString()
 
             response.bodyAsText() shouldBe """{"nyVurdering":true}"""

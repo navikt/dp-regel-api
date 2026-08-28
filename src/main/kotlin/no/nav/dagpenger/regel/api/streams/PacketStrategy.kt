@@ -1,7 +1,7 @@
 package no.nav.dagpenger.regel.api.streams
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.prometheus.metrics.core.metrics.Summary
-import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.BehovId

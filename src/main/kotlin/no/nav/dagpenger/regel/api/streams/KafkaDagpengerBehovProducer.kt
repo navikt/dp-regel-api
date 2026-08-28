@@ -1,6 +1,6 @@
 package no.nav.dagpenger.regel.api.streams
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.dagpenger.regel.api.PacketSerializer
 import no.nav.dagpenger.regel.api.models.InternBehov
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
@@ -29,10 +29,10 @@ internal class KafkaDagpengerBehovProducer(
     init {
         Runtime.getRuntime().addShutdownHook(
             Thread {
-                LOGGER.info("Closing dp-regel-api Kafka producer")
+                LOGGER.info { "Closing dp-regel-api Kafka producer" }
                 kafkaProducer.flush()
                 kafkaProducer.close()
-                LOGGER.info("done! ")
+                LOGGER.info { "done! " }
             },
         )
     }

@@ -61,7 +61,7 @@ internal class SubsumsjonRouteV1Test {
             val response = autentisert("v1/subsumsjon/01DSFGFVF3C1D1QQR69C7BRJT5", HttpMethod.Get)
             response.status shouldBe HttpStatusCode.OK
             response.headers["Content-Type"] shouldBe
-                ContentType.Application.Json.withParameter("charset", "UTF-8")
+                ContentType.Application.Json
                     .toString()
             response.bodyAsText().let {
                 JsonAdapter.fromJson(it) shouldBe subsumsjon
@@ -100,7 +100,7 @@ internal class SubsumsjonRouteV1Test {
             val response = autentisert("v1/subsumsjon/result/$id", HttpMethod.Get)
             response.status shouldBe HttpStatusCode.OK
             response.headers["Content-Type"] shouldBe
-                ContentType.Application.Json.withParameter("charset", "UTF-8")
+                ContentType.Application.Json
                     .toString()
             response.bodyAsText().let {
                 JsonAdapter.fromJson(it) shouldBe subsumsjon

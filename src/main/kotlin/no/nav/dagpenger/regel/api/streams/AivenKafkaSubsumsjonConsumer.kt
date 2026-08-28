@@ -1,7 +1,7 @@
 package no.nav.dagpenger.regel.api.streams
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.prometheus.metrics.core.metrics.Summary
-import mu.KotlinLogging
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.KafkaAivenCredentials
@@ -76,14 +76,11 @@ internal class AivenKafkaSubsumsjonConsumer(
     private fun logUnexpectedError(e: Throwable) {
         when (e) {
             is TopicAuthorizationException ->
-                LOGGER.warn(
-                    "TopicAuthorizationException in $serviceAppId stream, stopping app",
-                )
+                LOGGER.warn { "TopicAuthorizationException in $serviceAppId stream, stopping app" }
             else ->
-                LOGGER.error(
-                    "Uncaught exception in $serviceAppId stream, thread: ${Thread.currentThread()} message:  ${e.message}",
-                    e,
-                )
+                LOGGER.error(e) {
+                    "Uncaught exception in $serviceAppId stream, thread: ${Thread.currentThread()} message:  ${e.message}"
+                }
         }
     }
 }

@@ -2,6 +2,7 @@
 
 package no.nav.dagpenger.regel.api.routing
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
@@ -16,7 +17,6 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.withContext
-import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
@@ -44,13 +44,13 @@ internal fun Route.behov(
                             call.response.header(HttpHeaders.Location, "${call.request.path()}/status/${it.behovId.id}")
                             call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
                         }.also {
-                            logger.info(
-                                "Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}.",
-                            )
+                            logger.info {
+                                "Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}."
+                            }
                         }
                     }
                 }.getOrElse {
-                    logger.error("Feii i opprettesle av behov", it)
+                    logger.error(it) { "Feii i opprettesle av behov" }
                     throw it
                 }
             }

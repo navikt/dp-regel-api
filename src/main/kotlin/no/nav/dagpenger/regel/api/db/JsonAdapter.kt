@@ -1,7 +1,5 @@
 package no.nav.dagpenger.regel.api.db
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.JsonNode
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.models.BehovId
 import no.nav.dagpenger.regel.api.models.Faktum
@@ -11,6 +9,8 @@ import no.nav.dagpenger.regel.api.models.RegelKontekst
 import no.nav.dagpenger.regel.api.models.Subsumsjon
 import no.nav.dagpenger.regel.api.models.SubsumsjonSerDerException
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
+import tools.jackson.core.type.TypeReference
+import tools.jackson.databind.JsonNode
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -18,17 +18,16 @@ import java.time.format.DateTimeFormatter
 internal object JsonAdapter {
     fun fromJson(jsonString: String): Subsumsjon {
         try {
-            return jacksonObjectMapper.readTree(jsonString).let {
-                Subsumsjon(
-                    behovId = BehovId(it["behovId"].asText()),
-                    faktum = getFaktum(it),
-                    grunnlagResultat = it.getOrNull("grunnlagResultat")?.asMap(),
-                    minsteinntektResultat = it.getOrNull("minsteinntektResultat")?.asMap(),
-                    satsResultat = it.getOrNull("satsResultat")?.asMap(),
-                    periodeResultat = it.getOrNull("periodeResultat")?.asMap(),
-                    problem = it.getOrNull("problem")?.asProblem(),
-                )
-            }
+            val node: tools.jackson.databind.JsonNode = jacksonObjectMapper.readTree(jsonString)
+            return Subsumsjon(
+                behovId = BehovId(node["behovId"].asText()),
+                faktum = getFaktum(node),
+                grunnlagResultat = node.getOrNull("grunnlagResultat")?.asMap(),
+                minsteinntektResultat = node.getOrNull("minsteinntektResultat")?.asMap(),
+                satsResultat = node.getOrNull("satsResultat")?.asMap(),
+                periodeResultat = node.getOrNull("periodeResultat")?.asMap(),
+                problem = node.getOrNull("problem")?.asProblem(),
+            )
         } catch (e: Exception) {
             throw SubsumsjonSerDerException("Unable to deserialize: $jsonString", e)
         }

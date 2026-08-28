@@ -1,7 +1,6 @@
 package no.nav.dagpenger.regel.api.routing
 
 import de.huxhorn.sulky.ulid.ULID
-import io.kotest.common.runBlocking
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -11,6 +10,7 @@ import io.ktor.http.HttpStatusCode
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verifyAll
+import kotlinx.coroutines.runBlocking
 import no.nav.dagpenger.events.Problem
 import no.nav.dagpenger.regel.api.db.JsonAdapter
 import no.nav.dagpenger.regel.api.db.SubsumsjonNotFoundException
@@ -63,7 +63,7 @@ internal class SubsumsjonRouteTest {
                 val response = autentisert("/subsumsjon/01DSFGFVF3C1D1QQR69C7BRJT5", HttpMethod.Get)
                 response.status shouldBe HttpStatusCode.OK
                 response.headers["Content-Type"] shouldBe
-                    ContentType.Application.Json.withParameter("charset", "UTF-8")
+                    ContentType.Application.Json
                         .toString()
                 response.bodyAsText().let {
                     JsonAdapter.fromJson(it) shouldBe subsumsjon
@@ -102,7 +102,7 @@ internal class SubsumsjonRouteTest {
             val response = autentisert("/subsumsjon/result/$id", HttpMethod.Get)
             response.status shouldBe HttpStatusCode.OK
             response.headers["Content-Type"] shouldBe
-                ContentType.Application.Json.withParameter("charset", "UTF-8")
+                ContentType.Application.Json
                     .toString()
             response.bodyAsText().let {
                 JsonAdapter.fromJson(it) shouldBe subsumsjon

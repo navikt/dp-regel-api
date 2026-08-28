@@ -1,9 +1,9 @@
 package no.nav.dagpenger.regel.api
 
-import com.fasterxml.jackson.core.JacksonException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson3.JacksonConverter
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
@@ -25,7 +25,6 @@ import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
-import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.Vaktmester.Companion.LOGGER
 import no.nav.dagpenger.regel.api.auth.azureAdJWT
 import no.nav.dagpenger.regel.api.db.BehovNotFoundException
@@ -50,6 +49,7 @@ import no.nav.dagpenger.regel.api.streams.KafkaSubsumsjonBruktConsumer
 import no.nav.dagpenger.regel.api.streams.SubsumsjonPond
 import no.nav.dagpenger.regel.api.streams.subsumsjonPacketStrategies
 import org.slf4j.event.Level
+import tools.jackson.core.JacksonException
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.fixedRateTimer
 
@@ -156,7 +156,7 @@ internal fun Application.api(
     }
 
     install(ContentNegotiation) {
-        register(ContentType.Application.Json, JacksonConverter(jacksonObjectMapper))
+        register(ContentType.Application.Json, JacksonConverter(jacksonObjectMapper, streamRequestBody = false))
     }
 
     install(MicrometerMetrics) {
@@ -165,25 +165,25 @@ internal fun Application.api(
 
     install(StatusPages) {
         exception<BadRequestException> { call, cause ->
-            LOGGER.warn("Request failed!", cause)
+            LOGGER.warn(cause) { "Request failed!" }
             call.respond(HttpStatusCode.BadRequest)
         }
 
         exception<JacksonException> { call, cause ->
-            LOGGER.warn("Request failed!", cause)
+            LOGGER.warn(cause) { "Request failed!" }
             call.respond(HttpStatusCode.BadRequest)
         }
 
         exception<BehovNotFoundException> { call, cause ->
-            LOGGER.warn("Request failed!", cause)
+            LOGGER.warn(cause) { "Request failed!" }
             call.respond(HttpStatusCode.NotFound)
         }
         exception<SubsumsjonNotFoundException> { call, cause ->
-            LOGGER.warn("Request failed!", cause)
+            LOGGER.warn(cause) { "Request failed!" }
             call.respond(HttpStatusCode.NotFound)
         }
         exception<IllegalUlidException> { call, cause ->
-            LOGGER.warn("Request failed!", cause)
+            LOGGER.warn(cause) { "Request failed!" }
             call.respond(HttpStatusCode.BadRequest)
         }
     }

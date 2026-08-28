@@ -1,9 +1,9 @@
 package no.nav.dagpenger.regel.api.models
 
-import com.fasterxml.jackson.core.type.TypeReference
 import no.nav.dagpenger.events.Packet
 import no.nav.dagpenger.inntekt.v1.Inntekt
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
+import tools.jackson.core.type.TypeReference
 import java.time.YearMonth
 
 data class InntektsPeriode(

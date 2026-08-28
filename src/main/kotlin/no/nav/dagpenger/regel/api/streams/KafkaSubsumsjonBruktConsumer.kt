@@ -1,10 +1,11 @@
 package no.nav.dagpenger.regel.api.streams
 
 import de.huxhorn.sulky.ulid.ULID
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.dagpenger.regel.api.Configuration
 import no.nav.dagpenger.regel.api.KafkaAivenCredentials
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
+import no.nav.dagpenger.regel.api.models.Faktum
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 import no.nav.dagpenger.regel.api.serder.jacksonObjectMapper
@@ -86,7 +87,7 @@ internal class KafkaSubsumsjonBruktConsumer(
             }
             .mapValues { _, bruktSubsumsjon -> bruktSubsumsjonStrategy.handle(bruktSubsumsjon) }
             .filterNot { _, value -> value == null }
-            .mapValues { _, faktum ->
+            .mapValues { _, faktum: Faktum? ->
                 jacksonObjectMapper.writeValueAsString(
                     mapOf(
                         "@event_name" to "brukt_inntekt",
@@ -95,22 +96,18 @@ internal class KafkaSubsumsjonBruktConsumer(
                         "kontekst" to faktum?.regelkontekst,
                     ),
                 )
-            }
-            .to(config.inntektBruktTopic, Produced.with(Serdes.StringSerde(), Serdes.StringSerde()))
+            }.to(config.inntektBruktTopic, Produced.with<String, String>(Serdes.StringSerde(), Serdes.StringSerde()))
         return builder.build()
     }
 
     private fun logUnexpectedError(e: Throwable) {
         when (e) {
             is TopicAuthorizationException ->
-                LOGGER.warn(
-                    "TopicAuthorizationException in $serviceAppId stream, stopping app",
-                )
+                LOGGER.warn { "TopicAuthorizationException in $serviceAppId stream, stopping app" }
             else ->
-                LOGGER.error(
-                    "Uncaught exception in $serviceAppId stream, thread: ${Thread.currentThread()} message:  ${e.message}",
-                    e,
-                )
+                LOGGER.error(e) {
+                    "Uncaught exception in $serviceAppId stream, thread: ${Thread.currentThread()} message:  ${e.message}"
+                }
         }
     }
 }

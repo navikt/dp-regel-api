@@ -1,6 +1,6 @@
 package no.nav.dagpenger.regel.api.streams
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.dagpenger.regel.api.Vaktmester
 import no.nav.dagpenger.regel.api.db.BruktSubsumsjonStore
 import no.nav.dagpenger.regel.api.db.EksternSubsumsjonBrukt
@@ -17,11 +17,11 @@ internal class BruktSubsumsjonStrategy(
 
     fun handle(bruktSubsumsjon: EksternSubsumsjonBrukt): Faktum? {
         return try {
-            logger.info("Mottatt $bruktSubsumsjon ")
+            logger.info { "Mottatt $bruktSubsumsjon " }
             val internSubsumsjonBrukt = bruktSubsumsjonStore.eksternTilInternSubsumsjon(bruktSubsumsjon)
             bruktSubsumsjonStore.insertSubsumsjonBrukt(internSubsumsjonBrukt)
             vaktmester.markerSomBrukt(internSubsumsjonBrukt)
-            logger.info("Lagret $bruktSubsumsjon til database")
+            logger.info { "Lagret $bruktSubsumsjon til database" }
 
             bruktSubsumsjonStore.getSubsumsjonByResult(SubsumsjonId(internSubsumsjonBrukt.id)).faktum
         } catch (e: SubsumsjonNotFoundException) {

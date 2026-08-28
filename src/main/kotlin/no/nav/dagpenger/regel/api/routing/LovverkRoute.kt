@@ -1,5 +1,6 @@
 package no.nav.dagpenger.regel.api.routing
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -9,7 +10,6 @@ import io.ktor.server.routing.route
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import no.nav.dagpenger.regel.api.models.Behov
 import no.nav.dagpenger.regel.api.models.BehovId
@@ -48,9 +48,9 @@ internal fun Route.lovverk(
                         .any { subsumsjon -> subsumsjon.måReberegnes(beregningsdato) }
                         .let { call.respond(KreverNyVurdering(it)) }
                 }.also {
-                    LOGGER.info(
-                        "Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}.",
-                    )
+                    LOGGER.info {
+                        "Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}."
+                    }
                 }
             }
         }
@@ -78,7 +78,7 @@ suspend fun SubsumsjonStore.sjekkResultat(
     subsumsjon: Subsumsjon,
 ): Boolean {
     repeat(15) {
-        LOGGER.info("Sjekker resultat. Runde: $it. For behov: $behovId og subsumsjon: $subsumsjon")
+        LOGGER.info { "Sjekker resultat. Runde: $it. For behov: $behovId og subsumsjon: $subsumsjon" }
         when (this.behovStatus(behovId)) {
             is Status.Done -> return !(this.getSubsumsjon(behovId) sammeMinsteinntektResultatSom subsumsjon)
             is Status.Pending -> delay(1000)

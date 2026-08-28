@@ -38,9 +38,10 @@ internal object TestApplication {
                 application {
                     apply(moduleFunction)
                 }
-                createClient {
-                    followRedirects = false
-                }
+                client =
+                    createClient {
+                        followRedirects = false
+                    }
 
                 test()
             }

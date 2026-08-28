@@ -1,12 +1,12 @@
 package no.nav.dagpenger.regel.api.routing
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
-import mu.KotlinLogging
 import no.nav.dagpenger.regel.api.monitoring.HealthCheck
 import no.nav.dagpenger.regel.api.monitoring.HealthStatus
 
@@ -19,7 +19,7 @@ fun Routing.naischecks(healthChecks: List<HealthCheck>) {
         when {
             failingHealthChecks.isEmpty() -> call.respondText("ALIVE", ContentType.Text.Plain)
             else -> {
-                LOGGER.error("The health check(s) is failing ${failingHealthChecks.joinToString(", ")}")
+                LOGGER.error { "The health check(s) is failing ${failingHealthChecks.joinToString(", ")}" }
                 call.response.status(HttpStatusCode.ServiceUnavailable)
             }
         }

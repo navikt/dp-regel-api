@@ -64,14 +64,14 @@ class BehovRouteV1Test {
             with(autentisert("v1/behov/status/01DSFG6P7969DP56BPW2EDS1RN", HttpMethod.Get)) {
                 status shouldBe HttpStatusCode.OK
                 headers["Content-Type"] shouldBe
-                    ContentType.Application.Json.withParameter("charset", "UTF-8")
+                    ContentType.Application.Json
                         .toString()
                 bodyAsText() shouldBe """{"status":"PENDING"}"""
             }
 //            with(autentisert("v1/behov/status/01DSFG798QNFAWXNFGZF0J2APX", HttpMethod.Get)) {
 //                status shouldBe HttpStatusCode.OK
 //                headers["Content-Type"] shouldBe
-//                    ContentType.Application.Json.withParameter("charset", "UTF-8")
+//                    ContentType.Application.Json
 //                        .toString()
 //                bodyAsText() shouldBe """{"status":"PENDING"}"""
 //            }
