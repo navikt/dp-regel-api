@@ -1,9 +1,7 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     id("common")
     application
-    alias(libs.plugins.shadow.jar)
 }
 
 repositories {
@@ -66,8 +64,4 @@ dependencies {
     val junitVersion = libs.versions.junit.get()
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-}
-
-tasks.withType<ShadowJar> {
-    mergeServiceFiles()
 }
