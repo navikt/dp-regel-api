@@ -18,7 +18,7 @@ application {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.github.navikt:dp-inntekt-kontrakter:2_20251211.17f9d7")
-    implementation("com.github.navikt:dagpenger-events:20250226.cb02d9")
+    implementation("com.github.navikt:dagpenger-events:20250331.0d2308")
     implementation(libs.bundles.jackson)
 
     val kafkaVersion = "8.3.2-ce"
@@ -37,7 +37,7 @@ dependencies {
 
     implementation("io.prometheus:client_java:1.9.0")
     implementation("io.prometheus:prometheus-metrics-core:1.9.0")
-    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.8.0")
+    implementation("io.prometheus:prometheus-metrics-instrumentation-jvm:1.9.0")
 
     implementation("ch.qos.logback:logback-classic:1.6.3")
     implementation("net.logstash.logback:logstash-logback-encoder:9.0")
@@ -56,7 +56,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5-jvm:${libs.versions.kotest.get()}")
     testImplementation(libs.testcontainer.postgresql)
     testImplementation("org.testcontainers:kafka:1.21.4")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:7.9.9-ce")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:8.3.2-ce")
     testImplementation("no.nav.security:mock-oauth2-server:4.0.1")
 
     testImplementation(libs.mockk)
