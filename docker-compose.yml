@@ -1,7 +1,7 @@
 version: '3'
 services:
   zoo1:
-    image: zookeeper:3.9.5@sha256:cab8944a33a1f1c39926b9016f5285ead7fa5e81d1e4ee3e3c9017bd4ca6e3bb
+    image: zookeeper:3.9.5@sha256:7d0f24ebb67ba83ff01697202600f70475c807da2e48f29b829c9406b74cad9a
     hostname: zoo1
     ports:
       - "2181:2181"
@@ -31,7 +31,7 @@ services:
     depends_on:
       - zoo1
   postgres:
-    image: postgres:18@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280
+    image: postgres:18@sha256:86c951e05bf56c93d95d397747fb8820ac76cc3bedb78f43abd83eedbe3666ae
     ports:
       - "5432:5432"
     environment:
