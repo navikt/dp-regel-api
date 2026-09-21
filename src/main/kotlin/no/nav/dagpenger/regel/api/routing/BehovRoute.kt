@@ -38,16 +38,18 @@ internal fun Route.behov(
             withContext(IO) {
                 runCatching {
                     mapRequestToBehov(call.receive()).apply {
-                        store.opprettBehov(this).also {
-                            producer.produceEvent(it)
-                        }.also {
-                            call.response.header(HttpHeaders.Location, "${call.request.path()}/status/${it.behovId.id}")
-                            call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
-                        }.also {
-                            logger.info {
-                                "Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}."
+                        store
+                            .opprettBehov(this)
+                            .also {
+                                producer.produceEvent(it)
+                            }.also {
+                                call.response.header(HttpHeaders.Location, "${call.request.path()}/status/${it.behovId.id}")
+                                call.respond(HttpStatusCode.Accepted, StatusResponse("PENDING"))
+                            }.also {
+                                logger.info {
+                                    "Produserte behov ${it.behovId} for intern id  ${it.behandlingsId} med beregningsdato ${it.beregningsDato}."
+                                }
                             }
-                        }
                     }
                 }.getOrElse {
                     logger.error(it) { "Feii i opprettesle av behov" }
@@ -77,7 +79,9 @@ internal fun Route.behov(
     }
 }
 
-private data class StatusResponse(val status: String)
+private data class StatusResponse(
+    val status: String,
+)
 
 internal fun mapRequestToBehov(request: BehovRequest): Behov {
     val id = request.regelkontekst.id ?: "0"
@@ -111,5 +115,8 @@ internal data class BehovRequest(
     val lærling: Boolean?,
     val regelverksdato: LocalDate? = null,
 ) {
-    data class RegelKontekst(val id: String? = null, val type: Kontekst)
+    data class RegelKontekst(
+        val id: String? = null,
+        val type: Kontekst,
+    )
 }

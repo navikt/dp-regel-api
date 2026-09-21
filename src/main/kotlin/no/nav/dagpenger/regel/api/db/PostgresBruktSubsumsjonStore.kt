@@ -24,7 +24,8 @@ private val LOGGER = KotlinLogging.logger {}
 class PostgresBruktSubsumsjonStore(
     private val dataSource: DataSource,
     val subsumsjonStore: SubsumsjonStore = PostgresSubsumsjonStore(dataSource),
-) : BruktSubsumsjonStore, HealthCheck {
+) : BruktSubsumsjonStore,
+    HealthCheck {
     override fun status(): HealthStatus {
         return try {
             using(sessionOf(dataSource)) { session ->
@@ -36,8 +37,8 @@ class PostgresBruktSubsumsjonStore(
         }
     }
 
-    override fun listSubsumsjonBrukt(): List<InternSubsumsjonBrukt> {
-        return using(sessionOf(dataSource)) { session ->
+    override fun listSubsumsjonBrukt(): List<InternSubsumsjonBrukt> =
+        using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """SELECT * FROM v2_subsumsjon_brukt""",
@@ -47,7 +48,6 @@ class PostgresBruktSubsumsjonStore(
                 }.asList,
             )
         }
-    }
 
     override fun eksternTilInternSubsumsjon(eksternSubsumsjonBrukt: EksternSubsumsjonBrukt): InternSubsumsjonBrukt {
         val behandlingsId =
@@ -71,8 +71,8 @@ class PostgresBruktSubsumsjonStore(
 
     override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon = subsumsjonStore.getSubsumsjonByResult(subsumsjonId)
 
-    override fun insertSubsumsjonBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt): Int {
-        return using(sessionOf(dataSource)) { session ->
+    override fun insertSubsumsjonBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt): Int =
+        using(sessionOf(dataSource)) { session ->
             session.run(
                 when (internSubsumsjonBrukt.created) {
                     null ->
@@ -97,10 +97,9 @@ class PostgresBruktSubsumsjonStore(
                 },
             )
         }
-    }
 
-    override fun getSubsumsjonBrukt(subsumsjonId: SubsumsjonId): InternSubsumsjonBrukt? {
-        return using(sessionOf(dataSource)) { session ->
+    override fun getSubsumsjonBrukt(subsumsjonId: SubsumsjonId): InternSubsumsjonBrukt? =
+        using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """SELECT * FROM v2_subsumsjon_brukt WHERE id = :id""",
@@ -108,19 +107,17 @@ class PostgresBruktSubsumsjonStore(
                 ).map { r -> extractInternSubsumsjonBrukt(r) }.asSingle,
             )
         }
-    }
 
-    private fun extractInternSubsumsjonBrukt(r: Row): InternSubsumsjonBrukt {
-        return InternSubsumsjonBrukt(
+    private fun extractInternSubsumsjonBrukt(r: Row): InternSubsumsjonBrukt =
+        InternSubsumsjonBrukt(
             id = r.string("id"),
             behandlingsId = r.string("behandlings_id"),
             arenaTs = r.zonedDateTime("arena_ts"),
             created = r.zonedDateTime("created"),
         )
-    }
 
-    override fun subsumsjonBruktFraBehandlingsId(behandlingsId: String): List<InternSubsumsjonBrukt> {
-        return using(sessionOf(dataSource)) { session ->
+    override fun subsumsjonBruktFraBehandlingsId(behandlingsId: String): List<InternSubsumsjonBrukt> =
+        using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """SELECT * FROM v2_subsumsjon_brukt WHERE behandlings_id = :bid""",
@@ -128,5 +125,4 @@ class PostgresBruktSubsumsjonStore(
                 ).map { r -> extractInternSubsumsjonBrukt(r) }.asList,
             )
         }
-    }
 }

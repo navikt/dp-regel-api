@@ -80,10 +80,14 @@ internal class PendingBehovStrategyTest {
 
         val registry = PrometheusRegistry.defaultRegistry
         val snapshot =
-            registry.scrape {
-                it == PACKET_PROCESS_TIME_METRIC_NAME
-            }.get(0)
-        snapshot.dataPoints[0].labels.get("strategy").shouldNotBeNull()
+            registry
+                .scrape {
+                    it == PACKET_PROCESS_TIME_METRIC_NAME
+                }.get(0)
+        snapshot.dataPoints[0]
+            .labels
+            .get("strategy")
+            .shouldNotBeNull()
     }
 }
 

@@ -77,15 +77,13 @@ internal class KafkaSubsumsjonBruktConsumer(
             .mapValues { _, value -> EksternSubsumsjonBrukt.fromJson(value) }
             .filterNot { _, bruktSubsumsjon ->
                 "AVSLU" == bruktSubsumsjon.vedtakStatus && "AVBRUTT" == bruktSubsumsjon.utfall
-            }
-            .filter { _, bruktSubsumsjon ->
+            }.filter { _, bruktSubsumsjon ->
                 kotlin.runCatching { ULID.parseULID(bruktSubsumsjon.id) }.isSuccess.also {
                     if (!it) {
                         LOGGER.warn { "Kunne ikke lese $bruktSubsumsjon -> ID er ikke ULID og ikke laget av dp-regel" }
                     }
                 }
-            }
-            .mapValues { _, bruktSubsumsjon -> bruktSubsumsjonStrategy.handle(bruktSubsumsjon) }
+            }.mapValues { _, bruktSubsumsjon -> bruktSubsumsjonStrategy.handle(bruktSubsumsjon) }
             .filterNot { _, value -> value == null }
             .mapValues { _, faktum: Faktum? ->
                 jacksonObjectMapper.writeValueAsString(

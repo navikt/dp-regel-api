@@ -23,9 +23,10 @@ internal object TestApplication {
     }
 
     val testOAuthToken: String by lazy {
-        mockOAuth2Server.issueToken(
-            issuerId = ISSUER_ID,
-        ).serialize()
+        mockOAuth2Server
+            .issueToken(
+                issuerId = ISSUER_ID,
+            ).serialize()
     }
 
     internal fun testApp(

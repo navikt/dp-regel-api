@@ -49,10 +49,12 @@ internal object PostgresTestSetup {
 
     fun withCleanDb(block: () -> Unit) {
         setup()
-        PostgresDataSourceBuilder.clean().run {
-            block()
-        }.also {
-            tearDown()
-        }
+        PostgresDataSourceBuilder
+            .clean()
+            .run {
+                block()
+            }.also {
+                tearDown()
+            }
     }
 }

@@ -2,7 +2,9 @@ package no.nav.dagpenger.regel.api.models
 
 import de.huxhorn.sulky.ulid.ULID
 
-open class Ulid(private val rawId: String) {
+open class Ulid(
+    private val rawId: String,
+) {
     val id: String
 
     init {
@@ -24,17 +26,19 @@ open class Ulid(private val rawId: String) {
         return true
     }
 
-    override fun hashCode(): Int {
-        return id.hashCode()
-    }
+    override fun hashCode(): Int = id.hashCode()
 
-    override fun toString(): String {
-        return "Ulid(id='$id')"
-    }
+    override fun toString(): String = "Ulid(id='$id')"
 }
 
-class BehovId(rawId: String) : Ulid(rawId)
+class BehovId(
+    rawId: String,
+) : Ulid(rawId)
 
-class SubsumsjonId(rawId: String) : Ulid(rawId)
+class SubsumsjonId(
+    rawId: String,
+) : Ulid(rawId)
 
-class IllegalUlidException(override val message: String) : RuntimeException(message)
+class IllegalUlidException(
+    override val message: String,
+) : RuntimeException(message)

@@ -22,7 +22,8 @@ internal interface DagpengerBehovProducer {
 internal class KafkaDagpengerBehovProducer(
     kafkaProps: Properties,
     private val regelTopic: String,
-) : DagpengerBehovProducer, HealthCheck {
+) : DagpengerBehovProducer,
+    HealthCheck {
     private val kafkaProducer =
         KafkaProducer(kafkaProps, StringSerializer(), PacketSerializer())
 
@@ -47,8 +48,8 @@ internal class KafkaDagpengerBehovProducer(
         return HealthStatus.UP
     }
 
-    override fun produceEvent(behov: InternBehov): Future<RecordMetadata> {
-        return kafkaProducer.send(
+    override fun produceEvent(behov: InternBehov): Future<RecordMetadata> =
+        kafkaProducer.send(
             ProducerRecord(
                 regelTopic,
                 behov.behovId.id,
@@ -64,5 +65,4 @@ internal class KafkaDagpengerBehovProducer(
                 }
             }
         }
-    }
 }

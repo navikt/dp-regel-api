@@ -29,7 +29,11 @@ internal object PostgresDataSourceBuilder {
     }
 
     private val flyWayBuilder: FluentConfiguration =
-        Flyway.configure().connectRetries(10).validateMigrationNaming(true).failOnMissingLocations(true)
+        Flyway
+            .configure()
+            .connectRetries(10)
+            .validateMigrationNaming(true)
+            .failOnMissingLocations(true)
 
     fun clean() =
         flyWayBuilder

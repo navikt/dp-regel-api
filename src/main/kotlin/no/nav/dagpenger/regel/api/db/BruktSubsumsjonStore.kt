@@ -34,16 +34,13 @@ data class EksternSubsumsjonBrukt(
     companion object Mapper {
         private val LOGGER = KotlinLogging.logger { }
 
-        fun fromJson(json: String): EksternSubsumsjonBrukt {
-            return runCatching<EksternSubsumsjonBrukt> {
+        fun fromJson(json: String): EksternSubsumsjonBrukt =
+            runCatching<EksternSubsumsjonBrukt> {
                 jacksonObjectMapper.readValue(json, EksternSubsumsjonBrukt::class.java)
             }.onFailure { e -> LOGGER.warn(e) { "Failed to convert string to object" } }.getOrThrow()
-        }
     }
 
-    fun toJson(): String {
-        return jacksonObjectMapper.writeValueAsString(this)
-    }
+    fun toJson(): String = jacksonObjectMapper.writeValueAsString(this)
 }
 
 data class InternSubsumsjonBrukt(
@@ -55,19 +52,18 @@ data class InternSubsumsjonBrukt(
     companion object Mapper {
         private val LOGGER = KotlinLogging.logger { }
 
-        fun fromJson(json: String): InternSubsumsjonBrukt? {
-            return runCatching<InternSubsumsjonBrukt> {
+        fun fromJson(json: String): InternSubsumsjonBrukt? =
+            runCatching<InternSubsumsjonBrukt> {
                 jacksonObjectMapper.readValue(
                     json,
                     InternSubsumsjonBrukt::class.java,
                 )
             }.onFailure { e -> LOGGER.warn(e) { "Failed to convert string to object" } }.getOrNull()
-        }
     }
 
-    fun toJson(): String {
-        return jacksonObjectMapper.writeValueAsString(this)
-    }
+    fun toJson(): String = jacksonObjectMapper.writeValueAsString(this)
 }
 
-internal class SubsumsjonBruktNotFoundException(override val message: String) : RuntimeException(message)
+internal class SubsumsjonBruktNotFoundException(
+    override val message: String,
+) : RuntimeException(message)

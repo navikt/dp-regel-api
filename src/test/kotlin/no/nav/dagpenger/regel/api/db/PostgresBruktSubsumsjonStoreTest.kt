@@ -42,9 +42,10 @@ class PostgresBruktSubsumsjonStoreTest {
                     InternSubsumsjonBrukt(
                         id = subsumsjon.behovId.id,
                         behandlingsId =
-                            PostgresSubsumsjonStore(dataSource).opprettKoblingTilRegelkontekst(
-                                eksternId,
-                            ).id,
+                            PostgresSubsumsjonStore(dataSource)
+                                .opprettKoblingTilRegelkontekst(
+                                    eksternId,
+                                ).id,
                         arenaTs = exampleDate,
                     )
                 this.insertSubsumsjonBrukt(internSubsumsjonBrukt = internSubsumsjonBrukt)

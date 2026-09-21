@@ -16,7 +16,8 @@ private val LOGGER = KotlinLogging.logger {}
 
 const val PACKET_PROCESS_TIME_METRIC_NAME = "packet_process_time_nanoseconds"
 val packetProcessTimeLatency: Summary =
-    Summary.builder()
+    Summary
+        .builder()
         .name(PACKET_PROCESS_TIME_METRIC_NAME)
         .quantile(0.5, 0.05) // Add 50th percentile (= median) with 5% tolerated error
         .quantile(0.9, 0.01) // Add 90th percentile with 1% tolerated error
@@ -35,7 +36,8 @@ internal interface SubsumsjonPacketStrategy {
     fun run(packet: Packet) {
         if (shouldHandle(packet)) {
             val started: LocalDateTime? =
-                packet.getNullableStringValue("system_started")
+                packet
+                    .getNullableStringValue("system_started")
                     ?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() }
             LOGGER.info { "Strategy triggered: $simpleStrategyName" }
             handle(packet)
@@ -46,7 +48,9 @@ internal interface SubsumsjonPacketStrategy {
     }
 }
 
-internal class PendingBehovStrategy(private val subsumsjonStore: SubsumsjonStore) : SubsumsjonPacketStrategy {
+internal class PendingBehovStrategy(
+    private val subsumsjonStore: SubsumsjonStore,
+) : SubsumsjonPacketStrategy {
     override fun shouldHandle(packet: Packet): Boolean = behovPending(packet.behovId)
 
     override fun handle(packet: Packet) {
@@ -63,13 +67,17 @@ internal class PendingBehovStrategy(private val subsumsjonStore: SubsumsjonStore
             .getOrDefault(false)
 }
 
-internal class SuccessStrategy(private val delegate: PendingBehovStrategy) : SubsumsjonPacketStrategy {
+internal class SuccessStrategy(
+    private val delegate: PendingBehovStrategy,
+) : SubsumsjonPacketStrategy {
     override fun handle(packet: Packet) = delegate.handle(packet)
 
     override fun shouldHandle(packet: Packet): Boolean = !packet.hasProblem() && delegate.shouldHandle(packet)
 }
 
-internal class CompleteResultStrategy(private val delegate: SuccessStrategy) : SubsumsjonPacketStrategy {
+internal class CompleteResultStrategy(
+    private val delegate: SuccessStrategy,
+) : SubsumsjonPacketStrategy {
     override fun handle(packet: Packet) = delegate.handle(packet)
 
     override fun shouldHandle(packet: Packet) =
@@ -82,7 +90,9 @@ internal class CompleteResultStrategy(private val delegate: SuccessStrategy) : S
             delegate.shouldHandle(packet)
 }
 
-internal class ManuellGrunnlagStrategy(private val delegate: SuccessStrategy) : SubsumsjonPacketStrategy {
+internal class ManuellGrunnlagStrategy(
+    private val delegate: SuccessStrategy,
+) : SubsumsjonPacketStrategy {
     override fun handle(packet: Packet) = delegate.handle(packet)
 
     override fun shouldHandle(packet: Packet) =
@@ -90,7 +100,9 @@ internal class ManuellGrunnlagStrategy(private val delegate: SuccessStrategy) : 
             delegate.shouldHandle(packet)
 }
 
-internal class ForrigeGrunnlagStrategy(private val delegate: SuccessStrategy) : SubsumsjonPacketStrategy {
+internal class ForrigeGrunnlagStrategy(
+    private val delegate: SuccessStrategy,
+) : SubsumsjonPacketStrategy {
     override fun handle(packet: Packet) = delegate.handle(packet)
 
     override fun shouldHandle(packet: Packet) =
@@ -98,7 +110,9 @@ internal class ForrigeGrunnlagStrategy(private val delegate: SuccessStrategy) : 
             delegate.shouldHandle(packet)
 }
 
-internal class ProblemStrategy(private val delegate: PendingBehovStrategy) : SubsumsjonPacketStrategy {
+internal class ProblemStrategy(
+    private val delegate: PendingBehovStrategy,
+) : SubsumsjonPacketStrategy {
     override fun shouldHandle(packet: Packet) = packet.hasProblem() && delegate.shouldHandle(packet)
 
     override fun handle(packet: Packet) = delegate.handle(packet)

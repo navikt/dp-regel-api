@@ -22,22 +22,19 @@ internal val jacksonObjectMapper =
                 module.addSerializer(Ulid::class.java, UlidSerializer())
                 module.addDeserializer(Ulid::class.java, UlidDeserializer())
             },
-        )
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        ).disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .changeDefaultPropertyInclusion {
-            it.withValueInclusion(JsonInclude.Include.NON_NULL)
+            it
+                .withValueInclusion(JsonInclude.Include.NON_NULL)
                 .withContentInclusion(JsonInclude.Include.NON_NULL)
-        }
-        .addMixIn(Problem::class.java, ProblemJacksonMixIn::class.java)
+        }.addMixIn(Problem::class.java, ProblemJacksonMixIn::class.java)
         .build()
 
 internal class EksternIdDeserializer : ValueDeserializer<Long>() {
     override fun deserialize(
         p: JsonParser,
         ctxt: DeserializationContext,
-    ): Long {
-        return BigDecimal(p.getString()).toLong()
-    }
+    ): Long = BigDecimal(p.getString()).toLong()
 }
 
 @JsonIgnoreProperties(value = ["toJson"])

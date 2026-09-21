@@ -14,7 +14,8 @@ import no.nav.dagpenger.regel.api.db.SubsumsjonStore
 import javax.sql.DataSource
 
 private val deletedCounter =
-    Counter.builder()
+    Counter
+        .builder()
         .name("subsumsjoner_slettet")
         .help("Antall subsumsjoner slettet fra databasen")
         .register()

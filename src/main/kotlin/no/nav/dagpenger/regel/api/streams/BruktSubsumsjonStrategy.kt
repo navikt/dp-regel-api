@@ -15,8 +15,8 @@ internal class BruktSubsumsjonStrategy(
 ) {
     private val logger = KotlinLogging.logger { }
 
-    fun handle(bruktSubsumsjon: EksternSubsumsjonBrukt): Faktum? {
-        return try {
+    fun handle(bruktSubsumsjon: EksternSubsumsjonBrukt): Faktum? =
+        try {
             logger.info { "Mottatt $bruktSubsumsjon " }
             val internSubsumsjonBrukt = bruktSubsumsjonStore.eksternTilInternSubsumsjon(bruktSubsumsjon)
             bruktSubsumsjonStore.insertSubsumsjonBrukt(internSubsumsjonBrukt)
@@ -31,5 +31,4 @@ internal class BruktSubsumsjonStrategy(
             logger.warn(e) { "Fant ikke ekstern id for ${bruktSubsumsjon.id}, ekstern id ${bruktSubsumsjon.eksternId}" }
             null
         }
-    }
 }

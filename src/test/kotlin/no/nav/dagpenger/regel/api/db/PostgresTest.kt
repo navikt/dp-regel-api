@@ -283,7 +283,8 @@ class PostgresSubsumsjonStoreTest {
     }
 
     private fun shouldBeTimed() {
-        PrometheusRegistry.defaultRegistry.scrape()
+        PrometheusRegistry.defaultRegistry
+            .scrape()
             .find { it.metadata.name == "subsumsjonstore_latency" }
             ?.let { metric ->
                 metric.dataPoints[0].labels shouldNotBe null

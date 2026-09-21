@@ -18,9 +18,7 @@ class PacketSerializer : Serializer<Packet> {
     override fun serialize(
         topic: String?,
         data: Packet?,
-    ): ByteArray? {
-        return data?.toJson()?.toByteArray(charset = StandardCharsets.UTF_8)
-    }
+    ): ByteArray? = data?.toJson()?.toByteArray(charset = StandardCharsets.UTF_8)
 }
 
 class PacketDeserializer : Deserializer<Packet> {
@@ -34,13 +32,12 @@ class PacketDeserializer : Deserializer<Packet> {
     override fun deserialize(
         topic: String?,
         data: ByteArray?,
-    ): Packet? {
-        return data?.let {
+    ): Packet? =
+        data?.let {
             try {
                 Packet(String(data, charset = StandardCharsets.UTF_8))
             } catch (e: Exception) {
                 throw SerializationException("Error when deserializing JSON to Packet", e)
             }
         }
-    }
 }

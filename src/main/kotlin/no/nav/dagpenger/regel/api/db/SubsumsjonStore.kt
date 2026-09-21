@@ -50,8 +50,14 @@ interface SubsumsjonStore {
     fun markerSomBrukt(internSubsumsjonBrukt: InternSubsumsjonBrukt)
 }
 
-internal class SubsumsjonNotFoundException(override val message: String) : RuntimeException(message)
+internal class SubsumsjonNotFoundException(
+    override val message: String,
+) : RuntimeException(message)
 
-internal class BehovNotFoundException(override val message: String) : RuntimeException(message)
+internal class BehovNotFoundException(
+    override val message: String,
+) : RuntimeException(message)
 
-internal class StoreException(override val message: String) : RuntimeException(message)
+internal class StoreException(
+    override val message: String,
+) : RuntimeException(message)

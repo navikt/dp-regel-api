@@ -40,8 +40,8 @@ internal fun producerConfig(
     aivenCredentials: KafkaAivenCredentials? = null,
     keySerializer: String = StringSerializer::class.java.name,
     valueSerializer: String = StringSerializer::class.java.name,
-): Properties {
-    return Properties().apply {
+): Properties =
+    Properties().apply {
         putAll(
             listOf(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootStapServerUrl,
@@ -62,7 +62,6 @@ internal fun producerConfig(
 
         this.credentials(aivenCredentials)
     }
-}
 
 fun streamConfigAiven(
     appId: String,
@@ -70,8 +69,8 @@ fun streamConfigAiven(
     stateDir: String? = null,
     aivenCredentials: KafkaAivenCredentials? = null,
     environmentConfiguration: EnvironmentConfiguration = EnvironmentConfiguration(),
-): Properties {
-    return Properties().apply {
+): Properties =
+    Properties().apply {
         putAll(
             commonProperties(bootStapServerUrl, appId),
         )
@@ -84,7 +83,6 @@ fun streamConfigAiven(
 
         this.credentials(aivenCredentials)
     }
-}
 
 private fun Properties.credentials(aivenCredentials: KafkaAivenCredentials?) {
     aivenCredentials?.let {
@@ -114,7 +112,8 @@ private fun commonProperties(
     StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG to LogAndFailExceptionHandler::class.java,
     StreamsConfig.producerPrefix(ProducerConfig.COMPRESSION_TYPE_CONFIG) to "snappy",
     StreamsConfig.producerPrefix(ProducerConfig.BATCH_SIZE_CONFIG) to
-        32.times(1024)
+        32
+            .times(1024)
             .toString(),
     // 32Kb (default is 16 Kb)
     // Increase max.request.size to 3 MB (default is 1MB )), messages should be compressed but there are currently a bug

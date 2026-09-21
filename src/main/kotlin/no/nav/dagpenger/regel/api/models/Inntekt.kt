@@ -16,12 +16,11 @@ data class InntektsPeriode(
                 jacksonObjectMapper.convertValue(json, InntektsPeriode::class.java)
             }
 
-        fun toJson(inntektsPeriode: InntektsPeriode): Any {
-            return jacksonObjectMapper.convertValue(
+        fun toJson(inntektsPeriode: InntektsPeriode): Any =
+            jacksonObjectMapper.convertValue(
                 inntektsPeriode,
                 object : TypeReference<Map<String, String>>() {},
             )
-        }
     }
 
     fun toJson(): Any = toJson(this)

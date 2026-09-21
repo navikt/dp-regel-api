@@ -69,8 +69,8 @@ data class InternBehov(
         fun fromBehov(
             behov: Behov,
             behandlingsId: BehandlingsId,
-        ): InternBehov {
-            return InternBehov(
+        ): InternBehov =
+            InternBehov(
                 behandlingsId = behandlingsId,
                 aktørId = behov.aktørId,
                 harAvtjentVerneplikt = behov.harAvtjentVerneplikt,
@@ -84,12 +84,13 @@ data class InternBehov(
                 lærling = behov.lærling,
                 regelverksdato = behov.regelverksdato,
             )
-        }
     }
 }
 
 sealed class Status {
-    data class Done(val behovId: BehovId) : Status() {
+    data class Done(
+        val behovId: BehovId,
+    ) : Status() {
         companion object {
             override fun toString() = "Done"
         }

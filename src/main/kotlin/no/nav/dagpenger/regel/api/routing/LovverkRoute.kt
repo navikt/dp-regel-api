@@ -41,17 +41,20 @@ internal fun Route.lovverk(
     route("/lovverk/vurdering") {
         post("/minsteinntekt") {
             withContext(Dispatchers.IO) {
-                call.receive<KreverNyBehandlingParametre>().apply {
-                    val beregningsdato = beregningsdato
-                    val subsumsjonIder = subsumsjonIder.map { SubsumsjonId(it) }
-                    store.getSubsumsjonerByResults(subsumsjonIder)
-                        .any { subsumsjon -> subsumsjon.måReberegnes(beregningsdato) }
-                        .let { call.respond(KreverNyVurdering(it)) }
-                }.also {
-                    LOGGER.info {
-                        "Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}."
+                call
+                    .receive<KreverNyBehandlingParametre>()
+                    .apply {
+                        val beregningsdato = beregningsdato
+                        val subsumsjonIder = subsumsjonIder.map { SubsumsjonId(it) }
+                        store
+                            .getSubsumsjonerByResults(subsumsjonIder)
+                            .any { subsumsjon -> subsumsjon.måReberegnes(beregningsdato) }
+                            .let { call.respond(KreverNyVurdering(it)) }
+                    }.also {
+                        LOGGER.info {
+                            "Vurder om minsteinntekt må reberegnes for subsumsjoner ${it.subsumsjonIder} beregningsdato ${it.beregningsdato}."
+                        }
                     }
-                }
             }
         }
     }
@@ -89,6 +92,11 @@ suspend fun SubsumsjonStore.sjekkResultat(
 
 class BehovTimeoutException : RuntimeException("Timet ut ved henting av behov")
 
-private data class KreverNyVurdering(val nyVurdering: Boolean)
+private data class KreverNyVurdering(
+    val nyVurdering: Boolean,
+)
 
-data class KreverNyBehandlingParametre(val subsumsjonIder: List<String>, val beregningsdato: LocalDate)
+data class KreverNyBehandlingParametre(
+    val subsumsjonIder: List<String>,
+    val beregningsdato: LocalDate,
+)

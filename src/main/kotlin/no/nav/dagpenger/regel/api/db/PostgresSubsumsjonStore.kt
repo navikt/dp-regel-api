@@ -28,12 +28,17 @@ import javax.sql.DataSource
 private val LOGGER = KotlinLogging.logger {}
 
 private val subsumsjonStoreLatency: Histogram =
-    Histogram.builder()
+    Histogram
+        .builder()
         .name("subsumsjonstore_latency")
         .labelNames("method")
-        .help("Subsumsjonstore latency in seconds.").register()
+        .help("Subsumsjonstore latency in seconds.")
+        .register()
 
-internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : SubsumsjonStore, HealthCheck {
+internal class PostgresSubsumsjonStore(
+    private val dataSource: DataSource,
+) : SubsumsjonStore,
+    HealthCheck {
     companion object {
         private val resultatNøkler =
             setOf<String>("satsResultat", "minsteinntektResultat", "periodeResultat", "grunnlagResultat")
@@ -131,9 +136,13 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                             harAvtjentVerneplikt = row.boolean("avtjent_verne_plikt"),
                             oppfyllerKravTilFangstOgFisk = row.boolean("oppfyller_krav_til_fangst_og_fisk"),
                             bruktInntektsPeriode =
-                                row.localDateOrNull("brukt_opptjening_forste_maned")?.toYearMonth()
+                                row
+                                    .localDateOrNull("brukt_opptjening_forste_maned")
+                                    ?.toYearMonth()
                                     ?.let { førsteMåned ->
-                                        row.localDateOrNull("brukt_opptjening_siste_maned")?.toYearMonth()
+                                        row
+                                            .localDateOrNull("brukt_opptjening_siste_maned")
+                                            ?.toYearMonth()
                                             ?.let { sisteMåned ->
                                                 InntektsPeriode(
                                                     førsteMåned = førsteMåned,
@@ -255,9 +264,11 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
 
     override fun getSubsumsjonByResult(subsumsjonId: SubsumsjonId): Subsumsjon =
         withTimer<Subsumsjon>("getSubsumsjonByResult") {
-            return resultatNøkler.mapNotNull { getSubsumsjonByResult(it, subsumsjonId) }.map {
-                JsonAdapter.fromJson(it)
-            }.firstOrNull()
+            return resultatNøkler
+                .mapNotNull { getSubsumsjonByResult(it, subsumsjonId) }
+                .map {
+                    JsonAdapter.fromJson(it)
+                }.firstOrNull()
                 ?: throw SubsumsjonNotFoundException("Could not find subsumsjon with subsumsjonId $subsumsjonId")
         }
 
@@ -271,8 +282,8 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
     private fun getSubsumsjonByResult(
         resultatNøkkel: String,
         subsumsjonId: SubsumsjonId,
-    ): String? {
-        return using(sessionOf(dataSource)) { session ->
+    ): String? =
+        using(sessionOf(dataSource)) { session ->
             session.run(
                 queryOf(
                     """ select
@@ -280,11 +291,10 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
                                             from v2_subsumsjon
                                             where data -> '$resultatNøkkel' ->> 'subsumsjonsId' = :id""",
                     mapOf("id" to subsumsjonId.id),
-                )
-                    .map { row -> row.string("data") }.asSingle,
+                ).map { row -> row.string("data") }
+                    .asSingle,
             )
         }
-    }
 
     private fun behovExists(behovId: BehovId): Boolean =
         withTimer<Boolean>("behovExists") {
@@ -305,12 +315,13 @@ internal class PostgresSubsumsjonStore(private val dataSource: DataSource) : Sub
     private fun getBehovIdBy(behovId: BehovId): BehovId? {
         try {
             return using(sessionOf(dataSource)) { session ->
-                session.run(
-                    queryOf(
-                        """ SELECT behov_id FROM v2_subsumsjon WHERE behov_id = ? """,
-                        behovId.id,
-                    ).map { row -> row.stringOrNull("behov_id") }.asSingle,
-                )?.let { BehovId(it) }
+                session
+                    .run(
+                        queryOf(
+                            """ SELECT behov_id FROM v2_subsumsjon WHERE behov_id = ? """,
+                            behovId.id,
+                        ).map { row -> row.stringOrNull("behov_id") }.asSingle,
+                    )?.let { BehovId(it) }
             }
         } catch (p: PSQLException) {
             throw StoreException(p.message!!)

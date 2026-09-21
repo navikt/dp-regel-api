@@ -17,7 +17,13 @@ class InternBehovTest {
                 BehandlingsId.nyBehandlingsIdFraEksternId(
                     RegelKontekst("1234", Kontekst.vedtak),
                 ),
-                LocalDate.now(), true, true, InntektsPeriode(YearMonth.now(), YearMonth.now()), 1, 1, lærling = false,
+                LocalDate.now(),
+                true,
+                true,
+                InntektsPeriode(YearMonth.now(), YearMonth.now()),
+                1,
+                1,
+                lærling = false,
             )
         val packet = InternBehov.toPacket(behov)
 

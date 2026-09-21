@@ -25,7 +25,8 @@ import java.time.Duration
 private val LOGGER = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 private val processTimeLatency: Summary =
-    Summary.builder()
+    Summary
+        .builder()
         .name("process_time_seconds")
         .quantile(0.5, 0.05) // Add 50th percentile (= median) with 5% tolerated error
         .quantile(0.9, 0.01) // Add 90th percentile with 1% tolerated error

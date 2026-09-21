@@ -64,16 +64,15 @@ internal data class AzureAdOpenIdConfiguration(
     val authorizationEndpoint: String,
 )
 
-private fun meta(url: String): AzureAdOpenIdConfiguration {
-    return runBlocking {
+private fun meta(url: String): AzureAdOpenIdConfiguration =
+    runBlocking {
         httpClient.get(url).let {
             jacksonObjectMapper.readValue(it.bodyAsText(), AzureAdOpenIdConfiguration::class.java)
         }
     }
-}
 
-private fun jwkProvider(url: String): JwkProvider {
-    return JwkProviderBuilder(URI(url).toURL())
+private fun jwkProvider(url: String): JwkProvider =
+    JwkProviderBuilder(URI(url).toURL())
         .cached(10, 24, TimeUnit.HOURS) // cache up to 10 JWKs for 24 hours
         .rateLimited(
             10,
@@ -81,4 +80,3 @@ private fun jwkProvider(url: String): JwkProvider {
             TimeUnit.MINUTES,
         ) // if not cached, only allow max 10 different keys per minute to be fetched from external provider
         .build()
-}

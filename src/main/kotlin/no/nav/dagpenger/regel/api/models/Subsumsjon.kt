@@ -38,23 +38,30 @@ data class Subsumsjon(
 
 // todo Remove once "minsteinntektInntektsPerioder" is part of the result and return the map
 internal fun minsteinntektResultatFrom(packet: Packet): Map<String, Any>? =
-    mapFrom(PacketKeys.MINSTEINNTEKT_RESULTAT, packet)?.toMutableMap()?.apply {
-        packet.getNullableObjectValue(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER) { any -> any }?.let {
-            put(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER, it)
-        }
-    }?.toMap()
+    mapFrom(PacketKeys.MINSTEINNTEKT_RESULTAT, packet)
+        ?.toMutableMap()
+        ?.apply {
+            packet.getNullableObjectValue(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER) { any -> any }?.let {
+                put(PacketKeys.MINSTEINNTEKT_INNTEKTSPERIODER, it)
+            }
+        }?.toMap()
 
 // todo Remove once "grunnlagInntektsPerioder" is part of the result and return the map
 internal fun grunnlagResultatFrom(packet: Packet): Map<String, Any>? =
-    mapFrom(PacketKeys.GRUNNLAG_RESULTAT, packet)?.toMutableMap()?.apply {
-        packet.getNullableObjectValue(PacketKeys.GRUNNLAG_INNTEKTSPERIODER) { any -> any }?.let {
-            put(PacketKeys.GRUNNLAG_INNTEKTSPERIODER, it)
-        }
-    }?.toMap()
+    mapFrom(PacketKeys.GRUNNLAG_RESULTAT, packet)
+        ?.toMutableMap()
+        ?.apply {
+            packet.getNullableObjectValue(PacketKeys.GRUNNLAG_INNTEKTSPERIODER) { any -> any }?.let {
+                put(PacketKeys.GRUNNLAG_INNTEKTSPERIODER, it)
+            }
+        }?.toMap()
 
 internal fun mapFrom(
     packetKey: String,
     packet: Packet,
 ): Map<String, Any>? = packet.hasField(packetKey).takeIf { it }?.let { packet.getMapValue(packetKey) }
 
-internal class SubsumsjonSerDerException(message: String, cause: Throwable) : RuntimeException(message, cause)
+internal class SubsumsjonSerDerException(
+    message: String,
+    cause: Throwable,
+) : RuntimeException(message, cause)

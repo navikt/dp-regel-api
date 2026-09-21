@@ -23,15 +23,16 @@ internal class InntektsPeriodeTest {
     @Test
     fun `Mapping from Packet`() {
         val inntektsPeriode =
-            Packet().apply {
-                putValue(
-                    PacketKeys.BRUKT_INNTEKTSPERIODE,
-                    mapOf(
-                        Pair("førsteMåned", "2019-01"),
-                        Pair("sisteMåned", "2019-02"),
-                    ),
-                )
-            }.let { InntektsPeriode.fromPacket(it) }
+            Packet()
+                .apply {
+                    putValue(
+                        PacketKeys.BRUKT_INNTEKTSPERIODE,
+                        mapOf(
+                            Pair("førsteMåned", "2019-01"),
+                            Pair("sisteMåned", "2019-02"),
+                        ),
+                    )
+                }.let { InntektsPeriode.fromPacket(it) }
 
         inntektsPeriode shouldNotBe null
         inntektsPeriode?.førsteMåned shouldBe YearMonth.of(2019, 1)

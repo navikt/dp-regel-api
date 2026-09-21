@@ -21,7 +21,8 @@ internal class SubsumsjonTest {
             periodeResultat = emptyMap(),
             satsResultat = emptyMap(),
             problem = Problem(title = "problem"),
-        ).toJson() shouldBe """{"behovId":"01DSFTA586H33ESMTYMY6QD4ZD","faktum":{"aktorId":"aktorId","regelkontekst":{"id":"1","type":"vedtak"},"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}"""
+        ).toJson() shouldBe
+            """{"behovId":"01DSFTA586H33ESMTYMY6QD4ZD","faktum":{"aktorId":"aktorId","regelkontekst":{"id":"1","type":"vedtak"},"beregningsdato":"2019-05-09"},"grunnlagResultat":{},"minsteinntektResultat":{},"periodeResultat":{},"satsResultat":{},"problem":{"type":"about:blank","title":"problem","status":500,"instance":"about:blank"}}"""
     }
 
     @Test

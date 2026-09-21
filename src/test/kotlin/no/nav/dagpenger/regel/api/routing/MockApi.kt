@@ -16,7 +16,7 @@ internal fun mockApi(
     kafkaDagpengerBehovProducer: DagpengerBehovProducer = mockk(),
     healthChecks: List<HealthCheck> = mockk(),
 ): Application.() -> Unit =
-    { ->
+    {
         api(
             subsumsjonStore = subsumsjonStore,
             kafkaProducer = kafkaDagpengerBehovProducer,

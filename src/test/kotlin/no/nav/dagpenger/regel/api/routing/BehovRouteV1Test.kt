@@ -385,8 +385,8 @@ class BehovRouteV1Test {
         }
     }
 
-    private fun mockedSubsumsjonStore(): SubsumsjonStore {
-        return object : SubsumsjonStore {
+    private fun mockedSubsumsjonStore(): SubsumsjonStore =
+        object : SubsumsjonStore {
             override fun insertSubsumsjon(
                 subsumsjon: Subsumsjon,
                 created: ZonedDateTime,
@@ -406,13 +406,10 @@ class BehovRouteV1Test {
                 TODO("not implemented")
             }
 
-            override fun insertBehov(behov: InternBehov): Int {
-                return 1
-            }
+            override fun insertBehov(behov: InternBehov): Int = 1
 
-            override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId {
-                return BehandlingsId.nyBehandlingsIdFraEksternId(regelKontekst)
-            }
+            override fun hentKoblingTilRegelKontekst(regelKontekst: RegelKontekst): BehandlingsId =
+                BehandlingsId.nyBehandlingsIdFraEksternId(regelKontekst)
 
             override fun opprettKoblingTilRegelkontekst(regelKontekst: RegelKontekst): BehandlingsId {
                 TODO("not implemented")
@@ -434,7 +431,6 @@ class BehovRouteV1Test {
                 TODO("Not yet implemented")
             }
         }
-    }
 }
 
 internal class BehovRequestMappingTest {

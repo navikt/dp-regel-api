@@ -44,7 +44,8 @@ private val subsumsjonGenerator =
                     aktorId = stringArb.next(it),
                     regelkontekst = RegelKontekst(stringArb.next(it), Kontekst.vedtak),
                     beregningsdato =
-                        Arb.localDate(LocalDate.of(2010, 1, 1), LocalDate.of(LocalDate.now().year, 1, 1))
+                        Arb
+                            .localDate(LocalDate.of(2010, 1, 1), LocalDate.of(LocalDate.now().year, 1, 1))
                             .next(it),
                 ),
             grunnlagResultat = Arb.map(stringArb, stringArb).next(it),
