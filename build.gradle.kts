@@ -33,7 +33,7 @@ dependencies {
 
     implementation(libs.bundles.ktor.client)
 
-    implementation("io.micrometer:micrometer-registry-prometheus:1.17.1")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.17.2")
 
     implementation("io.prometheus:client_java:1.10.0")
     implementation("io.prometheus:prometheus-metrics-core:1.10.0")
