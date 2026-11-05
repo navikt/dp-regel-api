@@ -5,6 +5,9 @@ metadata:
   namespace: "{{namespace}}"
   labels:
     team: "{{team}}"
+    subteam: paragrafjegerene
+    okonomisystem: "true"
+    fagsystem: dagpenger
 spec:
   image: "{{ image }}"
   port: 8092
