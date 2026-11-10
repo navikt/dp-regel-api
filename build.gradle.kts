@@ -56,7 +56,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5-jvm:${libs.versions.kotest.get()}")
     testImplementation(libs.testcontainer.postgresql)
     testImplementation("org.testcontainers:kafka:1.21.4")
-    testImplementation("org.apache.kafka:kafka-streams-test-utils:8.4.0-ce")
+    testImplementation("org.apache.kafka:kafka-streams-test-utils:8.4.1-ce")
     testImplementation("no.nav.security:mock-oauth2-server:6.1.5")
 
     testImplementation(libs.mockk)
