@@ -1,7 +1,7 @@
 version: '3'
 services:
   zoo1:
-    image: zookeeper:3.9.6@sha256:d0ae1665a1e85022261dc05a10e030c83895060401cd5c1bf990ed6b4d38c31b
+    image: zookeeper:3.9.7@sha256:1554cb1e26e648ced8ec6f65100be140d4897b515d47720616dbae812a3caf54
     hostname: zoo1
     ports:
       - "2181:2181"
