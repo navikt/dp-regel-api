@@ -18,7 +18,7 @@ application {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.github.navikt:dp-inntekt-kontrakter:2_202609181789745424.d9cfdc")
-    implementation("com.github.navikt:dagpenger-events:20250331.0d2308")
+    implementation(project(":dagpenger-events"))
     implementation(libs.bundles.jackson)
 
     val kafkaVersion = "8.4.1-ce"

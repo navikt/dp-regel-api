@@ -1,5 +1,7 @@
 rootProject.name = "dp-regel-api"
 
+include("dagpenger-events")
+
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
