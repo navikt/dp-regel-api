@@ -49,6 +49,11 @@ Tjenesten starter på port `8092`.
 
 ## Prosjektstruktur
 
+`dagpenger-events/` er en lokal Gradle-modul med meldingswrapperen `Packet`,
+`Problem` og tilhørende tester. Koden er hentet fra
+[`navikt/dagpenger-events`, versjon `20260206.3b827f`](https://github.com/navikt/dagpenger-events/tree/3b827fa41ee40aec2175fba419bd2a02296ddcb9).
+Modulen bygges og testes sammen med API-et og publiseres ikke separat.
+
 ```
 src/main/kotlin/no/nav/dagpenger/regel/api/
 ├── RegelApi.kt                  # Applikasjonsoppstart og Ktor-modulen
